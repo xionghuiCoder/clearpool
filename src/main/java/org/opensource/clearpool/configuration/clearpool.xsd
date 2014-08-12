@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+xmlns="http://www.w3school.com.cn">
+	<xs:element name="clearpool">
+		<xs:complexType>
+			<xs:element name="console">
+				<xsd:complexType>
+					<xs:element name="port" type="xs:integer"/>
+					<xs:element name="security">
+						<xsd:complexType>
+							<xs:element name="user" type="xs:string"/>
+							<xs:element name="password" type="xs:string"/>
+						</xsd:complexType>
+					</xs:element*>
+				</xsd:complexType>
+			<xs:element/>
+			<xs:element name="alias" type="xs:string"/>
+			<xs:element name="distribute-url" type="xs:string"/>
+			<xs:choice>
+				<xs:element name="jndi"/>
+					<xsd:complexType>
+						<xs:element name="jndi-name" type="xs:string"/>
+						<xs:element name="prop">
+							<xsd:complexType>
+    							<xs:attribute name="key" type="xs:string" />
+							</xsd:complexType>
+  						</xs:element*>
+					</xsd:complexType>
+				<xs:element/>
+				<xs:element name="jdbc">
+					<xsd:complexType>
+						<xs:element name="class" type="xs:string"/>
+						<xs:element name="url" type="xs:string"/>
+						<xs:element name="user" type="xs:string"/>
+						<xs:element name="password" type="xs:string"/>
+					</xsd:complexType>
+				<xs:element/>
+			</xs:choice>
+			<xs:element name="core-pool-size" type="xs:integer"/>
+			<xs:element name="max-pool-size" type="xs:integer"/>
+			<xs:element name="acquire-increment" type="xs:integer"/>
+			<xs:element name="acquire-retry-times" type="xs:integer"/>
+			<xs:element name="limit-idle-time" type="xs:integer"/>
+			<xs:element name="keep-test-period" type="xs:integer"/>
+			<xs:element name="test-table-name" type="xs:string"/>
+			<xs:element name="show-sql" type="xs:boolean"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

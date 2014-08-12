@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clearpool>
+	<console>
+		<port>8085</port>
+		<security>
+			<user>1</user>
+			<password>1</password>
+		</security>
+		<security>
+			<user>2</user>
+			<password>2</password>
+		</security>
+	</console>
+	<!--alias -->
+	<alias>myclearpool</alias>
+	<!-- distribute-url defined urls which we used to get init-params.Note:we 
+		can't use other labels when we are using it. -->
+	<!-- <distribute-url>clearpool.xml</distribute-url> -->
+	<!-- jndi defined where we can get datasource.Note:it can't be used with 
+		diver -->
+	<!-- <jndi> <jndi-name>jdbc/mypool</jndi-name> <prop key="java.naming.factory.initial">weblogic.jndi.WLInitialContextFactory</prop> 
+		<prop key="java.naming.provider.url">t3://172.16.101.42:7001</prop> <prop 
+		key="java.naming.security.principal">user</prop> <prop key="java.naming.security.credentials">password</prop> 
+		</jndi> -->
+	<!-- jdbc defined JDBC deriver.Note:it can't be used with jndi -->
+	<jdbc>
+		<class>com.mysql.jdbc.Driver</class>
+		<url>jdbc:mysql://127.0.0.1:3306/test?characterEncoding=gbk</url>
+		<user>root</user>
+		<password>1</password>
+	</jdbc>
+	<!--core connection:default value is 0 -->
+	<core-pool-size>10</core-pool-size>
+	<!--max connection:default value is Integer.MAX_VALUE -->
+	<max-pool-size>50</max-pool-size>
+	<!-- we get acquire-increment connection to fill the pool when there in 
+		no connection could be used,the defalut value is max-pool-size subtract core-pool-size. -->
+	<acquire-increment>5</acquire-increment>
+	<!-- when we get connection fail,we try acquire-retry-times,default value 
+		is 0. -->
+	<acquire-retry-times>3</acquire-retry-times>
+	<!--when the connection is more than max-connection and free for more than 
+		limit-idle-time(s),it will be released.The default value is 60(s). -->
+	<limit-idle-time>60</limit-idle-time>
+	<!-- we test if connection is valid during keep-test-period(s),default value 
+		is -1,which means we don't have to test the connection.-->
+	<keep-test-period>60</keep-test-period>
+	<!-- we create keep-test-table to test the connection, default table name 
+		is "clearpool_test".Note:we suggest to set test-table-name length less than 
+		30 chars to support oracle. -->
+	<test-table-name>test</test-table-name>
+	<!-- we will log the sql before we execute it if we set show-sql true and the log is valid -->
+	<show-sql>true</show-sql>
+</clearpool>
