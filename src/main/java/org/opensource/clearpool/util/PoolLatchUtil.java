@@ -1,4 +1,4 @@
-package org.opensource.clearpool.core.util;
+package org.opensource.clearpool.util;
 
 import java.util.concurrent.CountDownLatch;
 

@@ -1,11 +1,11 @@
 package org.opensource.clearpool.core.hook;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.core.util.PoolLatchUtil;
-import org.opensource.clearpool.core.util.ThreadSleepUtil;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.util.PoolLatchUtil;
+import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class's duty is to create connection if needed.When do we need a

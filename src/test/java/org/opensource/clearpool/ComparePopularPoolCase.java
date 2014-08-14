@@ -5,7 +5,6 @@ import java.lang.management.ThreadInfo;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -28,7 +27,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 /**
  * Compare with other Database Pool.
  */
-public class CompareCase extends TestCase {
+public class ComparePopularPoolCase extends TestCase {
 	private String jdbcUrl;
 	private String user;
 	private String password;
@@ -37,7 +36,7 @@ public class CompareCase extends TestCase {
 	private int maxPoolSize = 50;
 	private int threadCount = 1000;
 	private int loopCount = 5;
-	private int LOOP_COUNT = 100_000 / this.threadCount;
+	private int LOOP_COUNT = 1000_000 / this.threadCount;
 
 	private static AtomicLong physicalConnStat = new AtomicLong();
 
@@ -71,7 +70,7 @@ public class CompareCase extends TestCase {
 		printMemoryInfo();
 		System.setProperty("org.clearpool.log.unable", "true");
 		DriverManager.registerDriver(TestDriver.instance);
-		this.driverClass = "org.opensource.clearpool.CompareCase$TestDriver";
+		this.driverClass = "org.opensource.clearpool.ComparePopularPoolCase$TestDriver";
 		this.jdbcUrl = "jdbc:test:comparecase:";
 		this.user = "1";
 		this.password = "1";
@@ -220,12 +219,8 @@ public class CompareCase extends TestCase {
 				public void run() {
 					try {
 						startLatch.await();
-						for (int i = 0; i < CompareCase.this.LOOP_COUNT; i++) {
+						for (int i = 0; i < ComparePopularPoolCase.this.LOOP_COUNT; i++) {
 							Connection conn = dataSource.getConnection();
-							conn.setReadOnly(true);
-							Statement s = conn.createStatement();
-							s.execute("select 1 from hello");
-							s.close();
 							conn.close();
 						}
 					} catch (Exception ex) {

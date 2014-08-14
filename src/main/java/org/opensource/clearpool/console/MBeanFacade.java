@@ -3,7 +3,7 @@ package org.opensource.clearpool.console;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.core.util.PoolLatchUtil;
+import org.opensource.clearpool.util.PoolLatchUtil;
 
 /**
  * This class is the facade of MBean,we should use MBean by it.

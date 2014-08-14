@@ -3,11 +3,11 @@ package org.opensource.clearpool.core.hook;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.core.chain.CommonChain;
-import org.opensource.clearpool.core.util.PoolLatchUtil;
-import org.opensource.clearpool.core.util.ThreadSleepUtil;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.util.PoolLatchUtil;
+import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class's duty is to check if the connection is valid.

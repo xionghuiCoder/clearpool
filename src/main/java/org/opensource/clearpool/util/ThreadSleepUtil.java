@@ -1,4 +1,4 @@
-package org.opensource.clearpool.core.util;
+package org.opensource.clearpool.util;
 
 /**
  * This class's duty is to release CPU,it sleep for a while in case the CPU is

@@ -22,7 +22,8 @@ import org.opensource.clearpool.log.PoolLogFactory;
  * @version 1.0
  */
 public class ConfigurationVO {
-	private static final PoolLog LOG = PoolLogFactory.getLog(ConfigurationVO.class);
+	private static final PoolLog LOG = PoolLogFactory
+			.getLog(ConfigurationVO.class);
 
 	private static Console console;
 	private String alias;
@@ -167,9 +168,13 @@ public class ConfigurationVO {
 						"cfg should have a driver or a jndi,otherwise you should set datasource in DataSourceHolder");
 			}
 		}
+		if (this.maxPoolSize == 0) {
+			throw new ConnectionPoolXMLParseException(
+					"the maxPoolsize should not be zero");
+		}
 		if (this.maxPoolSize < this.corePoolSize) {
-			LOG.warn("the maxPoolsize less than corePoolsize");
-			this.maxPoolSize = Integer.MAX_VALUE;
+			throw new ConnectionPoolXMLParseException(
+					"the maxPoolsize less than corePoolsize");
 		}
 		if (this.acquireIncrement <= 0) {
 			this.acquireIncrement = this.maxPoolSize - this.corePoolSize;

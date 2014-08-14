@@ -11,9 +11,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.opensource.clearpool.configuration.XMLConfiguration;
-import org.opensource.clearpool.datasource.util.JdbcUtils;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.opensource.clearpool.util.JdbcUtils;
 
 public class JDBCDataSource extends CommonDataSource {
 	private final static String CLASS = "class";

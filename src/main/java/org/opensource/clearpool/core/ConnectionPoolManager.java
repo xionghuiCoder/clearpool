@@ -10,11 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.chain.AtomicSingleChain;
 import org.opensource.clearpool.core.chain.CommonChain;
-import org.opensource.clearpool.core.util.ThreadSleepUtil;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class save the connection to {@link #connectionChain},it's duty is to
@@ -31,7 +31,9 @@ public class ConnectionPoolManager {
 	private static final PoolLog LOG = PoolLogFactory
 			.getLog(ConnectionPoolManager.class);
 
-	private final CommonChain<ConnectionProxy> connectionChain = new AtomicSingleChain<ConnectionProxy>();
+	// private final CommonChain<ConnectionProxy> connectionChain = new
+	// AtomicSingleChain<ConnectionProxy>();
+	private final CommonChain<ConnectionProxy> connectionChain;
 
 	// save all the connection to close in case we shutdown the JVM
 	private volatile Set<ConnectionProxy> connectionSet = new HashSet<>();
@@ -53,6 +55,9 @@ public class ConnectionPoolManager {
 
 	ConnectionPoolManager(ConfigurationVO cfgVO) {
 		this.cfgVO = cfgVO;
+		// this.connectionChain = new
+		// LockCircleChain<ConnectionProxy>(cfgVO.getMaxPoolSize());
+		this.connectionChain = new AtomicSingleChain<ConnectionProxy>();
 	}
 
 	/**
