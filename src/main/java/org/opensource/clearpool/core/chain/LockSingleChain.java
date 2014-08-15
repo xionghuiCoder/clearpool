@@ -10,25 +10,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * @date 26.07.2014
  * @version 1.0
  */
-public class LockCircleChain<E> extends CommonChain<E> {
+public class LockSingleChain<E> extends CommonChain<E> {
 	private Lock addLock = new ReentrantLock();
 	private Lock removeLock = new ReentrantLock();
 
-	private volatile Node<E> head = new SingleNode<E>(null);
+	private volatile Node<E> head = this.tail = new SingleNode<E>(null);
 	private volatile Node<E> tail;
 
 	private int size;
-
-	public LockCircleChain(int maxCount) {
-		Node<E> temp = this.head;
-		// note:the circle's size is maxCount+1
-		for (int i = 0; i < maxCount; i++) {
-			temp.next = new SingleNode<E>(null);
-			temp = temp.next;
-		}
-		temp.next = this.head;
-		this.tail = this.head;
-	}
 
 	@Override
 	public void add(E e) {
@@ -36,6 +25,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
 		try {
 			this.tail.element = e;
 			this.tail.entryTime = System.currentTimeMillis();
+			this.tail.next = new SingleNode<E>(null);
 			this.tail = this.tail.next;
 		} finally {
 			this.addLock.unlock();

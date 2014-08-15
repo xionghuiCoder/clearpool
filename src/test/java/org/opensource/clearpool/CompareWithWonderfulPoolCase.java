@@ -15,7 +15,8 @@ import javax.sql.DataSource;
 import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
-import org.opensource.clearpool.util.TestUtil;
+import org.opensource.clearpool.util.GCUtil;
+import org.opensource.clearpool.util.MemoryUtil;
 
 import com.alibaba.druid.mock.MockConnection;
 import com.alibaba.druid.mock.MockDriver;
@@ -31,9 +32,9 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 	private String driverClass;
 	private int minPoolSize = 10;
 	private int maxPoolSize = 50;
-	private int threadCount = 1000;
+	private int threadCount = 100;
 	private int loopCount = 5;
-	private int LOOP_COUNT = 1000_000 / this.threadCount;
+	private int LOOP_COUNT = 100_000 / this.threadCount;
 
 	private static AtomicLong physicalConnStat = new AtomicLong();
 
@@ -64,7 +65,7 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 
 	@Override
 	public void setUp() throws Exception {
-		printMemoryInfo();
+		MemoryUtil.printMemoryInfo();
 		System.setProperty("org.clearpool.log.unable", "true");
 		DriverManager.registerDriver(TestDriver.instance);
 		this.driverClass = "org.opensource.clearpool.CompareWithWonderfulPoolCase$TestDriver";
@@ -177,15 +178,15 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 			thread.start();
 		}
 		long startMillis = System.currentTimeMillis();
-		long startYGC = TestUtil.getYoungGC();
-		long startFullGC = TestUtil.getFullGC();
+		long startYGC = GCUtil.getYoungGC();
+		long startFullGC = GCUtil.getFullGC();
 
 		startLatch.countDown();
 		endLatch.await();
 
 		long millis = System.currentTimeMillis() - startMillis;
-		long ygc = TestUtil.getYoungGC() - startYGC;
-		long fullGC = TestUtil.getFullGC() - startFullGC;
+		long ygc = GCUtil.getYoungGC() - startYGC;
+		long fullGC = GCUtil.getFullGC() - startFullGC;
 
 		long[] threadIdArray = new long[threads.length];
 		for (int i = 0; i < threads.length; ++i) {
@@ -212,17 +213,5 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 				+ " waited " + NumberFormat.getInstance().format(waitedCount)
 				+ " physicalConn " + physicalConnStat.get());
 
-	}
-
-	/**
-	 * Show memory
-	 */
-	private static void printMemoryInfo() {
-		Runtime currRuntime = Runtime.getRuntime();
-		int nFreeMemory = (int) (currRuntime.freeMemory() / 1024 / 1024);
-		int nTotalMemory = (int) (currRuntime.totalMemory() / 1024 / 1024);
-		String message = nFreeMemory + "M/" + nTotalMemory + "M(free/total)";
-		System.out.println("memory:" + message);
-		System.out.println();
 	}
 }

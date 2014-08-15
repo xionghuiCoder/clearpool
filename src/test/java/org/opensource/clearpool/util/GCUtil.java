@@ -8,7 +8,7 @@ import javax.management.ObjectName;
 /**
  * This class come from alibaba.druid
  */
-public class TestUtil {
+public class GCUtil {
 
 	public static long getYoungGC() {
 		try {

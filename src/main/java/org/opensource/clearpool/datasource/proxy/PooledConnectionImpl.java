@@ -15,12 +15,12 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
 import javax.sql.ConnectionEvent;
@@ -43,8 +43,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 	private Connection connection;
 	private final ConnectionProxy conProxy;
 
-	private final List<ConnectionEventListener> connectionEventListeners = new CopyOnWriteArrayList<ConnectionEventListener>();
-	private final List<StatementEventListener> statementEventListeners = new CopyOnWriteArrayList<StatementEventListener>();
+	private final List<ConnectionEventListener> connectionEventListeners = new ArrayList<ConnectionEventListener>();
+	private final List<StatementEventListener> statementEventListeners = new ArrayList<StatementEventListener>();
 
 	private final Set<Statement> statementSet = new HashSet<>();
 
@@ -665,7 +665,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 			}
 			this.connectionEventListeners.clear();
 		}
-		if (this.statementEventListeners.size() > 0) {
+		if (this.connectionEventListeners.size() > 0) {
 			this.statementEventListeners.clear();
 		}
 		this.connection = null;
