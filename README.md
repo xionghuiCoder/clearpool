@@ -12,4 +12,4 @@ The function of the pool:<br />
 Note:
 Thread may fight for connection in clearpool all the time because we abandoned the lock,so the CPU will be busy.
 
-If you want to compare the performance with other database pool,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareCase.java.
+If you want to compare the performance with other database pool,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/ComparePopularPoolCase.java.
