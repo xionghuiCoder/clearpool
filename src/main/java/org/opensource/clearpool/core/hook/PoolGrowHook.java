@@ -49,14 +49,13 @@ public class PoolGrowHook implements Runnable {
 			if (Thread.currentThread().isInterrupted()) {
 				break;
 			}
-			int lackCount = this.pool.getLackCount();
-			if (lackCount == 0) {
+			if (this.pool.getLackCount() == 0) {
 				// release CPU
 				ThreadSleepUtil.sleep();
 				continue;
 			}
 			try {
-				this.pool.fillPool(lackCount);
+				this.pool.fillPool();
 			} catch (ConnectionPoolException e) {
 				// swallow it,we don't have to log it because fillPool() already
 				// did.

@@ -6,14 +6,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.CommonDataSource;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.opensource.clearpool.configuration.console.Console;
-import org.opensource.clearpool.datasource.JDBCDataSource;
-import org.opensource.clearpool.datasource.JndiDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 import org.opensource.clearpool.log.PoolLog;
@@ -43,6 +42,7 @@ public class XMLConfiguration {
 	private final static String DOCUMENT_NAME = "clearpool";
 	private final static String ALIAS = "alias";
 	private final static String DISTRIBUTE_URL = "distribute-url";
+	private final static String JTA_SUPPORT = "jta-support";
 	private final static String CORE_POOL_SIZE = "core-pool-size";
 	private final static String MAX_POOL_SIZE = "max-pool-size";
 	private final static String ACQUIRE_INCREMENT = "acquire-increment";
@@ -56,11 +56,10 @@ public class XMLConfiguration {
 	public static Map<String, ConfigurationVO> getCfgVO(String path) {
 		path = getRealPath(path);
 		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
-		Set<ConfigurationVO> cfgSet = new HashSet<>();
 		XMLInputFactory xmlFac = XMLInputFactory.newInstance();
 		try {
 			long begin = System.currentTimeMillis();
-			parseXML(cfgMap, cfgSet, path, xmlFac, false, false);
+			parseXML(cfgMap, path, xmlFac, true, false);
 			long cost = System.currentTimeMillis() - begin;
 			LOG.info("XML parsing cost " + cost + "ms");
 		} catch (XMLStreamException e) {
@@ -89,59 +88,34 @@ public class XMLConfiguration {
 	}
 
 	/**
-	 * The rule of searching resource is base on ClassLoader searching rule.
-	 * 
-	 * @see java.lang.Class#getResourceAsStream(String)
-	 * @param path
-	 *            is the url of the resource
-	 * @return the inputstream of the resource
-	 */
-	private static InputStream getResourceAsStream(String path) {
-		path = path.startsWith("/") ? path.substring(1) : path;
-		InputStream inStream = null;
-		ClassLoader classLoader = Thread.currentThread()
-				.getContextClassLoader();
-		if (classLoader == null) {
-			inStream = ClassLoader.getSystemResourceAsStream(path);
-		} else {
-			inStream = classLoader.getResourceAsStream(path);
-		}
-		if (inStream == null) {
-			throw new ConnectionPoolException(path + " not found");
-		}
-		return inStream;
-	}
-
-	/**
-	 * Parse XML recursive.If reader has {@code DISTRIBUTE_URL},we give up this
-	 * XML and parse the url in {@code DISTRIBUTE_URL}.When we get a repeat url
-	 * from {@code DISTRIBUTE_URL},we throw a
+	 * Parse XML recursive.If reader has {@code DISTRIBUTE_URL} and we get a
+	 * repeat path from {@code DISTRIBUTE_URL},we throw a
 	 * {@link ConnectionPoolXMLParseException} .If we get a element in
-	 * {@code DISTRIBUTE_URL} which isn't {@link DISTRIBUTE_VALUE},we throw a
+	 * {@code DISTRIBUTE_URL} which isn't {@code DISTRIBUTE_VALUE},we throw a
 	 * {@link ConnectionPoolXMLParseException}.
 	 * 
 	 * If reader don't has {@code DISTRIBUTE_URL},we treat the XML as a
 	 * {@link ConfigurationVO}.After we fill {@link ConfigurationVO},we check if
 	 * {@link ConfigurationVO} is legal.IF {@link ConfigurationVO} is legal,we
-	 * add it to cfgVOs,otherwise we throw a
-	 * {@link ConnectionPoolXMLParseException}.And we throw a
-	 * {@link ConnectionPoolXMLParseException} if {@link ConfigurationVO}
-	 * repeat.
+	 * add it to cfgMap,otherwise we throw a
+	 * {@link ConnectionPoolXMLParseException}.
 	 * 
-	 * @param cfgVOs
-	 *            is hashset of the cfgVO
-	 * @param reader
-	 *            is the XMLStreamReader of the root stream
+	 * @param cfgMap
+	 *            is hashMap of the alias to cfgVO
+	 * @param path
+	 *            is the path of the cfg
 	 * @param xmlFac
 	 *            is used to parse path
+	 * @param isFirst
+	 *            if is the first cfg
 	 * @param distributed
 	 *            if is distributed
 	 * @throws XMLStreamException
 	 *             {@link XMLStreamException}
 	 */
 	private static void parseXML(Map<String, ConfigurationVO> cfgMap,
-			Set<ConfigurationVO> cfgSet, String path, XMLInputFactory xmlFac,
-			boolean isNotFirst, boolean distributed) throws XMLStreamException {
+			String path, XMLInputFactory xmlFac, boolean isFirst,
+			boolean distributed) throws XMLStreamException {
 		InputStream inStream = getResourceAsStream(path);
 		XMLStreamReader reader = xmlFac.createXMLStreamReader(inStream);
 		int event = reader.getEventType();
@@ -149,7 +123,7 @@ public class XMLConfiguration {
 			if (event == XMLStreamConstants.START_ELEMENT) {
 				if (!DOCUMENT_NAME.equals(reader.getLocalName())) {
 					throw new ConnectionPoolXMLParseException(
-							"xml's name should be " + DOCUMENT_NAME);
+							"cfg's name should be " + DOCUMENT_NAME);
 				}
 				break;
 			}
@@ -159,7 +133,6 @@ public class XMLConfiguration {
 		// has other labels except DISTRIBUTE_URL.
 		boolean hasDistributed = false, noDistributed = false;
 		Set<String> urls = new HashSet<>();
-		urls.add(path);
 		ConfigurationVO cfgVO = new ConfigurationVO();
 		while (reader.hasNext()) {
 			event = reader.next();
@@ -174,7 +147,7 @@ public class XMLConfiguration {
 				cfgVO.setAlias(reader.getElementText().trim());
 				break;
 			case CONSOLE:
-				if (isNotFirst) {
+				if (!isFirst) {
 					throw new ConnectionPoolXMLParseException(CONSOLE
 							+ " should set in the first configuration");
 				}
@@ -197,25 +170,29 @@ public class XMLConfiguration {
 				break;
 			case JDBC:
 				checkDistributedLegal(hasDistributed);
-				if (cfgVO.getDataSource() != null) {
-					throw new ConnectionPoolXMLParseException(JDBC + " or "
-							+ JNDI + " repeat");
+				if (cfgVO.getCommonDataSource() != null) {
+					throw new ConnectionPoolXMLParseException(
+							"we should set only one " + JDBC + " or " + JNDI);
 				}
 				noDistributed = true;
-				JDBCDataSource jdbc = new JDBCDataSource();
-				jdbc.parse(reader);
-				cfgVO.setDataSource(jdbc);
+				CommonDataSource jdbcDs = JDBCConfiguration.parse(reader);
+				cfgVO.setCommonDataSource(jdbcDs);
 				break;
 			case JNDI:
 				checkDistributedLegal(hasDistributed);
-				if (cfgVO.getDataSource() != null) {
-					throw new ConnectionPoolXMLParseException(JDBC + " or "
-							+ JNDI + " repeat");
+				if (cfgVO.getCommonDataSource() != null) {
+					throw new ConnectionPoolXMLParseException(
+							"we should set only one " + JNDI + " or " + JDBC);
 				}
 				noDistributed = true;
-				JndiDataSource jndi = new JndiDataSource();
-				jndi.parse(reader);
-				cfgVO.setDataSource(jndi);
+				CommonDataSource jndiDs = JndiConfiguration.parse(reader);
+				cfgVO.setCommonDataSource(jndiDs);
+				break;
+			case JTA_SUPPORT:
+				checkDistributedLegal(hasDistributed);
+				noDistributed = true;
+				cfgVO.setJtaSupport(Boolean.valueOf(reader.getElementText()
+						.trim()));
 				break;
 			case CORE_POOL_SIZE:
 				checkDistributedLegal(hasDistributed);
@@ -266,30 +243,49 @@ public class XMLConfiguration {
 				break;
 			default:
 				throw new ConnectionPoolXMLParseException(DISTRIBUTE_URL
-						+ " contains illegal elements");
+						+ " contains illegal element: " + parsing);
 			}
 		}
-		if (urls.size() > 1) {
-			urls.remove(path);
+		if (urls.size() > 0) {
 			for (String url : urls) {
 				// invoke parseXML recursive
-				parseXML(cfgMap, cfgSet, url, xmlFac, true, distributed);
+				parseXML(cfgMap, url, xmlFac, false, distributed);
 			}
 		} else {
 			cfgVO.init();
-			if (!cfgSet.add(cfgVO)) {
-				throw new ConnectionPoolXMLParseException(
-						"configurations repeat");
-			}
 			if (cfgMap.put(cfgVO.getAlias(), cfgVO) != null) {
-				throw new ConnectionPoolXMLParseException(
-						"configurations have the same name");
+				throw new ConnectionPoolXMLParseException("cfg's alias "
+						+ cfgVO.getAlias() + " repeat");
 			}
 		}
 	}
 
 	/**
-	 * check if XML have distributed and the other labels at the same time
+	 * The rule of searching resource is base on ClassLoader searching rule.
+	 * 
+	 * @see java.lang.Class#getResourceAsStream(String)
+	 * @param path
+	 *            is the url of the resource
+	 * @return the inputstream of the resource
+	 */
+	private static InputStream getResourceAsStream(String path) {
+		path = path.startsWith("/") ? path.substring(1) : path;
+		InputStream inStream = null;
+		ClassLoader classLoader = Thread.currentThread()
+				.getContextClassLoader();
+		if (classLoader == null) {
+			inStream = ClassLoader.getSystemResourceAsStream(path);
+		} else {
+			inStream = classLoader.getResourceAsStream(path);
+		}
+		if (inStream == null) {
+			throw new ConnectionPoolException(path + " not found");
+		}
+		return inStream;
+	}
+
+	/**
+	 * Check if XML have distributed and the other labels at the same time
 	 */
 	private static void checkDistributedLegal(boolean hasDistributed) {
 		if (hasDistributed) {

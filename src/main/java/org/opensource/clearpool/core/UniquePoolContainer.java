@@ -4,8 +4,6 @@ import java.sql.SQLException;
 
 import javax.sql.PooledConnection;
 
-import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
-import org.opensource.clearpool.datasource.proxy.PooledConnectionImpl;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 
 /**
@@ -26,8 +24,7 @@ class UniquePoolContainer extends CommonPoolContainer {
 		PooledConnection pooledConnection = null;
 		for (ConnectionPoolManager pool : poolMap.values()) {
 			// get pool connection
-			ConnectionProxy conProxy = pool.exitPool();
-			pooledConnection = new PooledConnectionImpl(conProxy);
+			pooledConnection = pool.exitPool();
 			break;
 		}
 		return pooledConnection;

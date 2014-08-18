@@ -3,10 +3,21 @@ package org.opensource.clearpool.configuration;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.sql.CommonDataSource;
+import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.opensource.clearpool.configuration.console.Console;
+import org.opensource.clearpool.datasource.AbstractDataSource;
 import org.opensource.clearpool.datasource.DataSourceHolder;
+import org.opensource.clearpool.datasource.JDBCDataSource;
+import org.opensource.clearpool.datasource.factory.DataSourceAbstractFactory;
+import org.opensource.clearpool.datasource.factory.DataSourceFactory;
+import org.opensource.clearpool.datasource.factory.JDBCDataSourceFactory;
+import org.opensource.clearpool.datasource.factory.JDBCXADataSourceFactory;
+import org.opensource.clearpool.datasource.factory.PoolDataSourceFactory;
+import org.opensource.clearpool.datasource.factory.XADataSourceFactory;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
@@ -26,11 +37,16 @@ public class ConfigurationVO {
 			.getLog(ConfigurationVO.class);
 
 	private static Console console;
+
+	private DataSourceAbstractFactory factory = null;
+
 	private String alias;
-	private DataSource dataSource;
+	private AbstractDataSource dataSource;
+	private CommonDataSource commonDataSource;
+	private boolean jtaSupport;
 	private int corePoolSize;
-	private int maxPoolSize;
-	private int acquireIncrement;
+	private int maxPoolSize = Integer.MAX_VALUE;
+	private int acquireIncrement = 1;
 	private int acquireRetryTimes;
 	private long limitIdleTime = 60 * 1000L;
 	private long keepTestPeriod;
@@ -47,6 +63,10 @@ public class ConfigurationVO {
 		ConfigurationVO.console = console;
 	}
 
+	public DataSourceAbstractFactory getFactory() {
+		return this.factory;
+	}
+
 	public String getAlias() {
 		return this.alias;
 	}
@@ -55,12 +75,24 @@ public class ConfigurationVO {
 		this.alias = alias;
 	}
 
-	public DataSource getDataSource() {
+	public AbstractDataSource getDataSource() {
 		return this.dataSource;
 	}
 
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+	public CommonDataSource getCommonDataSource() {
+		return this.commonDataSource;
+	}
+
+	public void setCommonDataSource(CommonDataSource commonDataSource) {
+		this.commonDataSource = commonDataSource;
+	}
+
+	public boolean isJtaSupport() {
+		return this.jtaSupport;
+	}
+
+	public void setJtaSupport(boolean jtaSupport) {
+		this.jtaSupport = jtaSupport;
 	}
 
 	public int getCorePoolSize() {
@@ -80,6 +112,10 @@ public class ConfigurationVO {
 	}
 
 	public void setMaxPoolSize(int maxPoolSize) {
+		if (maxPoolSize <= 0) {
+			LOG.warn("maxPoolSize should be positive");
+			return;
+		}
 		this.maxPoolSize = maxPoolSize;
 	}
 
@@ -88,6 +124,10 @@ public class ConfigurationVO {
 	}
 
 	public void setAcquireIncrement(int acquireIncrement) {
+		if (acquireIncrement <= 0) {
+			LOG.warn("acquireIncrement should be positive");
+			return;
+		}
 		this.acquireIncrement = acquireIncrement;
 	}
 
@@ -97,7 +137,7 @@ public class ConfigurationVO {
 
 	public void setAcquireRetryTimes(int acquireRetryTimes) {
 		if (acquireRetryTimes < 0) {
-			LOG.warn("the acquireRetryTimes negative");
+			LOG.warn("acquireRetryTimes negative");
 			return;
 		}
 		this.acquireRetryTimes = acquireRetryTimes;
@@ -109,7 +149,7 @@ public class ConfigurationVO {
 
 	public void setLimitIdleTime(long limitIdleTime) {
 		if (limitIdleTime < 0) {
-			LOG.warn("the limitIdleTime negative");
+			LOG.warn("limitIdleTime negative");
 			return;
 		}
 		this.limitIdleTime = limitIdleTime;
@@ -120,8 +160,8 @@ public class ConfigurationVO {
 	}
 
 	public void setKeepTestPeriod(long keepTestPeriod) {
-		if (keepTestPeriod < 0) {
-			LOG.warn("the keepTestPeriod negative");
+		if (keepTestPeriod <= 0) {
+			LOG.warn("keepTestPeriod should be positive");
 			return;
 		}
 		this.keepTestPeriod = keepTestPeriod;
@@ -155,29 +195,10 @@ public class ConfigurationVO {
 	 * We check if this object is legal,and reset its default values.
 	 */
 	public void init() {
-		if (this.dataSource == null) {
-			// if we haven't get dataSource from configuration,we should try to
-			// get it by DataSourceHolder.
-			Map<String, DataSource> dataSourceMap = DataSourceHolder
-					.getDataSourceMap();
-			if (dataSourceMap != null) {
-				this.dataSource = dataSourceMap.get(this.alias);
-			}
-			if (this.dataSource == null) {
-				throw new ConnectionPoolXMLParseException(
-						"cfg should have a driver or a jndi,otherwise you should set datasource in DataSourceHolder");
-			}
-		}
-		if (this.maxPoolSize == 0) {
-			throw new ConnectionPoolXMLParseException(
-					"the maxPoolsize should not be zero");
-		}
+		this.handlerDatasource();
 		if (this.maxPoolSize < this.corePoolSize) {
 			throw new ConnectionPoolXMLParseException(
 					"the maxPoolsize less than corePoolsize");
-		}
-		if (this.acquireIncrement <= 0) {
-			this.acquireIncrement = this.maxPoolSize - this.corePoolSize;
 		}
 		if (this.keepTestPeriod == 0) {
 			this.testTableName = null;
@@ -197,5 +218,46 @@ public class ConfigurationVO {
 			this.testCreateSql = "create table " + this.testTableName
 					+ "(id char(1) primary key)";
 		}
+	}
+
+	/**
+	 * Set dataSource if dataSource is null, check if it's null after
+	 * setting.And create dataSource by factory.
+	 */
+	private void handlerDatasource() {
+		if (this.commonDataSource == null) {
+			// if we haven't get dataSource from configuration,we should try to
+			// get it by DataSourceHolder.
+			Map<String, CommonDataSource> dataSourceMap = DataSourceHolder
+					.getDataSourceMap();
+			if (dataSourceMap != null) {
+				this.commonDataSource = dataSourceMap.get(this.alias);
+			}
+			if (this.commonDataSource == null) {
+				throw new ConnectionPoolXMLParseException(
+						"cfg should have a driver or a jndi,otherwise you should set datasource in DataSourceHolder");
+			}
+		}
+		if (this.jtaSupport) {
+			if (this.commonDataSource instanceof JDBCDataSource) {
+				this.factory = new JDBCXADataSourceFactory();
+			} else if (this.commonDataSource instanceof XADataSource) {
+				this.factory = new XADataSourceFactory();
+			}
+		} else {
+			if (this.commonDataSource instanceof DataSource) {
+				this.factory = new DataSourceFactory();
+			} else if (this.commonDataSource instanceof JDBCDataSource) {
+				this.factory = new JDBCDataSourceFactory();
+			} else if (this.commonDataSource instanceof ConnectionPoolDataSource) {
+				this.factory = new PoolDataSourceFactory();
+			}
+		}
+		if (this.factory == null) {
+			throw new UnsupportedOperationException(
+					"we don't support the datasource: "
+							+ this.commonDataSource.getClass().getName());
+		}
+		this.dataSource = this.factory.createDataSource(this.commonDataSource);
 	}
 }

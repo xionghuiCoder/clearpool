@@ -6,7 +6,10 @@ import java.sql.Savepoint;
 import java.util.HashMap;
 import java.util.Properties;
 
+import javax.sql.XAConnection;
+
 import org.opensource.clearpool.core.ConnectionPoolManager;
+import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
@@ -23,8 +26,8 @@ public class ConnectionProxy {
 			.getLog(ConnectionProxy.class);
 
 	private final ConnectionPoolManager pool;
-
-	protected final Connection connection;
+	private final Connection connection;
+	private final XAConnection xaConnection;
 
 	boolean autoCommit;
 	String catalog;
@@ -44,9 +47,10 @@ public class ConnectionProxy {
 	boolean typeMapChanged;
 	Savepoint savepoint;
 
-	public ConnectionProxy(ConnectionPoolManager pool, Connection connection) {
+	public ConnectionProxy(ConnectionPoolManager pool, CommonConnection cmnCon) {
 		this.pool = pool;
-		this.connection = connection;
+		this.connection = cmnCon.getConnection();
+		this.xaConnection = cmnCon.getXAConnection();
 		this.saveValue();
 	}
 
@@ -115,6 +119,10 @@ public class ConnectionProxy {
 
 	public Connection getConnection() {
 		return this.connection;
+	}
+
+	public XAConnection getXaConnection() {
+		return this.xaConnection;
 	}
 
 	/**

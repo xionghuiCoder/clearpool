@@ -10,8 +10,8 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 
 public class Security {
-	final static String USER = "user";
-	private final static String PASSWORD = "password";
+	static final String USER = "user";
+	private static final String PASSWORD = "password";
 
 	private String user;
 	private String password;

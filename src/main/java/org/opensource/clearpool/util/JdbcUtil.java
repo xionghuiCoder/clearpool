@@ -3,7 +3,7 @@ package org.opensource.clearpool.util;
 import java.sql.Driver;
 import java.sql.SQLException;
 
-public final class JdbcUtils {
+public final class JdbcUtil {
 	public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 	public static final String LOG4JDBC_DRIVER = "net.sf.log4jdbc.DriverSpy";
 	public static final String MARIADB_DRIVER = "org.mariadb.jdbc.Driver";
@@ -11,6 +11,9 @@ public final class JdbcUtils {
 	public static final String ALI_ORACLE_DRIVER = "com.alibaba.jdbc.AlibabaDriver";
 	public static final String DB2_DRIVER = "COM.ibm.db2.jdbc.app.DB2Driver";
 	public static final String H2_DRIVER = "org.h2.Driver";
+
+	public static final String POSTGRESQL = "postgresql";
+	public static final String JTDS = "jtds";
 
 	public static String getDriverClassName(String rawUrl) throws SQLException {
 		if (rawUrl.startsWith("jdbc:derby:")) {
@@ -92,10 +95,9 @@ public final class JdbcUtils {
 			try {
 				clazz = classLoader.loadClass(driverClassName);
 			} catch (ClassNotFoundException e) {
-				// skip
+				// swallow it
 			}
 		}
-
 		if (clazz == null) {
 			try {
 				ClassLoader contextLoader = Thread.currentThread()
@@ -104,10 +106,9 @@ public final class JdbcUtils {
 					clazz = contextLoader.loadClass(driverClassName);
 				}
 			} catch (ClassNotFoundException e) {
-				// skip
+				// swallow it
 			}
 		}
-
 		if (clazz == null) {
 			try {
 				clazz = Class.forName(driverClassName);
@@ -115,7 +116,6 @@ public final class JdbcUtils {
 				throw new SQLException(e.getMessage(), e);
 			}
 		}
-
 		try {
 			return (Driver) clazz.newInstance();
 		} catch (IllegalAccessException e) {

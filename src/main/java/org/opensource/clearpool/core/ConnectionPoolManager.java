@@ -7,9 +7,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.sql.PooledConnection;
+
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.chain.AtomicSingleChain;
 import org.opensource.clearpool.core.chain.CommonChain;
+import org.opensource.clearpool.datasource.connection.CommonConnection;
+import org.opensource.clearpool.datasource.factory.DataSourceAbstractFactory;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
@@ -45,7 +49,7 @@ public class ConnectionPoolManager {
 
 	private volatile SQLException createConnectionException;
 
-	// it is count of how many connection the pool need to increment.
+	// it is the count of how many connection the pool need to increment.
 	private final AtomicInteger lackCount = new AtomicInteger();
 
 	private final AtomicInteger poolSize = new AtomicInteger();
@@ -66,8 +70,7 @@ public class ConnectionPoolManager {
 	void initPool() {
 		int coreSize = this.cfgVO.getCorePoolSize();
 		this.lackCount.getAndAdd(coreSize);
-		// fill coreSize connection
-		this.fillPool(coreSize);
+		this.fillPool();
 		String tableName = this.cfgVO.getTestTableName();
 		if (tableName != null) {
 			this.initTestTable();
@@ -84,7 +87,7 @@ public class ConnectionPoolManager {
 	/**
 	 * Get a connection from the pool
 	 */
-	public ConnectionProxy exitPool() throws SQLException {
+	public PooledConnection exitPool() throws SQLException {
 		ConnectionProxy conProxy = null;
 		do {
 			conProxy = this.connectionChain.remove();
@@ -108,31 +111,32 @@ public class ConnectionPoolManager {
 						}
 						this.lackCount.compareAndSet(count, increment);
 					}
-					// rest for a while
-					ThreadSleepUtil.sleep();
 				}
+				// rest for a while
+				ThreadSleepUtil.sleep();
 			}
 		} while (conProxy == null);
-		return conProxy;
+		DataSourceAbstractFactory factory = this.cfgVO.getFactory();
+		return factory.createPooledConnection(conProxy);
 	}
 
 	/**
-	 * fill the pool by poolNum
+	 * fill the pool by lackCount
 	 */
-	public void fillPool(int poolNum) {
+	public void fillPool() {
+		int poolNum = this.lackCount.get();
 		int retryTimes = this.cfgVO.getAcquireRetryTimes();
 		for (int i = 0; i < poolNum; i++) {
 			// try to get a connection
 			ConnectionProxy conProxy = this.tryGetConnection(retryTimes);
 			this.connectionChain.add(conProxy);
-			this.connectionSet.add(conProxy);
 			if (this.closed) {
 				this.remove();
-				break;
+				return;
 			}
-			this.incrementPoolSize();
-			this.lackCount.getAndDecrement();
 		}
+		this.poolSize.addAndGet(poolNum);
+		this.lackCount.addAndGet(-poolNum);
 	}
 
 	/**
@@ -140,10 +144,10 @@ public class ConnectionPoolManager {
 	 */
 	private ConnectionProxy tryGetConnection(int retryTimes) {
 		int count = 0;
-		Connection con = null;
+		CommonConnection cmnCon = null;
 		do {
 			try {
-				con = this.cfgVO.getDataSource().getConnection();
+				cmnCon = this.cfgVO.getDataSource().getCommonConnection();
 			} catch (SQLException e) {
 				LOG.error("try connect error(" + count++ + " time)");
 				if (count > retryTimes) {
@@ -152,12 +156,13 @@ public class ConnectionPoolManager {
 					throw new ConnectionPoolException("get connection error");
 				}
 			}
-		} while (con == null);
+		} while (cmnCon == null);
 		// reset exception if necessary
 		if (this.createConnectionException != null) {
 			this.createConnectionException = null;
 		}
-		ConnectionProxy conProxy = new ConnectionProxy(this, con);
+		ConnectionProxy conProxy = new ConnectionProxy(this, cmnCon);
+		this.connectionSet.add(conProxy);
 		return conProxy;
 	}
 
@@ -165,13 +170,8 @@ public class ConnectionPoolManager {
 	 * Init test table by testTableName in {@link #cfgVO}
 	 */
 	private void initTestTable() {
-		boolean comeFromChain = true;
-		ConnectionProxy conProxy = this.connectionChain.remove();
-		if (conProxy == null) {
-			comeFromChain = false;
-			int retryTimes = this.cfgVO.getAcquireRetryTimes();
-			conProxy = this.tryGetConnection(retryTimes);
-		}
+		int retryTimes = this.cfgVO.getAcquireRetryTimes();
+		ConnectionProxy conProxy = this.tryGetConnection(retryTimes);
 		try {
 			Connection con = conProxy.getConnection();
 			boolean auto = con.getAutoCommit();
@@ -180,12 +180,14 @@ public class ConnectionPoolManager {
 			con.setAutoCommit(auto);
 		} catch (SQLException e) {
 			throw new ConnectionPoolException(e);
-		} finally {
-			if (comeFromChain) {
-				this.connectionChain.add(conProxy);
-			} else {
-				this.closeConnection(conProxy);
-			}
+		}
+		int coreSize = this.cfgVO.getCorePoolSize();
+		if (coreSize > 0) {
+			this.connectionChain.add(conProxy);
+			this.lackCount.getAndDecrement();
+			this.incrementPoolSize();
+		} else {
+			this.closeConnection(conProxy);
 		}
 	}
 

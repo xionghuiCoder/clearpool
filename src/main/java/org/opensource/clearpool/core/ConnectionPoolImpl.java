@@ -2,6 +2,8 @@ package org.opensource.clearpool.core;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.PooledConnection;
@@ -35,7 +37,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	// the INSTANCE should be the front of the SINGLETON_MARK
 	private static ConnectionPoolImpl instance = new ConnectionPoolImpl();
 
-	// the SINGLETON_MARK make sure the ClearPool is singleton
+	// the SINGLETON_MARK make sure the ClearPool is a singleton
 	private final static boolean SINGLETON_MARK;
 
 	static {
@@ -93,10 +95,29 @@ class ConnectionPoolImpl implements IConnectionPool {
 	}
 
 	/**
-	 * Init pool by cfgMap
+	 * Init pool by vo
 	 */
 	@Override
-	public void initMap(Map<String, ConfigurationVO> cfgMap) {
+	public void initVO(ConfigurationVO vo) {
+		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
+		vo.init();
+		cfgMap.put(vo.getAlias(), vo);
+		this.load(null, cfgMap);
+	}
+
+	/**
+	 * Init pool by voList
+	 */
+	@Override
+	public void initVOList(List<ConfigurationVO> voList) {
+		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
+		for (ConfigurationVO vo : voList) {
+			vo.init();
+			if (cfgMap.put(vo.getAlias(), vo) != null) {
+				throw new ConnectionPoolStateException(
+						"ConfigurationVOs' alias " + vo.getAlias() + " repeat");
+			}
+		}
 		this.load(null, cfgMap);
 	}
 
@@ -106,7 +127,6 @@ class ConnectionPoolImpl implements IConnectionPool {
 	 * Note:one of path and cfgMap is null.
 	 */
 	private void load(String path, Map<String, ConfigurationVO> cfgMap) {
-		this.checkDestroyed();
 		long begin = System.currentTimeMillis();
 		// load cfg to init pool
 		CommonPoolContainer container = CommonPoolContainer.load(path, cfgMap);
@@ -115,13 +135,20 @@ class ConnectionPoolImpl implements IConnectionPool {
 			LOG.info("connection pool initialized.it cost "
 					+ (System.currentTimeMillis() - begin) + "ms\n");
 		}
-		// initialized
+		this.checkDestroyed();
 		this.state = 1;
 	}
 
-	PooledConnection getPooledConnection() throws SQLException {
-		this.checkState();
+	public PooledConnection getPooledConnection() throws SQLException {
+		this.checkDestroyed();
 		return poolContainer.getConnection();
+	}
+
+	@Override
+	public PooledConnection getPooledConnection(String name)
+			throws SQLException {
+		this.checkDestroyed();
+		return poolContainer.getConnection(name);
 	}
 
 	@Override
@@ -131,13 +158,12 @@ class ConnectionPoolImpl implements IConnectionPool {
 
 	@Override
 	public Connection getConnection(String name) throws SQLException {
-		this.checkState();
-		return poolContainer.getConnection(name).getConnection();
+		return this.getPooledConnection(name).getConnection();
 	}
 
 	@Override
 	public void close(String name) {
-		this.checkState();
+		this.checkDestroyed();
 		CommonPoolContainer tempContainer = poolContainer;
 		if (tempContainer == null) {
 			return;
@@ -148,7 +174,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 
 	@Override
 	public void close() {
-		this.checkState();
+		this.checkDestroyed();
 		// remove all the pool
 		this.removeAll();
 		LOG.info("the pool is removed");
@@ -162,8 +188,6 @@ class ConnectionPoolImpl implements IConnectionPool {
 		if (tempContainer == null) {
 			return;
 		}
-		// reset pool container
-		poolContainer = null;
 		tempContainer.remove();
 	}
 
@@ -172,27 +196,18 @@ class ConnectionPoolImpl implements IConnectionPool {
 		if (this.state == 2) {
 			return;
 		}
-		this.state = 2;
 		/**
 		 * When we destroy the pool,we should destroy this singleton
-		 * too,otherwise it will cause a memory reveal.
+		 * too,otherwise it will cause a memory leak.
 		 */
 		instance = null;
+		this.state = 2;
 		CommonPoolContainer.destory();
-		MBeanFacade.stop();
 		// remove all the pool
 		this.removeAll();
+		MBeanFacade.stop();
+		poolContainer = null;
 		LOG.info("the pool is destroyed");
-	}
-
-	/**
-	 * Check the state if it's initialized.
-	 */
-	private void checkInited() {
-		if (this.state == 0) {
-			throw new ConnectionPoolStateException(
-					"clearpool haven't been initialized");
-		}
 	}
 
 	/**
@@ -203,13 +218,5 @@ class ConnectionPoolImpl implements IConnectionPool {
 			throw new ConnectionPoolStateException(
 					"clearpool have been destroyed");
 		}
-	}
-
-	/**
-	 * Check the state if it's initialized and not destroyed.
-	 */
-	private void checkState() {
-		this.checkInited();
-		this.checkDestroyed();
 	}
 }

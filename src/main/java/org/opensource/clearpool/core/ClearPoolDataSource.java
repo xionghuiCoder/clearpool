@@ -3,17 +3,19 @@ package org.opensource.clearpool.core;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
-import javax.sql.DataSource;
 import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
+import org.opensource.clearpool.configuration.JDBCConfiguration;
 import org.opensource.clearpool.configuration.console.Console;
-import org.opensource.clearpool.datasource.CommonDataSource;
-import org.opensource.clearpool.datasource.JDBCDataSource;
+import org.opensource.clearpool.datasource.AbstractDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 
 /**
@@ -23,8 +25,12 @@ import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
  * @date 26.07.2014
  * @version 1.0
  */
-public class ClearPoolDataSource extends CommonDataSource implements
+public class ClearPoolDataSource extends AbstractDataSource implements
 		IConnectionPool, Closeable, ConnectionPoolDataSource {
+	private static volatile boolean isInited = false;
+
+	private Lock lock = new ReentrantLock();
+
 	private String poolPath;
 	private boolean isUsePath;
 	private ConfigurationVO vo = new ConfigurationVO();
@@ -32,8 +38,12 @@ public class ClearPoolDataSource extends CommonDataSource implements
 
 	private Console console;
 
-	private DataSource dataSource;
-	private JDBCDataSource jdbc;
+	private CommonDataSource dataSource;
+
+	private String driverClass;
+	private String jdbcUrl;
+	private String JdbcUser;
+	private String JdbcPassword;
 
 	public void setPoolPath(String poolPath) {
 		if (this.isUseVO) {
@@ -65,38 +75,38 @@ public class ClearPoolDataSource extends CommonDataSource implements
 		this.vo.setAlias(poolName);
 	}
 
-	public void setDataSource(DataSource dataSource) {
+	public void setDataSource(CommonDataSource dataSource) {
 		this.checkCfgLegal();
-		if (this.jdbc != null) {
+		if (this.driverClass != null || this.jdbcUrl != null
+				|| this.JdbcUser != null || this.JdbcPassword != null) {
 			throw new ConnectionPoolXMLParseException(
 					"we shouldn't use JDBC and dataSource at the same time");
 		}
 		this.dataSource = dataSource;
-		this.vo.setDataSource(dataSource);
 	}
 
 	public void setDriverClass(String driverClass) {
 		this.checkCfgLegal();
 		this.checkAndInitJDBC();
-		this.jdbc.setClazz(driverClass);
+		this.driverClass = driverClass;
 	}
 
 	public void setJdbcUrl(String jdbcUrl) {
 		this.checkCfgLegal();
 		this.checkAndInitJDBC();
-		this.jdbc.setUrl(jdbcUrl);
+		this.jdbcUrl = jdbcUrl;
 	}
 
 	public void setJdbcUser(String JdbcUser) {
 		this.checkCfgLegal();
 		this.checkAndInitJDBC();
-		this.jdbc.setUser(JdbcUser);
+		this.JdbcUser = JdbcUser;
 	}
 
 	public void setJdbcPassword(String JdbcPassword) {
 		this.checkCfgLegal();
 		this.checkAndInitJDBC();
-		this.jdbc.setPassword(JdbcPassword);
+		this.JdbcPassword = JdbcPassword;
 	}
 
 	public void setCorePoolSize(int corePoolSize) {
@@ -158,9 +168,6 @@ public class ClearPoolDataSource extends CommonDataSource implements
 			throw new ConnectionPoolXMLParseException(
 					"we shouldn't use dataSource and JDBC at the same time");
 		}
-		if (this.jdbc == null) {
-			this.jdbc = new JDBCDataSource();
-		}
 	}
 
 	/**
@@ -169,20 +176,40 @@ public class ClearPoolDataSource extends CommonDataSource implements
 	@Override
 	public void init() {
 		if (!this.isUseVO) {
-			// Note:if you haven't set poolPath and ConfigurationVO,we will use
+			// Note:if we haven't set poolPath and ConfigurationVO,we will
+			// use
 			// the default path to init pool
 			this.initPath(this.poolPath);
 			return;
 		}
-		if (this.dataSource == null && this.jdbc != null) {
-			// we use jdbc driver if dataSource is null.
-			this.jdbc.volidate();
-			this.vo.setDataSource(this.jdbc);
+		if (this.dataSource == null
+				&& (this.driverClass != null || this.jdbcUrl != null
+						|| this.JdbcUser != null || this.JdbcPassword != null)) {
+			// we are trying to use jdbc driver if dataSource is null.
+			this.dataSource = JDBCConfiguration.getDataSource(this.driverClass,
+					this.jdbcUrl, this.JdbcUser, this.JdbcPassword);
 		}
-		this.vo.init();
-		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
-		cfgMap.put(this.vo.getAlias(), this.vo);
-		this.initMap(cfgMap);
+		this.vo.setCommonDataSource(this.dataSource);
+		this.initVO(this.vo);
+		isInited = true;
+	}
+
+	/**
+	 * Try to init the pool.
+	 */
+	private void tryInit() {
+		if (isInited) {
+			return;
+		}
+		this.lock.lock();
+		try {
+			if (isInited) {
+				return;
+			}
+			this.init();
+		} finally {
+			this.lock.unlock();
+		}
 	}
 
 	/**
@@ -193,33 +220,45 @@ public class ClearPoolDataSource extends CommonDataSource implements
 		ConnectionPoolImpl.getInstance().initPath(path);
 	}
 
-	/**
-	 * Init pool by cfgMap
-	 */
 	@Override
-	public void initMap(Map<String, ConfigurationVO> cfgMap) {
-		ConnectionPoolImpl.getInstance().initMap(cfgMap);
+	public void initVO(ConfigurationVO vo) {
+		ConnectionPoolImpl.getInstance().initVO(vo);
+	}
+
+	@Override
+	public void initVOList(List<ConfigurationVO> voList) {
+		ConnectionPoolImpl.getInstance().initVOList(voList);
 	}
 
 	@Override
 	public Connection getConnection() throws SQLException {
+		this.tryInit();
 		return ConnectionPoolImpl.getInstance().getConnection();
 	}
 
 	@Override
 	public Connection getConnection(String name) throws SQLException {
+		this.tryInit();
 		return ConnectionPoolImpl.getInstance().getConnection(name);
 	}
 
 	@Override
 	public PooledConnection getPooledConnection() throws SQLException {
+		this.tryInit();
 		return ConnectionPoolImpl.getInstance().getPooledConnection();
+	}
+
+	@Override
+	public PooledConnection getPooledConnection(String name)
+			throws SQLException {
+		this.tryInit();
+		return ConnectionPoolImpl.getInstance().getPooledConnection(name);
 	}
 
 	@Override
 	public PooledConnection getPooledConnection(String user, String password)
 			throws SQLException {
-		throw new UnsupportedOperationException("Not supported now");
+		throw new UnsupportedOperationException("not supported it");
 	}
 
 	@Override

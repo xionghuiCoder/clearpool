@@ -8,7 +8,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 
-import org.opensource.clearpool.datasource.proxy.PooledConnectionImpl;
+import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
+import org.opensource.clearpool.jta.xa.XAConnectionImpl;
 
 /**
  * The Factory's duty is to create dynamic proxy.
@@ -19,10 +20,10 @@ import org.opensource.clearpool.datasource.proxy.PooledConnectionImpl;
  */
 public class ProxyFactory {
 	/**
-	 * this method is used to create the proxy of {@link Statement}
+	 * this method is used to create the handler of {@link Statement}
 	 */
 	public static Statement createProxyStatement(Statement statement,
-			PooledConnectionImpl conProxy, String sql) {
+			PoolConnectionImpl pooledConnection, String sql) {
 		Class<?>[] interfaces = new Class[1];
 		if (statement instanceof CallableStatement) {
 			interfaces[0] = CallableStatement.class;
@@ -31,18 +32,37 @@ public class ProxyFactory {
 		} else {
 			interfaces[0] = Statement.class;
 		}
-		InvocationHandler handler = new StatementHandler(statement, conProxy,
+		InvocationHandler handler = new StatementHandler(statement,
+				pooledConnection, sql);
+		return (Statement) Proxy.newProxyInstance(
+				ProxyFactory.class.getClassLoader(), interfaces, handler);
+	}
+
+	/**
+	 * this method is used to create the handler of XAStatement
+	 */
+	public static Statement createProxyXAStatement(Statement statement,
+			XAConnectionImpl xaCon, String sql) {
+		Class<?>[] interfaces = new Class[1];
+		if (statement instanceof CallableStatement) {
+			interfaces[0] = CallableStatement.class;
+		} else if (statement instanceof PreparedStatement) {
+			interfaces[0] = PreparedStatement.class;
+		} else {
+			interfaces[0] = Statement.class;
+		}
+		InvocationHandler handler = new XAStatementHandler(statement, xaCon,
 				sql);
 		return (Statement) Proxy.newProxyInstance(
 				ProxyFactory.class.getClassLoader(), interfaces, handler);
 	}
 
 	/**
-	 * This method is used to create the proxy of {@link DatabaseMetaData}
+	 * This method is used to create the handler of {@link DatabaseMetaData}
 	 */
-	public static DatabaseMetaData createProxyDatabaseMetaData(
-			Connection proxy, DatabaseMetaData metaData) {
-		InvocationHandler handler = new DatabaseMetaDataHandler(proxy, metaData);
+	public static DatabaseMetaData createProxyDatabaseMetaData(Connection con,
+			DatabaseMetaData metaData) {
+		InvocationHandler handler = new DatabaseMetaDataHandler(con, metaData);
 		return (DatabaseMetaData) Proxy.newProxyInstance(
 				ProxyFactory.class.getClassLoader(),
 				new Class[] { DatabaseMetaData.class }, handler);

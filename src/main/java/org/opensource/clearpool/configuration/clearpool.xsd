@@ -36,6 +36,7 @@ xmlns="http://www.w3school.com.cn">
 					</xsd:complexType>
 				<xs:element/>
 			</xs:choice>
+			<xs:element name="jta-support" type="xs:boolean"/>
 			<xs:element name="core-pool-size" type="xs:integer"/>
 			<xs:element name="max-pool-size" type="xs:integer"/>
 			<xs:element name="acquire-increment" type="xs:integer"/>

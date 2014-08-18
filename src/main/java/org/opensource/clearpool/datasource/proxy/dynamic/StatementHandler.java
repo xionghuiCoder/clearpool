@@ -12,8 +12,10 @@ import java.util.TreeMap;
 
 import javax.sql.StatementEvent;
 import javax.sql.StatementEventListener;
+import javax.transaction.SystemException;
+import javax.transaction.xa.XAException;
 
-import org.opensource.clearpool.datasource.proxy.PooledConnectionImpl;
+import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 
@@ -38,11 +40,11 @@ class StatementHandler implements InvocationHandler {
 	private static final String SETNULL_METHOD = "setNull";
 	private static final String SET_PREFIX = "set";
 	private static final String ADD_BATCH_METHOD = "addBatch";
-	private static final String EXECUTE_BATCH_METHOD = "executeBatch";
-	private static final String EXECUTE_PREFIX = "execute";
+	protected static final String EXECUTE_BATCH_METHOD = "executeBatch";
+	protected static final String EXECUTE = "execute";
 
 	private Statement statement;
-	private PooledConnectionImpl pooledConnection;
+	private PoolConnectionImpl pooledConnection;
 	private String sql;
 
 	// need to show sql?
@@ -52,8 +54,8 @@ class StatementHandler implements InvocationHandler {
 
 	private Map<Integer, Object> parameterMap;
 
-	StatementHandler(Statement statement,
-			PooledConnectionImpl pooledConnection, String sql) {
+	StatementHandler(Statement statement, PoolConnectionImpl pooledConnection,
+			String sql) {
 		this.statement = statement;
 		this.pooledConnection = pooledConnection;
 		this.showSql = pooledConnection.isShowSql();
@@ -74,6 +76,7 @@ class StatementHandler implements InvocationHandler {
 		} else if (CLOSE_METHOD.equals(methodName)) {
 			this.close();
 		} else {
+			this.beforeInvoke(methodName);
 			/**
 			 * setAccessible could improve the performance of the reflection.you
 			 * want the reason?ha,go to see the source of jdk.With simple
@@ -98,6 +101,14 @@ class StatementHandler implements InvocationHandler {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * This invoked before execute update.
+	 */
+	protected void beforeInvoke(String methodName) throws XAException,
+			SystemException {
+
 	}
 
 	/**
@@ -161,7 +172,7 @@ class StatementHandler implements InvocationHandler {
 		} else if (EXECUTE_BATCH_METHOD.equals(methodName)) {
 			// executing a batch should do a trace
 			this.trace(startTime);
-		} else if (methodName.startsWith(EXECUTE_PREFIX)) {
+		} else if (methodName.startsWith(EXECUTE)) {
 			// executing should update the log and do a trace
 			int argCount = (args != null ? args.length : 0);
 			if (argCount > 0 && args[0] instanceof String) {

@@ -11,7 +11,7 @@ import org.opensource.clearpool.log.PoolLog;
  * @date 26.07.2014
  * @version 1.0
  */
-public class PoolMockLogger implements PoolLog, Serializable {
+public class NullLogger implements PoolLog, Serializable {
 	private static final long serialVersionUID = 711131452761300222L;
 
 	@Override

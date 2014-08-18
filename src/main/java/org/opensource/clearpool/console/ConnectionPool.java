@@ -1,6 +1,6 @@
 package org.opensource.clearpool.console;
 
-import javax.sql.DataSource;
+import javax.sql.CommonDataSource;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.JDBCDataSource;
@@ -8,7 +8,7 @@ import org.opensource.clearpool.datasource.JDBCDataSource;
 class ConnectionPool implements ConnectionPoolMBean {
 	private ConnectionPoolManager pool;
 
-	private DataSource dataSource;
+	private CommonDataSource dataSource;
 
 	private int poolSize = -1;
 
@@ -16,7 +16,7 @@ class ConnectionPool implements ConnectionPoolMBean {
 
 	ConnectionPool(ConnectionPoolManager pool) {
 		this.pool = pool;
-		this.dataSource = this.pool.getCfgVO().getDataSource();
+		this.dataSource = this.pool.getCfgVO().getCommonDataSource();
 	}
 
 	@Override

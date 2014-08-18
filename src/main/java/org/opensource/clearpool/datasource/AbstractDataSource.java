@@ -8,14 +8,17 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-/**
- * This class is only support getConnection() now.
- * 
- * @author xionghui
- * @date 26.07.2014
- * @version 1.0
- */
-public abstract class CommonDataSource implements DataSource {
+import org.opensource.clearpool.datasource.connection.CommonConnection;
+
+public abstract class AbstractDataSource implements DataSource {
+	@Override
+	public Connection getConnection() throws SQLException {
+		throw new UnsupportedOperationException();
+	}
+
+	public CommonConnection getCommonConnection() throws SQLException {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {

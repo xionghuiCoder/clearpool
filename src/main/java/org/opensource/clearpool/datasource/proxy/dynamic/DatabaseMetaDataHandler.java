@@ -19,11 +19,11 @@ class DatabaseMetaDataHandler implements InvocationHandler {
 	private static final String HASHCODE_METHOD = "hashCode";
 	private static final String GETCONNECTION_METHOD = "getConnection";
 
-	private Connection proxy;
+	private Connection con;
 	private DatabaseMetaData metaData;
 
-	DatabaseMetaDataHandler(Connection proxy, DatabaseMetaData metaData) {
-		this.proxy = proxy;
+	DatabaseMetaDataHandler(Connection con, DatabaseMetaData metaData) {
+		this.con = con;
 		this.metaData = metaData;
 	}
 
@@ -51,12 +51,12 @@ class DatabaseMetaDataHandler implements InvocationHandler {
 	}
 
 	/**
-	 * We don't want to ask the DatabaseMetaData for the connection and we will
-	 * get the proxy instead of the it.
+	 * User may want to ask the DatabaseMetaData for the connection, so we will
+	 * return the pool connection instead of it.
 	 * 
 	 * @see DatabaseMetaData#getConnection
 	 */
 	private Connection getConnection() {
-		return this.proxy;
+		return this.con;
 	}
 }

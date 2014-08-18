@@ -13,28 +13,29 @@
 	</console>
 	<!--alias -->
 	<alias>myclearpool</alias>
-	<!-- distribute-url defined urls which we used to get init-params.Note:we 
-		can't use other labels when we are using it. -->
+	<!-- distribute-url defined urls which we used to get init-cfgs.Note:we 
+		can't use other labels except console when we are using it. -->
 	<!-- <distribute-url>clearpool.xml</distribute-url> -->
-	<!-- jndi defined where we can get datasource.Note:it can't be used with 
-		diver -->
+	<!-- jndi defined where we can get datasource.Note:it can't be used when jndi is using -->
 	<!-- <jndi> <jndi-name>jdbc/mypool</jndi-name> <prop key="java.naming.factory.initial">weblogic.jndi.WLInitialContextFactory</prop> 
 		<prop key="java.naming.provider.url">t3://172.16.101.42:7001</prop> <prop 
 		key="java.naming.security.principal">user</prop> <prop key="java.naming.security.credentials">password</prop> 
 		</jndi> -->
-	<!-- jdbc defined JDBC deriver.Note:it can't be used with jndi -->
+	<!-- jdbc defined JDBC deriver.Note:it can't be used when jndi is using-->
 	<jdbc>
 		<class>com.mysql.jdbc.Driver</class>
 		<url>jdbc:mysql://127.0.0.1:3306/test?characterEncoding=gbk</url>
 		<user>root</user>
 		<password>1</password>
 	</jdbc>
+	<!-- if we should support distributed transaction -->
+	<jta-support>true</jta-support>
 	<!--core connection:default value is 0 -->
 	<core-pool-size>10</core-pool-size>
 	<!--max connection:default value is Integer.MAX_VALUE -->
 	<max-pool-size>50</max-pool-size>
-	<!-- we get acquire-increment connection to fill the pool when there in 
-		no connection could be used,the defalut value is max-pool-size subtract core-pool-size. -->
+	<!-- we get acquire-increment connection to fill the pool when there is 
+		no connection could be used,the defalut value is 1. -->
 	<acquire-increment>5</acquire-increment>
 	<!-- when we get connection fail,we try acquire-retry-times,default value 
 		is 0. -->

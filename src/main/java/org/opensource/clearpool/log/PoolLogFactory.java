@@ -1,10 +1,9 @@
 package org.opensource.clearpool.log;
 
-import org.opensource.clearpool.log.impl.PoolJdk14Logger;
-import org.opensource.clearpool.log.impl.PoolMockLogger;
+import org.opensource.clearpool.log.impl.NullLogger;
 
 /**
- * This log factory depend on commons-logging.jar.We use {@link PoolMockLogger}
+ * This log factory depend on commons-logging.jar.We use {@link NullLogger}
  * to replace the log if we set the log unable or we don't have
  * commons-logging.jar.
  * 
@@ -38,9 +37,8 @@ public class PoolLogFactory {
 				Class.forName(CLAZZ);
 				commonsLogExist = true;
 			} catch (ClassNotFoundException e) {
-				PoolLog log = new PoolJdk14Logger(
-						PoolLogFactory.class.getName());
-				log.info("\"" + CLAZZ + "\" is not existed.");
+				// swallow it
+				// System.out.println("\"" + CLAZZ + "\" is not existed");
 			}
 		}
 	}
@@ -105,14 +103,14 @@ public class PoolLogFactory {
 
 	public static PoolLog getLog(Class<?> clazz) {
 		if (logUnable || !commonsLogExist) {
-			return new PoolMockLogger();
+			return new NullLogger();
 		}
 		return LogFactoryAdapter.getLog(clazz);
 	}
 
 	public static PoolLog getLog(String name) {
 		if (logUnable || !commonsLogExist) {
-			return new PoolMockLogger();
+			return new NullLogger();
 		}
 		return LogFactoryAdapter.getLog(name);
 	}

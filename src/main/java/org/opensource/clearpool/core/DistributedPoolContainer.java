@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.console.MBeanFacade;
-import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
-import org.opensource.clearpool.datasource.proxy.PooledConnectionImpl;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 
 /**
@@ -41,23 +39,22 @@ class DistributedPoolContainer extends CommonPoolContainer {
 					+ " is not existed");
 		}
 		// get pool connection
-		ConnectionProxy conProxy = pool.exitPool();
-		PooledConnection pooledConnection = new PooledConnectionImpl(conProxy);
+		PooledConnection pooledConnection = pool.exitPool();
 		return pooledConnection;
 	}
 
 	@Override
 	public void remove(String name) {
 		name = (name == null ? null : name.trim());
-		ConnectionPoolManager realPool = poolMap.remove(name);
-		if (realPool != null) {
-			MBeanFacade.UnregisterMBean(name);
-			realPool.remove();
-		}
 		// interrupt PoolGrowHook
 		Thread poolGrowHook = poolGrowHookMap.remove(name);
 		if (poolGrowHook != null) {
 			poolGrowHook.interrupt();
+		}
+		ConnectionPoolManager realPool = poolMap.remove(name);
+		if (realPool != null) {
+			MBeanFacade.UnregisterMBean(name);
+			realPool.remove();
 		}
 	}
 }

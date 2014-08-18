@@ -38,7 +38,7 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
  * @date 26.07.2014
  * @version 1.0
  */
-public class PooledConnectionImpl implements PooledConnection, Connection {
+public class PoolConnectionImpl implements PooledConnection, Connection {
 
 	private Connection connection;
 	private final ConnectionProxy conProxy;
@@ -50,7 +50,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 
 	private volatile boolean isClosed;
 
-	public PooledConnectionImpl(ConnectionProxy conProxy) {
+	public PoolConnectionImpl(ConnectionProxy conProxy) {
 		this.connection = conProxy.getConnection();
 		this.conProxy = conProxy;
 	}
@@ -87,8 +87,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		Statement statementProxy = ProxyFactory.createProxyStatement(statement,
-				this, null);
+		Statement statementProxy = this.createProxyStatement(statement, null);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -102,8 +101,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -117,8 +116,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		CallableStatement statementProxy = (CallableStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		CallableStatement statementProxy = (CallableStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -264,8 +263,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		Statement statementProxy = ProxyFactory.createProxyStatement(statement,
-				this, null);
+		Statement statementProxy = this.createProxyStatement(statement, null);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -281,8 +279,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -298,8 +296,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		CallableStatement statementProxy = (CallableStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		CallableStatement statementProxy = (CallableStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -396,8 +394,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		Statement statementProxy = ProxyFactory.createProxyStatement(statement,
-				this, null);
+		Statement statementProxy = this.createProxyStatement(statement, null);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -414,8 +411,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -432,8 +429,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		CallableStatement statementProxy = (CallableStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		CallableStatement statementProxy = (CallableStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -449,8 +446,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -465,8 +462,8 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
 		return statementProxy;
 	}
@@ -481,9 +478,18 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		PreparedStatement statementProxy = (PreparedStatement) ProxyFactory
-				.createProxyStatement(statement, this, sql);
+		PreparedStatement statementProxy = (PreparedStatement) this
+				.createProxyStatement(statement, sql);
 		this.statementSet.add(statementProxy);
+		return statementProxy;
+	}
+
+	/**
+	 * This is a template method for XAConnectionImpl
+	 */
+	protected Statement createProxyStatement(Statement statement, String sql) {
+		Statement statementProxy = ProxyFactory.createProxyStatement(statement,
+				this, sql);
 		return statementProxy;
 	}
 
@@ -675,7 +681,7 @@ public class PooledConnectionImpl implements PooledConnection, Connection {
 	/**
 	 * Check if pool connection closed.
 	 */
-	private void checkState() throws SQLException {
+	protected void checkState() throws SQLException {
 		if (this.isClosed) {
 			throw new SQLException("connection closed");
 		}

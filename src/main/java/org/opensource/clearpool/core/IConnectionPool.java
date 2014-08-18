@@ -3,7 +3,9 @@ package org.opensource.clearpool.core;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.List;
+
+import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
 
@@ -34,6 +36,16 @@ public interface IConnectionPool {
 	public Connection getConnection(String name) throws SQLException;
 
 	/**
+	 * Get a pooledConnection from the pool by name.
+	 * 
+	 * @param name
+	 *            is the pool's name
+	 * @return a free pooledConnection from the pool
+	 */
+	public PooledConnection getPooledConnection(String name)
+			throws SQLException;
+
+	/**
 	 * Init pool by the default path.
 	 * 
 	 * Note:if the default path had been init and not removed,it will throw a
@@ -49,12 +61,20 @@ public interface IConnectionPool {
 	public void initPath(String path);
 
 	/**
-	 * Init pool by cfgMap.
+	 * Init pool by vo.
 	 * 
-	 * Note:if the map name had been init and not removed,it will throw a
+	 * Note:if the vo's alias had been init and not removed,it will throw a
 	 * exception.
 	 */
-	public void initMap(Map<String, ConfigurationVO> cfgMap);
+	public void initVO(ConfigurationVO vo);
+
+	/**
+	 * Init pool by voList.
+	 * 
+	 * Note:if the vo's alias had been init and not removed,it will throw a
+	 * exception.
+	 */
+	public void initVOList(List<ConfigurationVO> voList);
 
 	/**
 	 * Close the database and connection in the pool which has the name of
