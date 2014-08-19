@@ -1,19 +1,16 @@
 package org.opensource.clearpool;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
+import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.MemoryUtil;
+import org.opensource.clearpool.util.MockTestDriver;
 import org.opensource.clearpool.util.ThreadProcessUtil;
 
-import com.alibaba.druid.mock.MockConnection;
-import com.alibaba.druid.mock.MockDriver;
 import com.alibaba.druid.pool.DruidDataSource;
 
 /**
@@ -28,45 +25,20 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
 	private int loopCount = 5;
-	private int LOOP_COUNT = 1000_000 / this.threadCount;
+	private int LOOP_COUNT = 100_000 / this.threadCount;
 
-	private static AtomicLong physicalConnStat = new AtomicLong();
-
-	public static class TestDriver extends MockDriver {
-		public static TestDriver instance = new TestDriver();
-
-		@Override
-		public boolean acceptsURL(String url) throws SQLException {
-			if (url.startsWith("jdbc:test:")) {
-				return true;
-			}
-			return super.acceptsURL(url);
-		}
-
-		@Override
-		public Connection connect(String url, Properties info)
-				throws SQLException {
-			physicalConnStat.incrementAndGet();
-			// to support clearpool
-			return new MockConnection(this, "jdbc:mock:case", info) {
-				@Override
-				public String getSchema() throws SQLException {
-					return null;
-				}
-			};
-		}
-	}
+	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
 
 	@Override
 	public void setUp() throws Exception {
 		MemoryUtil.printMemoryInfo();
-		System.setProperty("org.clearpool.log.unable", "true");
-		DriverManager.registerDriver(TestDriver.instance);
-		this.driverClass = this.getClass().getName() + "$TestDriver";
-		this.jdbcUrl = "jdbc:test:comparecase:";
+		System.setProperty(PoolLogFactory.LOG_UNABLE, "true");
+		DriverManager.registerDriver(new MockTestDriver());
+		this.driverClass = MockTestDriver.CLASS;
+		this.jdbcUrl = MockTestDriver.URL;
 		this.user = "1";
 		this.password = "1";
-		physicalConnStat.set(0);
+		physicalCon.set(0);
 	}
 
 	public void test_clearpool() throws Exception {
@@ -79,7 +51,7 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setJdbcPassword(this.password);
 		for (int i = 0; i < this.loopCount; ++i) {
 			ThreadProcessUtil.process(dataSource, "clearpool", this.LOOP_COUNT,
-					this.threadCount, physicalConnStat);
+					this.threadCount, physicalCon);
 		}
 		System.out.println();
 	}
@@ -99,7 +71,7 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setTestOnBorrow(false);
 		for (int i = 0; i < this.loopCount; ++i) {
 			ThreadProcessUtil.process(dataSource, "druid", this.LOOP_COUNT,
-					this.threadCount, physicalConnStat);
+					this.threadCount, physicalCon);
 		}
 		System.out.println();
 	}
@@ -115,7 +87,7 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setPassword(this.password);
 		for (int i = 0; i < this.loopCount; ++i) {
 			ThreadProcessUtil.process(dataSource, "tomcat-jdbc",
-					this.LOOP_COUNT, this.threadCount, physicalConnStat);
+					this.LOOP_COUNT, this.threadCount, physicalCon);
 		}
 		System.out.println();
 	}

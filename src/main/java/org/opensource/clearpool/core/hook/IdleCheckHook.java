@@ -39,7 +39,7 @@ public class IdleCheckHook extends CommonHook {
 	public void run() {
 		LOG.info("IdleCheckHook running");
 		// I'm running.
-		PoolLatchUtil.countDownStartLatch();
+		PoolLatchUtil.countDownIdleCheckLatch();
 		for (ConnectionPoolManager pool : this.poolChain) {
 			// if pool destroyed,it will interrupt this thread.
 			if (Thread.currentThread().isInterrupted()) {

@@ -38,7 +38,8 @@ public class JDBCXADataSource extends AbstractDataSource {
 	 */
 	private void initCheck() {
 		String url = this.jdbcDs.getUrl();
-		if (url.startsWith(JdbcUtil.ORACLE_DRIVER)) {
+		if (url.startsWith(JdbcUtil.ORACLE_ONE_PREFIX)
+				|| url.startsWith(JdbcUtil.ORACLE_ANO_PREFIX)) {
 			Driver driver = this.jdbcDs.getDriver();
 			if (driver.getMajorVersion() < 10) {
 				throw new TransactionException("not support oracle driver "
@@ -46,7 +47,7 @@ public class JDBCXADataSource extends AbstractDataSource {
 						+ driver.getMinorVersion());
 			}
 		}
-		if (url.startsWith(JdbcUtil.H2_DRIVER)) {
+		if (url.startsWith("jdbc:h2:")) {
 			this.h2Factory = H2Util.createJdbcDataSourceFactory();
 		}
 	}
@@ -64,19 +65,20 @@ public class JDBCXADataSource extends AbstractDataSource {
 	private XAConnection createXAConnetion() throws SQLException {
 		Connection con = this.jdbcDs.getConnection();
 		String url = this.jdbcDs.getUrl();
-		if (url.startsWith(JdbcUtil.MYSQL_DRIVER)) {
+		if (url.startsWith(JdbcUtil.MYSQL_PREFIX)) {
 			return MysqlUtil.mysqlXAConnection(con);
 		}
-		if (url.startsWith(JdbcUtil.ORACLE_DRIVER)) {
+		if (url.startsWith(JdbcUtil.ORACLE_ONE_PREFIX)
+				|| url.startsWith(JdbcUtil.ORACLE_ANO_PREFIX)) {
 			return OracleUtil.oracleXAConnection(con);
 		}
-		if (url.startsWith(JdbcUtil.H2_DRIVER)) {
+		if (url.startsWith(JdbcUtil.H2_PREFIX)) {
 			return H2Util.createXAConnection(this.h2Factory, con);
 		}
-		if (url.contains(JdbcUtil.POSTGRESQL)) {
+		if (url.startsWith(JdbcUtil.POSTGRESQL_PREFIX)) {
 			return PGUtil.createXAConnection(con);
 		}
-		if (url.contains(JdbcUtil.JTDS)) {
+		if (url.startsWith(JdbcUtil.JTDS_PREFIX)) {
 			return new JtdsXAConnection(con);
 		}
 		throw new SQLException("xa does not support url: " + url);

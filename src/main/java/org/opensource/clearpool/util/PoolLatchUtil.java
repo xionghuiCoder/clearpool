@@ -13,28 +13,14 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
  * @version 1.0
  */
 public class PoolLatchUtil {
-	// 3 hooks:IdleCheckHook,IdleGarbageHook and HtmlAdaptorHook.
+	// 3 hooks: IdleGarbageHook,PoolGrowHook and HtmlAdaptorHook.
 	private static CountDownLatch startLatch = new CountDownLatch(3);
 
-	// this latch is init by pool size
-	private static CountDownLatch poolLatch;
+	// IdleCheckHook.
+	private static CountDownLatch idleCheckLatch;
 
 	/**
-	 * Init pool latch.
-	 */
-	public static void initLatch(int size) {
-		poolLatch = new CountDownLatch(size);
-	}
-
-	/**
-	 * Count down poolLatch,used by hook.
-	 */
-	public static void countDownPoolLatch() {
-		poolLatch.countDown();
-	}
-
-	/**
-	 * Count down startLatch,used by hook.
+	 * Count down startLatch.
 	 */
 	public static void countDownStartLatch() {
 		if (startLatch != null) {
@@ -43,16 +29,35 @@ public class PoolLatchUtil {
 	}
 
 	/**
+	 * Init idleCheckLatch.
+	 */
+	public static void initIdleCheckLatch() {
+		idleCheckLatch = new CountDownLatch(1);
+	}
+
+	/**
+	 * Count down idleCheckLatch.
+	 */
+	public static void countDownIdleCheckLatch() {
+		if (idleCheckLatch != null) {
+			idleCheckLatch.countDown();
+		}
+	}
+
+	/**
 	 * Wait one time.
 	 */
 	public static void await() {
 		try {
-			poolLatch.await();
-			// help gc
-			poolLatch = null;
 			if (startLatch != null) {
 				startLatch.await();
+				// help gc
 				startLatch = null;
+			}
+			if (idleCheckLatch != null) {
+				idleCheckLatch.await();
+				// help gc
+				idleCheckLatch = null;
 			}
 		} catch (InterruptedException e) {
 			throw new ConnectionPoolException(e);

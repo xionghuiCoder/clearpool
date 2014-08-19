@@ -1,11 +1,16 @@
 package org.opensource.clearpool.core;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.sql.PooledConnection;
 
+import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.console.MBeanFacade;
-import org.opensource.clearpool.exception.ConnectionPoolException;
+import org.opensource.clearpool.log.PoolLog;
+import org.opensource.clearpool.log.PoolLogFactory;
 
 /**
  * This class is created when we get more than a database configuration.
@@ -15,9 +20,40 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
  * @version 1.0
  */
 class DistributedPoolContainer extends CommonPoolContainer {
+	private static final PoolLog LOG = PoolLogFactory
+			.getLog(DistributedPoolContainer.class);
 
-	DistributedPoolContainer() {
-		this.poolKind = "DistributedPool";
+	/**
+	 * Init pool and start MBean if necessary.
+	 */
+	@Override
+	public boolean initPool(Map<String, ConfigurationVO> cfgMap) {
+		// this is a sign of if we need to start idle check.
+		boolean needIdleCheck = false;
+		long begin = System.currentTimeMillis();
+		for (Map.Entry<String, ConfigurationVO> e : cfgMap.entrySet()) {
+			ConfigurationVO cfgVO = e.getValue();
+			if (cfgVO.getKeepTestPeriod() > 0) {
+				needIdleCheck = true;
+			}
+			ConnectionPoolManager pool = new ConnectionPoolManager(cfgVO);
+			try {
+				pool.initPool();
+			} catch (Throwable t) {
+				// in case memory reveal.
+				pool.remove();
+				throw t;
+			}
+			String poolName = e.getKey();
+			poolMap.put(poolName, pool);
+			String alias = cfgVO.getAlias();
+			String mbeanName = "org.clearpool:type=Pool"
+					+ (alias == null ? "" : ",name=" + alias);
+			MBeanFacade.registerMBean(pool, mbeanName, poolName);
+		}
+		long cost = System.currentTimeMillis() - begin;
+		LOG.info("initPool cost " + cost + "ms");
+		return needIdleCheck;
 	}
 
 	/**
@@ -26,8 +62,16 @@ class DistributedPoolContainer extends CommonPoolContainer {
 	 */
 	@Override
 	public PooledConnection getConnection() throws SQLException {
-		throw new UnsupportedOperationException(
-				"we should get connection by a name if the pool is distributed");
+		if (poolMap.size() > 1) {
+			return this.getConnection(null);
+		}
+		PooledConnection pooledConnection = null;
+		for (ConnectionPoolManager pool : poolMap.values()) {
+			// get pool connection
+			pooledConnection = pool.exitPool();
+			break;
+		}
+		return pooledConnection;
 	}
 
 	@Override
@@ -35,8 +79,7 @@ class DistributedPoolContainer extends CommonPoolContainer {
 		name = (name == null ? null : name.trim());
 		ConnectionPoolManager pool = poolMap.get(name);
 		if (pool == null) {
-			throw new ConnectionPoolException("the pool " + name
-					+ " is not existed");
+			return null;
 		}
 		// get pool connection
 		PooledConnection pooledConnection = pool.exitPool();
@@ -46,15 +89,30 @@ class DistributedPoolContainer extends CommonPoolContainer {
 	@Override
 	public void remove(String name) {
 		name = (name == null ? null : name.trim());
-		// interrupt PoolGrowHook
-		Thread poolGrowHook = poolGrowHookMap.remove(name);
-		if (poolGrowHook != null) {
-			poolGrowHook.interrupt();
-		}
 		ConnectionPoolManager realPool = poolMap.remove(name);
 		if (realPool != null) {
 			MBeanFacade.UnregisterMBean(name);
 			realPool.remove();
+		}
+	}
+
+	/**
+	 * Remove the pool
+	 */
+	@Override
+	public void remove() {
+		Map<String, ConnectionPoolManager> tempMap = poolMap;
+		// reset pool map
+		poolMap = new HashMap<>();
+		for (Entry<String, ConnectionPoolManager> e : tempMap.entrySet()) {
+			String poolName = e.getKey();
+			MBeanFacade.UnregisterMBean(poolName);
+			ConnectionPoolManager pool = e.getValue();
+			pool.remove();
+		}
+		if (idleCheckHook != null) {
+			idleCheckHook.interrupt();
+			idleCheckHook = null;
 		}
 	}
 }

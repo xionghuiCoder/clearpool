@@ -3,8 +3,8 @@
 	<!--alias -->
 	<alias>myclearpool2</alias>
 	<jdbc>
-		<class>org.opensource.clearpool.CompareCase$TestDriver</class>
-		<url>jdbc:mock:case:</url>
+		<class>org.opensource.clearpool.util.MockTestDriver</class>
+		<url>jdbc:mock:case</url>
 	</jdbc>
 	<!--core connection:default value is 0 -->
 	<core-pool-size>10</core-pool-size>

@@ -1,5 +1,8 @@
 package org.opensource.clearpool.jta;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.InvalidTransactionException;
@@ -10,7 +13,6 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.TransactionException;
 
 /**
@@ -21,6 +23,7 @@ import org.opensource.clearpool.exception.TransactionException;
  * @version 1.0
  */
 public class TransactionManagerImpl implements TransactionManager {
+	private static final int DEFAULT_TIMEOUT = 60;
 
 	// the INSTANCE should be the front of the SINGLETON_MARK
 	private static final TransactionManagerImpl MANAGER = new TransactionManagerImpl();
@@ -38,11 +41,15 @@ public class TransactionManagerImpl implements TransactionManager {
 	 */
 	private static ThreadLocal<Transaction> txHolder = new ThreadLocal<Transaction>();
 
+	private Set<Transaction> suspendTx;
+
+	private int transactionTimeout = DEFAULT_TIMEOUT;
+
 	private TransactionManagerImpl() {
 		// whenever we invoke the constructor by reflection,we throw a
-		// ConnectionPoolException.
+		// exception.
 		if (SINGLETON_MARK) {
-			throw new ConnectionPoolException("create ClearPool illegal");
+			throw new TransactionException("create TransactionManager illegal");
 		}
 	}
 
@@ -57,20 +64,22 @@ public class TransactionManagerImpl implements TransactionManager {
 			throw new NotSupportedException(
 					"nested transaction is not supported");
 		}
-		action = new TransactionImpl();
+		action = new TransactionImpl(this.transactionTimeout);
 		txHolder.set(action);
 	}
 
 	@Override
 	public void commit() throws RollbackException, HeuristicMixedException,
-			HeuristicRollbackException, SecurityException,
-			IllegalStateException, SystemException {
+			HeuristicRollbackException, SecurityException, SystemException {
 		Transaction action = txHolder.get();
 		if (action == null) {
-			return;
+			throw new IllegalStateException("this is no transaction held");
 		}
-		action.commit();
-		txHolder.set(null);
+		try {
+			action.commit();
+		} finally {
+			txHolder.set(null);
+		}
 	}
 
 	@Override
@@ -84,32 +93,49 @@ public class TransactionManagerImpl implements TransactionManager {
 
 	@Override
 	public Transaction getTransaction() throws SystemException {
-		Transaction action = txHolder.get();
-		return action;
+		Transaction tx = txHolder.get();
+		if (tx != null) {
+			return new TransactionAdapter(tx);
+		}
+		return null;
 	}
 
 	@Override
 	public void resume(Transaction transaction)
-			throws InvalidTransactionException, IllegalStateException,
-			SystemException {
-
-	}
-
-	@Override
-	public void rollback() throws IllegalStateException, SecurityException,
-			SystemException {
-		Transaction action = txHolder.get();
-		if (action == null) {
-			throw new TransactionException("this is no tranaction beginning");
+			throws InvalidTransactionException, SystemException {
+		if (!(transaction instanceof TransactionAdapter)
+				|| this.suspendTx == null
+				|| !this.suspendTx.remove(transaction)) {
+			throw new InvalidTransactionException("the transaction is invalid");
 		}
-		action.rollback();
+		Transaction tx = ((TransactionAdapter) transaction).getTx();
+		Transaction current = txHolder.get();
+		if (current != null) {
+			throw new IllegalStateException(
+					"the thread already has a transaction");
+		}
+		((TransactionImpl) tx).resume();
+		txHolder.set(tx);
 	}
 
 	@Override
-	public void setRollbackOnly() throws IllegalStateException, SystemException {
+	public void rollback() throws SecurityException, SystemException {
 		Transaction action = txHolder.get();
 		if (action == null) {
-			throw new IllegalStateException("this is no tranaction started");
+			throw new TransactionException("this is no transaction holding");
+		}
+		try {
+			action.rollback();
+		} finally {
+			txHolder.set(null);
+		}
+	}
+
+	@Override
+	public void setRollbackOnly() throws SystemException {
+		Transaction action = txHolder.get();
+		if (action == null) {
+			throw new IllegalStateException("this is no transaction started");
 		}
 		action.setRollbackOnly();
 	}
@@ -117,20 +143,28 @@ public class TransactionManagerImpl implements TransactionManager {
 	@Override
 	public void setTransactionTimeout(int i) throws SystemException {
 		if (i < 0) {
-			throw new SystemException("the parameter shouldn't be negative");
+			throw new SystemException("the parameter shouldn't be nagative");
 		}
-		Transaction action = txHolder.get();
-		if (action != null) {
-			;
+		if (i == 0) {
+			this.transactionTimeout = DEFAULT_TIMEOUT;
+		} else {
+			this.transactionTimeout = i;
 		}
 	}
 
 	@Override
 	public Transaction suspend() throws SystemException {
-		Transaction action = txHolder.get();
-		if (action != null) {
-			;
+		Transaction tx = txHolder.get();
+		if (tx != null) {
+			if (this.suspendTx == null) {
+				this.suspendTx = new HashSet<>();
+			}
+			((TransactionImpl) tx).suspend();
+			TransactionAdapter adapter = new TransactionAdapter(tx);
+			this.suspendTx.add(adapter);
+			txHolder.set(null);
+			return adapter;
 		}
-		return action;
+		return null;
 	}
 }

@@ -14,16 +14,16 @@
 	<!--alias -->
 	<alias>myclearpool</alias>
 	<jdbc>
-		<class>org.opensource.clearpool.CompareCase$TestDriver</class>
-		<url>jdbc:mock:case:</url>
+		<class>org.opensource.clearpool.util.MockTestDriver</class>
+		<url>jdbc:mock:case</url>
 	</jdbc>
 	<!--core connection:default value is 0 -->
-	<core-pool-size>100</core-pool-size>
+	<core-pool-size>10</core-pool-size>
 	<!--max connection:default value is Integer.MAX_VALUE -->
-	<max-pool-size>500</max-pool-size>
+	<max-pool-size>50</max-pool-size>
 	<!-- we get acquire-increment connection to fill the pool when there in 
 		no connection could be used,the defalut value is max-pool-size subtract core-pool-size. -->
-	<acquire-increment>50</acquire-increment>
+	<acquire-increment>5</acquire-increment>
 	<!-- when we get connection fail,we try acquire-retry-times,default value 
 		is 0. -->
 	<acquire-retry-times>3</acquire-retry-times>

@@ -1,6 +1,7 @@
 package org.opensource.clearpool.jta.xa;
 
 import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.UUID;
@@ -19,6 +20,8 @@ public final class XidImpl implements Xid {
 	private static final int FORMAT_ID = 0xffff;
 
 	private static final AtomicLong UNIQUE_LONG = new AtomicLong();
+
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	// cache the hash code for Xid
 	private int hash;
@@ -56,10 +59,16 @@ public final class XidImpl implements Xid {
 		ByteBuffer uuidBys = ByteBuffer.allocate(24);
 		int year = Calendar.getInstance().get(Calendar.YEAR);
 		uuidBys.putLong(year);
-		uuidBys.putLong(UUID.randomUUID().node());
 		long ul = UNIQUE_LONG.getAndIncrement();
 		uuidBys.putLong(ul);
+		uuidBys.putLong(SECURE_RANDOM.nextLong());
 		return uuidBys.array();
+	}
+
+	public static void main(String[] args) {
+		String str = UUID.randomUUID().toString();
+		char[] chs = UUID.randomUUID().toString().toCharArray();
+		System.out.print(str + " " + chs.length);
 	}
 
 	@Override

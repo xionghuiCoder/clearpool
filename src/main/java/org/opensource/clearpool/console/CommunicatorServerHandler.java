@@ -44,9 +44,6 @@ class CommunicatorServerHandler {
 	 */
 	public static void registerMBean(ConnectionPoolManager pool,
 			String mbeanName, String poolName) {
-		if (communicatorServer == null) {
-			return;
-		}
 		ConnectionPoolMBean bean = new ConnectionPool(pool);
 		try {
 			ObjectName objectName = new ObjectName(mbeanName);
@@ -63,9 +60,6 @@ class CommunicatorServerHandler {
 	 * Unregister a MBean
 	 */
 	public static void UnregisterMBean(String poolName) {
-		if (communicatorServer == null) {
-			return;
-		}
 		ObjectNameCarry carry = objectNameMap.get(poolName);
 		if (carry == null) {
 			return;

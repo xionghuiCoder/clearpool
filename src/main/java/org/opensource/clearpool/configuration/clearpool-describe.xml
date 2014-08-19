@@ -17,16 +17,16 @@
 		can't use other labels except console when we are using it. -->
 	<!-- <distribute-url>clearpool.xml</distribute-url> -->
 	<!-- jndi defined where we can get datasource.Note:it can't be used when jndi is using -->
-	<!-- <jndi> <jndi-name>jdbc/mypool</jndi-name> <prop key="java.naming.factory.initial">weblogic.jndi.WLInitialContextFactory</prop> 
-		<prop key="java.naming.provider.url">t3://172.16.101.42:7001</prop> <prop 
+	<!-- <jndi> <jndi-name>jndi</jndi-name> <prop key="java.naming.factory.initial">initial</prop> 
+		<prop key="java.naming.provider.url">url</prop> <prop 
 		key="java.naming.security.principal">user</prop> <prop key="java.naming.security.credentials">password</prop> 
 		</jndi> -->
 	<!-- jdbc defined JDBC deriver.Note:it can't be used when jndi is using-->
 	<jdbc>
-		<class>com.mysql.jdbc.Driver</class>
-		<url>jdbc:mysql://127.0.0.1:3306/test?characterEncoding=gbk</url>
-		<user>root</user>
-		<password>1</password>
+		<class>class</class>
+		<url>url</url>
+		<user>user</user>
+		<password>password</password>
 	</jdbc>
 	<!-- if we should support distributed transaction -->
 	<jta-support>true</jta-support>

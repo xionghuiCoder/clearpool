@@ -153,12 +153,20 @@ class ConnectionPoolImpl implements IConnectionPool {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		return this.getPooledConnection().getConnection();
+		PooledConnection pooledCon = this.getPooledConnection();
+		if (pooledCon == null) {
+			return null;
+		}
+		return pooledCon.getConnection();
 	}
 
 	@Override
 	public Connection getConnection(String name) throws SQLException {
-		return this.getPooledConnection(name).getConnection();
+		PooledConnection pooledCon = this.getPooledConnection(name);
+		if (pooledCon == null) {
+			return null;
+		}
+		return pooledCon.getConnection();
 	}
 
 	@Override
@@ -202,7 +210,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 		 */
 		instance = null;
 		this.state = 2;
-		CommonPoolContainer.destory();
+		CommonPoolContainer.destoryHooks();
 		// remove all the pool
 		this.removeAll();
 		MBeanFacade.stop();

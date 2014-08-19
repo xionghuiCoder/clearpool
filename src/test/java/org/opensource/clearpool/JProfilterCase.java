@@ -4,9 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,11 +14,17 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.util.GCUtil;
+import org.opensource.clearpool.util.MockTestDriver;
 
-import com.alibaba.druid.mock.MockConnection;
-import com.alibaba.druid.mock.MockDriver;
 import com.alibaba.druid.pool.DruidDataSource;
 
+/**
+ * This class is used to monitor the jvm by JProfilter.
+ * 
+ * @author xionghui
+ * @date 16.08.2014
+ * @version 1.0
+ */
 public class JProfilterCase extends TestCase {
 	private String jdbcUrl;
 	private String user;
@@ -30,42 +34,17 @@ public class JProfilterCase extends TestCase {
 	private int maxPoolSize = 50;
 	private int threadCount = 10;
 
-	private static AtomicLong physicalConnStat = new AtomicLong();
-
-	public static class TestDriver extends MockDriver {
-		public static TestDriver instance = new TestDriver();
-
-		@Override
-		public boolean acceptsURL(String url) throws SQLException {
-			if (url.startsWith("jdbc:test:")) {
-				return true;
-			}
-			return super.acceptsURL(url);
-		}
-
-		@Override
-		public Connection connect(String url, Properties info)
-				throws SQLException {
-			physicalConnStat.incrementAndGet();
-			// to support clearpool
-			return new MockConnection(this, "jdbc:mock:case", info) {
-				@Override
-				public String getSchema() throws SQLException {
-					return null;
-				}
-			};
-		}
-	}
+	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
 
 	@Override
 	public void setUp() throws Exception {
 		System.setProperty("org.clearpool.log.unable", "true");
-		DriverManager.registerDriver(TestDriver.instance);
-		this.driverClass = "org.opensource.clearpool.CompareWithWonderfulPoolCase$TestDriver";
-		this.jdbcUrl = "jdbc:test:comparecase:";
+		DriverManager.registerDriver(new MockTestDriver());
+		this.driverClass = MockTestDriver.CLASS;
+		this.jdbcUrl = MockTestDriver.URL;
 		this.user = "1";
 		this.password = "1";
-		physicalConnStat.set(0);
+		physicalCon.set(0);
 	}
 
 	public void test_clearpool() throws Exception {
@@ -170,7 +149,6 @@ public class JProfilterCase extends TestCase {
 				+ " blocked "
 				+ NumberFormat.getInstance().format(blockedCount) //
 				+ " waited " + NumberFormat.getInstance().format(waitedCount)
-				+ " physicalConn " + physicalConnStat.get());
-
+				+ " physicalConn " + physicalCon.get());
 	}
 }

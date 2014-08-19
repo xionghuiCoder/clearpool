@@ -191,7 +191,6 @@ public class ClearPoolDataSource extends AbstractDataSource implements
 		}
 		this.vo.setCommonDataSource(this.dataSource);
 		this.initVO(this.vo);
-		isInited = true;
 	}
 
 	/**
@@ -218,16 +217,19 @@ public class ClearPoolDataSource extends AbstractDataSource implements
 	@Override
 	public void initPath(String path) {
 		ConnectionPoolImpl.getInstance().initPath(path);
+		isInited = true;
 	}
 
 	@Override
 	public void initVO(ConfigurationVO vo) {
 		ConnectionPoolImpl.getInstance().initVO(vo);
+		isInited = true;
 	}
 
 	@Override
 	public void initVOList(List<ConfigurationVO> voList) {
 		ConnectionPoolImpl.getInstance().initVOList(voList);
+		isInited = true;
 	}
 
 	@Override
@@ -258,7 +260,7 @@ public class ClearPoolDataSource extends AbstractDataSource implements
 	@Override
 	public PooledConnection getPooledConnection(String user, String password)
 			throws SQLException {
-		throw new UnsupportedOperationException("not supported it");
+		throw new UnsupportedOperationException("not supported it now");
 	}
 
 	@Override

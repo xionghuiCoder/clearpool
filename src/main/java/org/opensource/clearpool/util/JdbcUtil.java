@@ -4,28 +4,32 @@ import java.sql.Driver;
 import java.sql.SQLException;
 
 public final class JdbcUtil {
-	public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
-	public static final String LOG4JDBC_DRIVER = "net.sf.log4jdbc.DriverSpy";
-	public static final String MARIADB_DRIVER = "org.mariadb.jdbc.Driver";
-	public static final String ORACLE_DRIVER = "oracle.jdbc.driver.OracleDriver";
-	public static final String ALI_ORACLE_DRIVER = "com.alibaba.jdbc.AlibabaDriver";
-	public static final String DB2_DRIVER = "COM.ibm.db2.jdbc.app.DB2Driver";
-	public static final String H2_DRIVER = "org.h2.Driver";
+	public static final String MYSQL_PREFIX = "jdbc:mysql:";
+	public static final String ORACLE_ONE_PREFIX = "jdbc:oracle:";
+	public static final String ORACLE_ANO_PREFIX = "JDBC:oracle:";
+	public static final String H2_PREFIX = "jdbc:h2:";
+	public static final String POSTGRESQL_PREFIX = "jdbc:postgresql:";
+	public static final String JTDS_PREFIX = "jdbc:jtds:";
 
-	public static final String POSTGRESQL = "postgresql";
-	public static final String JTDS = "jtds";
+	private static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
+	private static final String LOG4JDBC_DRIVER = "net.sf.log4jdbc.DriverSpy";
+	private static final String MARIADB_DRIVER = "org.mariadb.jdbc.Driver";
+	private static final String ORACLE_DRIVER = "oracle.jdbc.driver.OracleDriver";
+	private static final String ALI_ORACLE_DRIVER = "com.alibaba.jdbc.AlibabaDriver";
+	private static final String DB2_DRIVER = "COM.ibm.db2.jdbc.app.DB2Driver";
+	private static final String H2_DRIVER = "org.h2.Driver";
 
 	public static String getDriverClassName(String rawUrl) throws SQLException {
 		if (rawUrl.startsWith("jdbc:derby:")) {
 			return "org.apache.derby.jdbc.EmbeddedDriver";
-		} else if (rawUrl.startsWith("jdbc:mysql:")) {
+		} else if (rawUrl.startsWith(MYSQL_PREFIX)) {
 			return MYSQL_DRIVER;
 		} else if (rawUrl.startsWith("jdbc:log4jdbc:")) {
 			return LOG4JDBC_DRIVER;
 		} else if (rawUrl.startsWith("jdbc:mariadb:")) {
 			return MARIADB_DRIVER;
-		} else if (rawUrl.startsWith("jdbc:oracle:")
-				|| rawUrl.startsWith("JDBC:oracle:")) {
+		} else if (rawUrl.startsWith(ORACLE_ONE_PREFIX)
+				|| rawUrl.startsWith(ORACLE_ANO_PREFIX)) {
 			return ORACLE_DRIVER;
 		} else if (rawUrl.startsWith("jdbc:alibaba:oracle:")) {
 			return ALI_ORACLE_DRIVER;
@@ -35,12 +39,12 @@ public final class JdbcUtil {
 			return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 		} else if (rawUrl.startsWith("jdbc:sybase:Tds:")) {
 			return "com.sybase.jdbc2.jdbc.SybDriver";
-		} else if (rawUrl.startsWith("jdbc:jtds:")) {
+		} else if (rawUrl.startsWith(JTDS_PREFIX)) {
 			return "net.sourceforge.jtds.jdbc.Driver";
 		} else if (rawUrl.startsWith("jdbc:fake:")
 				|| rawUrl.startsWith("jdbc:mock:")) {
 			return "com.alibaba.druid.mock.MockDriver";
-		} else if (rawUrl.startsWith("jdbc:postgresql:")) {
+		} else if (rawUrl.startsWith(POSTGRESQL_PREFIX)) {
 			return "org.postgresql.Driver";
 		} else if (rawUrl.startsWith("jdbc:hsqldb:")) {
 			return "org.hsqldb.jdbcDriver";
@@ -50,7 +54,7 @@ public final class JdbcUtil {
 			return "org.sqlite.JDBC";
 		} else if (rawUrl.startsWith("jdbc:ingres:")) {
 			return "com.ingres.jdbc.IngresDriver";
-		} else if (rawUrl.startsWith("jdbc:h2:")) {
+		} else if (rawUrl.startsWith(H2_PREFIX)) {
 			return H2_DRIVER;
 		} else if (rawUrl.startsWith("jdbc:mckoi:")) {
 			return "com.mckoi.JDBCDriver";
@@ -79,7 +83,7 @@ public final class JdbcUtil {
 		} else if (rawUrl.startsWith("jdbc:mimer:multi1:")) {
 			return "com.mimer.jdbc.Driver";
 		} else {
-			throw new SQLException("unkow jdbc driver : " + rawUrl);
+			throw new SQLException("unknow jdbc driver: " + rawUrl);
 		}
 	}
 

@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <clearpool>
 	<!--alias -->
-	<alias>myclearpool1</alias>
+	<alias>myclearpool</alias>
 	<jdbc>
-		<class>org.opensource.clearpool.util.MockTestDriver</class>
-		<url>jdbc:mock:case</url>
+		<class>com.mysql.jdbc.Driver</class>
+		<url>jdbc:mysql://127.0.0.1:3306/test?characterEncoding=gbk</url>
+		<user>root</user>
+		<password>1</password>
 	</jdbc>
+	<jta-support>true</jta-support>
 	<!--core connection:default value is 0 -->
 	<core-pool-size>10</core-pool-size>
 	<!--max connection:default value is Integer.MAX_VALUE -->
 	<max-pool-size>50</max-pool-size>
 	<!-- we get acquire-increment connection to fill the pool when there in 
 		no connection could be used,the defalut value is max-pool-size subtract core-pool-size. -->
-	<acquire-increment>10</acquire-increment>
+	<acquire-increment>5</acquire-increment>
 	<!-- when we get connection fail,we try acquire-retry-times,default value 
 		is 0. -->
 	<acquire-retry-times>3</acquire-retry-times>
@@ -27,5 +30,5 @@
 		30 chars to support oracle. -->
 	<test-table-name>test</test-table-name>
 	<!-- we will log the sql before we execute it if we set show-sql true and the log is valid -->
-	<show-sql>false</show-sql>
+	<show-sql>true</show-sql>
 </clearpool>

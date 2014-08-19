@@ -3,6 +3,7 @@ package org.opensource.clearpool;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.TestCase;
 
@@ -13,7 +14,7 @@ public class DistributedFunctionCase extends TestCase {
 
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
-	private volatile boolean showSql = true;
+	private volatile AtomicBoolean showSql = new AtomicBoolean(true);
 
 	@Override
 	public void setUp() throws Exception {
@@ -48,16 +49,18 @@ public class DistributedFunctionCase extends TestCase {
 							}
 							Connection conn = DistributedFunctionCase.this.dataSource
 									.getConnection(name);
-							if (DistributedFunctionCase.this.showSql) {
-								PreparedStatement s = conn
-										.prepareStatement("select 1 from ?");
-								s.setString(1, "hello");
-								s.execute();
-								s.close();
-								DistributedFunctionCase.this.showSql = false;
+							if (DistributedFunctionCase.this.showSql.get()) {
+								if (DistributedFunctionCase.this.showSql
+										.compareAndSet(true, false)) {
+									PreparedStatement s = conn
+											.prepareStatement("select 1 from ?");
+									s.setString(1, "hello");
+									s.execute();
+									s.close();
+								}
 							}
 							try {
-								Thread.sleep(10);
+								Thread.sleep(1);
 							} catch (InterruptedException e) {
 								// swallow the exception
 							}

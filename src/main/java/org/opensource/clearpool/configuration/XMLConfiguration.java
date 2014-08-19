@@ -149,15 +149,13 @@ public class XMLConfiguration {
 			case CONSOLE:
 				if (!isFirst) {
 					throw new ConnectionPoolXMLParseException(CONSOLE
-							+ " should set in the first configuration");
-				}
-				if (ConfigurationVO.getConsole() != null) {
-					// ignore the CONSOLE if it is already loaded.
-					return;
+							+ " should in the first configuration");
 				}
 				Console console = new Console();
 				console.parse(reader);
-				ConfigurationVO.setConsole(console);
+				if (ConfigurationVO.getConsole() == null) {
+					ConfigurationVO.setConsole(console);
+				}
 				break;
 			case DISTRIBUTE_URL:
 				checkDistributedLegal(noDistributed);

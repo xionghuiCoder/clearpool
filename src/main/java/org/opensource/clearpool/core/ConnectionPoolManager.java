@@ -129,11 +129,12 @@ public class ConnectionPoolManager {
 		for (int i = 0; i < poolNum; i++) {
 			// try to get a connection
 			ConnectionProxy conProxy = this.tryGetConnection(retryTimes);
-			this.connectionChain.add(conProxy);
 			if (this.closed) {
 				this.remove();
 				return;
 			}
+			this.connectionChain.add(conProxy);
+			this.handlePeakPoolSize(i + 1);
 		}
 		this.poolSize.addAndGet(poolNum);
 		this.lackCount.addAndGet(-poolNum);
@@ -153,7 +154,8 @@ public class ConnectionPoolManager {
 				if (count > retryTimes) {
 					// record exception
 					this.createConnectionException = e;
-					throw new ConnectionPoolException("get connection error");
+					throw new ConnectionPoolException("get connection error"
+							+ e.getMessage());
 				}
 			}
 		} while (cmnCon == null);
@@ -170,8 +172,14 @@ public class ConnectionPoolManager {
 	 * Init test table by testTableName in {@link #cfgVO}
 	 */
 	private void initTestTable() {
-		int retryTimes = this.cfgVO.getAcquireRetryTimes();
-		ConnectionProxy conProxy = this.tryGetConnection(retryTimes);
+		int coreSize = this.cfgVO.getCorePoolSize();
+		ConnectionProxy conProxy = null;
+		if (coreSize > 0) {
+			conProxy = this.connectionChain.remove();
+		} else {
+			int retryTimes = this.cfgVO.getAcquireRetryTimes();
+			conProxy = this.tryGetConnection(retryTimes);
+		}
 		try {
 			Connection con = conProxy.getConnection();
 			boolean auto = con.getAutoCommit();
@@ -181,11 +189,8 @@ public class ConnectionPoolManager {
 		} catch (SQLException e) {
 			throw new ConnectionPoolException(e);
 		}
-		int coreSize = this.cfgVO.getCorePoolSize();
 		if (coreSize > 0) {
 			this.connectionChain.add(conProxy);
-			this.lackCount.getAndDecrement();
-			this.incrementPoolSize();
 		} else {
 			this.closeConnection(conProxy);
 		}
@@ -219,8 +224,11 @@ public class ConnectionPoolManager {
 		this.lackCount.getAndIncrement();
 	}
 
-	private void incrementPoolSize() {
-		int size = this.poolSize.incrementAndGet();
+	/**
+	 * Save the peak pool size
+	 */
+	private void handlePeakPoolSize(int poolNum) {
+		int size = this.poolSize.get() + poolNum;
 		if (size > this.peakPoolSize) {
 			this.peakPoolSize = size;
 		}

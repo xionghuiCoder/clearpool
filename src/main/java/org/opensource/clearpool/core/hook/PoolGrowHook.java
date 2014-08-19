@@ -8,57 +8,55 @@ import org.opensource.clearpool.util.PoolLatchUtil;
 import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
- * This class's duty is to create connection if needed.When do we need a
- * connection?OK,it's a good question,the time we create new connection is when
- * connection is invalid and it's been threw.
+ * This class's duty is to create connection if needed.When do we need a new
+ * connection? OK,it's a good question,it is when the pool connection is invalid
+ * and it had been threw.
  * 
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
-public class PoolGrowHook implements Runnable {
+public class PoolGrowHook extends CommonHook {
 	private static final PoolLog LOG = PoolLogFactory
 			.getLog(PoolGrowHook.class);
-
-	private ConnectionPoolManager pool;
 
 	/**
 	 * start the ConnectionIncrementHook
 	 */
-	public static Thread startHook(ConnectionPoolManager pool) {
-		PoolGrowHook connectionIncrementHook = new PoolGrowHook(pool);
-		Thread thread = new Thread(connectionIncrementHook);
-		thread.setName("PoolGrowHook");
-		thread.setDaemon(true);
-		thread.start();
+	public static Thread startHook(ConnectionPoolManager[] poolArray) {
+		CommonHook idleGarbageHook = new PoolGrowHook();
+		Thread thread = idleGarbageHook.startHook(poolArray, "PoolGrowHook");
 		return thread;
 	}
 
-	private PoolGrowHook(ConnectionPoolManager pool) {
-		this.pool = pool;
+	/**
+	 * Hide the constructor
+	 */
+	private PoolGrowHook() {
 	}
 
 	@Override
 	public void run() {
-		String name = this.pool.getCfgVO().getAlias();
-		LOG.info("PoolGrowHook for pool " + name + " is running");
+		LOG.info("PoolGrowHook running");
 		// I'm running.
-		PoolLatchUtil.countDownPoolLatch();
-		while (true) {
-			// if pool destroyed or closed,it will stop this thread.
+		PoolLatchUtil.countDownStartLatch();
+		for (ConnectionPoolManager pool : this.poolChain) {
+			// if pool destroyed,it will interrupt this thread.
 			if (Thread.currentThread().isInterrupted()) {
 				break;
 			}
-			if (this.pool.getLackCount() == 0) {
-				// release CPU
-				ThreadSleepUtil.sleep();
+			// release CPU
+			ThreadSleepUtil.sleep();
+			if (pool == null || pool.isClosed()) {
+				this.poolChain.remove();
 				continue;
 			}
-			try {
-				this.pool.fillPool();
-			} catch (ConnectionPoolException e) {
-				// swallow it,we don't have to log it because fillPool() already
-				// did.
+			while (pool.getLackCount() != 0 && !pool.isClosed()) {
+				try {
+					pool.fillPool();
+				} catch (ConnectionPoolException e) {
+					// we don't have to log it because fillPool() already did.
+				}
 			}
 		}
 	}

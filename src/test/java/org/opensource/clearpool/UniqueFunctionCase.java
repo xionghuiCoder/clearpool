@@ -9,7 +9,6 @@ import junit.framework.TestCase;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
 public class UniqueFunctionCase extends TestCase {
-
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
 	private volatile boolean[] signs = new boolean[10];
@@ -25,23 +24,23 @@ public class UniqueFunctionCase extends TestCase {
 
 	public void testClearPool() throws Exception {
 		CountDownLatch startLatch = new CountDownLatch(1);
-		CountDownLatch endLatch = new CountDownLatch(1000);
-		this.startThreads(startLatch, endLatch, 100, 0);
+		CountDownLatch endLatch = new CountDownLatch(100);
+		this.startThreads(startLatch, endLatch, 10, 0);
 		startLatch.countDown();
-		System.out.println("start 100 threads");
+		System.out.println("start 10 threads");
 		// add 100 thread every 30s
 		for (int i = 1; i < 10; i++) {
 			Thread.sleep(this.time * 1000);
 			startLatch = new CountDownLatch(1);
-			this.startThreads(startLatch, endLatch, 100, i);
+			this.startThreads(startLatch, endLatch, 10, i);
 			startLatch.countDown();
-			System.out.println("start " + ((1 + i) * 100) + " threads");
+			System.out.println("start " + ((1 + i) * 10) + " threads");
 		}
 		// remove 100 thread every 30s
 		for (int i = 0; i < 10; i++) {
 			Thread.sleep(this.time * 1000);
 			this.signs[i] = true;
-			System.out.println("left " + ((9 - i) * 100) + " threads");
+			System.out.println("left " + ((9 - i) * 10) + " threads");
 		}
 		Thread.sleep(this.time * 1000);
 		endLatch.await();

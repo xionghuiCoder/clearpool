@@ -3,9 +3,12 @@
 	<!--alias -->
 	<alias>myclearpool1</alias>
 	<jdbc>
-		<class>org.opensource.clearpool.util.MockTestDriver</class>
-		<url>jdbc:mock:case</url>
+		<class>com.mysql.jdbc.Driver</class>
+		<url>jdbc:mysql://127.0.0.1:3306/test</url>
+		<user>root</user>
+		<password>1</password>
 	</jdbc>
+	<jta-support>true</jta-support>
 	<!--core connection:default value is 0 -->
 	<core-pool-size>10</core-pool-size>
 	<!--max connection:default value is Integer.MAX_VALUE -->

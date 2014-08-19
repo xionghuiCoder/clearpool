@@ -3,7 +3,6 @@ package org.opensource.clearpool.core;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,8 +17,6 @@ import org.opensource.clearpool.core.hook.IdleGarbageHook;
 import org.opensource.clearpool.core.hook.PoolGrowHook;
 import org.opensource.clearpool.core.hook.ShutdownHook;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 
 /**
@@ -36,17 +33,11 @@ import org.opensource.clearpool.util.PoolLatchUtil;
  * @version 1.0
  */
 abstract class CommonPoolContainer {
-	private static final PoolLog LOG = PoolLogFactory
-			.getLog(CommonPoolContainer.class);
-
 	private static final Lock lock = new ReentrantLock();
 
-	// save the thread for remove and destroy to interrupt it.
-	protected static volatile Map<String, Thread> poolGrowHookMap = new HashMap<>();
 	private static Thread idleGarbageHook;
-	private static Thread idleCheckHook;
-
-	protected String poolKind;
+	private static Thread poolGrowHook;
+	protected static Thread idleCheckHook;
 
 	/**
 	 * It carry the pool,and it make sure the pool should just be loaded one
@@ -64,10 +55,6 @@ abstract class CommonPoolContainer {
 	 */
 	static CommonPoolContainer load(String path,
 			Map<String, ConfigurationVO> cfgMap) {
-		if (ConnectionPoolImpl.poolContainer instanceof UniquePoolContainer) {
-			throw new ConnectionPoolException(
-					"this pool is a unique pool,please remove it before fill other pools.");
-		}
 		if (cfgMap == null) {
 			cfgMap = XMLConfiguration.getCfgVO(path);
 		}
@@ -79,26 +66,14 @@ abstract class CommonPoolContainer {
 			// double check
 			checkPoolName(nameSet);
 			CommonPoolContainer container = ConnectionPoolImpl.poolContainer;
-			// if the pool is a unique pool,we shouldn't fill it.
-			if (container instanceof UniquePoolContainer) {
-				throw new ConnectionPoolException(
-						"this pool is a unique pool,please remove it before fill other pools.");
-			}
 			// if container is not null,it must be a distributed pool,so we
 			// should fill it instead of create it.
-			if (container == null) {
-				if (cfgMap.size() == 1) {
-					container = new UniquePoolContainer();
-				} else {
-					container = new DistributedPoolContainer();
-				}
+			if (idleGarbageHook == null) {
+				container = new DistributedPoolContainer();
 			}
-			// start MBean
-			MBeanFacade.start();
-			PoolLatchUtil.initLatch(cfgMap.size());
-			boolean needStartCheck = container.initPool(cfgMap);
+			boolean needIdleCheck = container.initPool(cfgMap);
 			// start hooks
-			startHook(needStartCheck);
+			startHooks(needIdleCheck);
 			// wait until hook running.
 			PoolLatchUtil.await();
 			return container;
@@ -124,55 +99,46 @@ abstract class CommonPoolContainer {
 	}
 
 	/**
-	 * Init pool and start MBean if necessary.
+	 * start ShutdownHook,IdleGarbageHook and IdleCheckHook(if necessary).
 	 */
-	private boolean initPool(Map<String, ConfigurationVO> cfgMap) {
-		// this is a sign of we need to start idle check.
-		boolean needStartCheck = false;
-		long begin = System.currentTimeMillis();
-		for (Map.Entry<String, ConfigurationVO> e : cfgMap.entrySet()) {
-			ConfigurationVO cfgVO = e.getValue();
-			if (cfgVO.getKeepTestPeriod() > 0) {
-				needStartCheck = true;
-			}
-			ConnectionPoolManager pool = new ConnectionPoolManager(cfgVO);
-			String poolName = e.getKey();
-			poolMap.put(poolName, pool);
-			pool.initPool();
-			// create a daemon thread to get connection if needed
-			Thread connectionIncrementHook = PoolGrowHook.startHook(pool);
-			poolGrowHookMap.put(poolName, connectionIncrementHook);
-			String alias = cfgVO.getAlias();
-			String mbeanName = "org.clearpool:type=Pool,kind=" + this.poolKind
-					+ (alias == null ? "" : ",name=" + alias);
-			MBeanFacade.registerMBean(pool, mbeanName, poolName);
+	private static void startHooks(boolean needIdleCheck) {
+		ConnectionPoolManager[] poolArray = poolMap.values().toArray(
+				new ConnectionPoolManager[0]);
+		if (idleCheckHook != null) {
+			return;
 		}
-		long cost = System.currentTimeMillis() - begin;
-		LOG.info("initPool cost " + cost + "ms");
-		return needStartCheck;
+		if (needIdleCheck) {
+			PoolLatchUtil.initIdleCheckLatch();
+			// start IdleCheckHook
+			idleCheckHook = IdleCheckHook.startHook(poolArray);
+		}
+		if (idleGarbageHook == null) {
+			// start MBean
+			MBeanFacade.start();
+			// register ShutdownHook
+			ShutdownHook.registerHook(poolArray);
+			// start IdleGarbageHook
+			idleGarbageHook = IdleGarbageHook.startHook(poolArray);
+			// create a daemon thread to get connection if needed
+			poolGrowHook = PoolGrowHook.startHook(poolArray);
+		}
 	}
 
 	/**
-	 * start ShutdownHook,IdleGarbageHook and IdleCheckHook(if necessary).
+	 * Interrupt all the daemon hooks.
 	 */
-	private static void startHook(boolean needStartCheck) {
-		ConnectionPoolManager[] poolArray = poolMap.values().toArray(
-				new ConnectionPoolManager[0]);
-		// register ShutdownHook
-		ShutdownHook.registerHook(poolArray);
-		// start IdleGarbageHook
-		idleGarbageHook = IdleGarbageHook.startHook(poolArray);
-		if (needStartCheck) {
-			// start IdleCheckHook
-			idleCheckHook = IdleCheckHook.startHook(poolArray);
-		} else {
-			/**
-			 * Maybe IdleCheckHook don't need to start,so don't forget count
-			 * down latch,otherwise CommonPoolContainer will wait forever.
-			 */
-			PoolLatchUtil.countDownStartLatch();
+	static void destoryHooks() {
+		if (poolGrowHook != null) {
+			poolGrowHook.interrupt();
+			poolGrowHook = null;
+		}
+		if (idleGarbageHook != null) {
+			idleGarbageHook.interrupt();
+			idleGarbageHook = null;
 		}
 	}
+
+	protected abstract boolean initPool(Map<String, ConfigurationVO> cfgMap);
 
 	protected abstract PooledConnection getConnection() throws SQLException;
 
@@ -181,44 +147,5 @@ abstract class CommonPoolContainer {
 
 	protected abstract void remove(String name);
 
-	/**
-	 * Remove the pool
-	 */
-	void remove() {
-		// interrupt PoolGrowHook
-		interruptPoolGrowHook();
-		Map<String, ConnectionPoolManager> tempMap = poolMap;
-		// reset pool map
-		poolMap = new HashMap<>();
-		for (Entry<String, ConnectionPoolManager> e : tempMap.entrySet()) {
-			String poolName = e.getKey();
-			MBeanFacade.UnregisterMBean(poolName);
-			ConnectionPoolManager pool = e.getValue();
-			pool.remove();
-		}
-	}
-
-	/**
-	 * Interrupt all the daemon thread
-	 */
-	static void destory() {
-		if (idleGarbageHook != null) {
-			idleGarbageHook.interrupt();
-		}
-		if (idleCheckHook != null) {
-			idleCheckHook.interrupt();
-		}
-	}
-
-	/**
-	 * Interrupt all the PoolGrowHook
-	 */
-	private static void interruptPoolGrowHook() {
-		Map<String, Thread> tempMap = poolGrowHookMap;
-		poolGrowHookMap = new HashMap<>();
-		Thread[] threadArray = tempMap.values().toArray(new Thread[0]);
-		for (Thread t : threadArray) {
-			t.interrupt();
-		}
-	}
+	protected abstract void remove();
 }
