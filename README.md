@@ -1,15 +1,20 @@
 clearpool
 =========
 
-Clearpool is a High Performance Database Pool.Its biggest characteristic is to abandon the traditional database pool lock,and replaced by the atomic operation.However.What we need to know is that it has a ultra low latency because it invoked the Unsafe.java under the package of sun.misc.On the other side,we should know that its source code is just about 6500 lines,so we could learn and modify it in a short time.
+Clearpool is a High Performance Distributed Database Pool.It could manage the distributed database with high performance.Clearpool has a wondorful performance because it abandon the traditional database pool lock,and replaced by atomic operation.However,we should know that it used the Unsafe.java in the package of sun.misc.
 
-The function of the pool:<br />
-1)it support distributed Database.<br />
-2)we can monitor it by JMX.<br />
-3)it will release the useless connection and get new connection if the Database restarted.<br />
-4)it will collect the idle connection if necessary.
+The function of the pool:
+<ol>
+<li>It can manage distributed database.</li>
+<li>It support jta.</li>
+<li>It can be monitor by JMX.</li>
+<li>It will release the connection and get new connection if the connection is invalid.</li>
+<li>It will collect the idle connection if necessary.
+</ol>
 
 Note:
-Thread may fight for connection in clearpool all the time because we abandoned the lock,so the CPU will be busy.
+Thread will fight for the connection in the pool all the time because we abandoned the lock,so the CPU may be busy,thus the program will be a little delayed.
 
-If you want to compare the performance with other database pool,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPoolCase.java.
+If you want to compare the performance with other popular database pools,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPoolCase.java.
+Here is the result of comparing with druid and tomcat-jdbc.
+![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/comparewithWonderfulpool.jpg)
