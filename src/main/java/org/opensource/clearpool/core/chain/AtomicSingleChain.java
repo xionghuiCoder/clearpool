@@ -15,7 +15,7 @@ import sun.misc.Unsafe;
  * @date 26.07.2014
  * @version 1.0
  */
-public class AtomicSingleChain<E> extends CommonChain<E> {
+class AtomicSingleChain<E> extends AtomicCommonChain<E> {
 	private static final long HEAD_OFFSET;
 	private static final long TAIL_OFFSET;
 

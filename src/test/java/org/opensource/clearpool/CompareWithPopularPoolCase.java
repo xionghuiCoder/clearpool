@@ -24,7 +24,7 @@ public class CompareWithPopularPoolCase extends TestCase {
 	private String user;
 	private String password;
 	private String driverClass;
-	private int minPoolSize = 50;
+	private int minPoolSize = 20;
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
 	private int loopCount = 5;

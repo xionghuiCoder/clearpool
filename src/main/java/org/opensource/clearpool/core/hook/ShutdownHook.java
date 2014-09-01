@@ -1,18 +1,20 @@
 package org.opensource.clearpool.core.hook;
 
+import java.util.Iterator;
+
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 
 public class ShutdownHook extends CommonHook {
-	private static final PoolLog LOG = PoolLogFactory.getLog(ShutdownHook.class);
+	private static final PoolLog LOG = PoolLogFactory
+			.getLog(ShutdownHook.class);
 
 	/**
 	 * start ShutdownHook by Runtime
 	 */
-	public static void registerHook(ConnectionPoolManager[] poolArray) {
+	public static void registerHook() {
 		ShutdownHook shutdownHook = new ShutdownHook();
-		shutdownHook.initMixPoolList(poolArray);
 		Thread thread = new Thread(shutdownHook);
 		thread.setName("ShutdownHook");
 		Runtime.getRuntime().addShutdownHook(thread);
@@ -31,7 +33,9 @@ public class ShutdownHook extends CommonHook {
 		 * Removes all connection pools. close all the connections
 		 */
 		long begin = System.currentTimeMillis();
-		for (ConnectionPoolManager pool : this.poolChain) {
+		Iterator<ConnectionPoolManager> itr = poolChain.iterator();
+		while (itr.hasNext()) {
+			ConnectionPoolManager pool = itr.next();
 			// the pool chain couldn't stop in for..in,but if it return null,we
 			// can see that it would be stopped.
 			if (pool == null) {

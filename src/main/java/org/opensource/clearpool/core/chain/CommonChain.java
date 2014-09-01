@@ -1,26 +1,9 @@
 package org.opensource.clearpool.core.chain;
 
-import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.opensource.clearpool.exception.ConnectionPoolException;
-
-import sun.misc.Unsafe;
-
 public abstract class CommonChain<E> implements Iterable<E> {
-	protected static final Unsafe UNSAFE;
-
-	static {
-		try {
-			Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-			unsafeField.setAccessible(true);
-			UNSAFE = (Unsafe) unsafeField.get(null);
-		} catch (Exception e) {
-			throw new ConnectionPoolException("create Unsafe error");
-		}
-	}
-
 	protected AtomicInteger size = new AtomicInteger();
 
 	/**
@@ -36,7 +19,9 @@ public abstract class CommonChain<E> implements Iterable<E> {
 	/**
 	 * Remove a element which is overtime.
 	 */
-	public abstract E removeIdle(long period);
+	public E removeIdle(long period) {
+		throw new UnsupportedOperationException("not supported by CommonChain");
+	}
 
 	/**
 	 * Get the number of the connection in the pool.
@@ -47,8 +32,7 @@ public abstract class CommonChain<E> implements Iterable<E> {
 
 	@Override
 	public Iterator<E> iterator() {
-		throw new UnsupportedOperationException(
-				"we don't need to use iterator now.");
+		throw new UnsupportedOperationException("not supported by CommonChain");
 	}
 
 	/**
@@ -60,23 +44,13 @@ public abstract class CommonChain<E> implements Iterable<E> {
 	 * @version 1.0
 	 */
 	static abstract class Node<E> {
-		private static final long NEXT_OFFSET;
-
-		static {
-			try {
-				NEXT_OFFSET = UNSAFE.objectFieldOffset(Node.class
-						.getDeclaredField("next"));
-			} catch (Exception e) {
-				throw new ConnectionPoolException("get next position error");
-			}
-		}
-
 		E element;
 
 		volatile Node<E> next;
 
 		/**
-		 * we should know that entryTime is used by {@link AtomicSingleChain}
+		 * we should know that entryTime is used by {@link AtomicSingleChain} or
+		 * {@link LockSingleChain}
 		 */
 		long entryTime;
 
@@ -87,21 +61,5 @@ public abstract class CommonChain<E> implements Iterable<E> {
 		abstract E getElement();
 
 		abstract void setNext(Node<E> next);
-
-		/**
-		 * Atomically sets the Node to the given updated Node if the current
-		 * Node is the expected Node.
-		 * 
-		 * @param expect
-		 *            the expected Node
-		 * @param update
-		 *            the new Node
-		 * @return true if successful. False return indicates that the actual
-		 *         Node was not equal to the expected Node.
-		 */
-		boolean compareAndSetNext(Node<E> expect, Node<E> update) {
-			return UNSAFE.compareAndSwapObject(this, NEXT_OFFSET, expect,
-					update);
-		}
 	}
 }

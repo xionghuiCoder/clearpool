@@ -1,11 +1,12 @@
 package org.opensource.clearpool.core.hook;
 
+import java.util.Iterator;
+
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
-import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class's duty is to create connection if needed.When do we need a new
@@ -23,9 +24,9 @@ public class PoolGrowHook extends CommonHook {
 	/**
 	 * start the ConnectionIncrementHook
 	 */
-	public static Thread startHook(ConnectionPoolManager[] poolArray) {
+	public static Thread startHook() {
 		CommonHook idleGarbageHook = new PoolGrowHook();
-		Thread thread = idleGarbageHook.startHook(poolArray, "PoolGrowHook");
+		Thread thread = idleGarbageHook.startHook("PoolGrowHook");
 		return thread;
 	}
 
@@ -40,15 +41,15 @@ public class PoolGrowHook extends CommonHook {
 		LOG.info("PoolGrowHook running");
 		// I'm running.
 		PoolLatchUtil.countDownStartLatch();
-		for (ConnectionPoolManager pool : this.poolChain) {
+		Iterator<ConnectionPoolManager> itr = poolChain.iterator();
+		while (itr.hasNext()) {
 			// if pool destroyed,it will interrupt this thread.
 			if (Thread.currentThread().isInterrupted()) {
 				break;
 			}
-			// release CPU
-			ThreadSleepUtil.sleep();
+			ConnectionPoolManager pool = itr.next();
 			if (pool == null || pool.isClosed()) {
-				this.poolChain.remove();
+				itr.remove();
 				continue;
 			}
 			while (pool.getLackCount() != 0 && !pool.isClosed()) {

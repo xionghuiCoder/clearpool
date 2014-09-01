@@ -1,11 +1,12 @@
 package org.opensource.clearpool.core.hook;
 
+import java.util.Iterator;
+
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
-import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class's duty is to close the connection which is expired.
@@ -21,9 +22,9 @@ public class IdleGarbageHook extends CommonHook {
 	/**
 	 * Start IdleGarbageHook
 	 */
-	public static Thread startHook(ConnectionPoolManager[] poolArray) {
+	public static Thread startHook() {
 		CommonHook idleGarbageHook = new IdleGarbageHook();
-		Thread thread = idleGarbageHook.startHook(poolArray, "IdleGarbageHook");
+		Thread thread = idleGarbageHook.startHook("IdleGarbageHook");
 		return thread;
 	}
 
@@ -38,15 +39,15 @@ public class IdleGarbageHook extends CommonHook {
 		LOG.info("IdleGarbageHook running");
 		// I'm running.
 		PoolLatchUtil.countDownStartLatch();
-		for (ConnectionPoolManager pool : this.poolChain) {
+		Iterator<ConnectionPoolManager> itr = poolChain.iterator();
+		while (itr.hasNext()) {
 			// if pool destroyed,it will interrupt this thread.
 			if (Thread.currentThread().isInterrupted()) {
 				break;
 			}
-			// release CPU
-			ThreadSleepUtil.sleep();
+			ConnectionPoolManager pool = itr.next();
 			if (pool == null || pool.isClosed()) {
-				this.poolChain.remove();
+				itr.remove();
 				continue;
 			}
 			long period = pool.getCfgVO().getLimitIdleTime();

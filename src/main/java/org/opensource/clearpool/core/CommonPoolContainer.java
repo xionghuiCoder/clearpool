@@ -1,6 +1,7 @@
 package org.opensource.clearpool.core;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import javax.sql.PooledConnection;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.configuration.XMLConfiguration;
 import org.opensource.clearpool.console.MBeanFacade;
+import org.opensource.clearpool.core.hook.CommonHook;
 import org.opensource.clearpool.core.hook.IdleCheckHook;
 import org.opensource.clearpool.core.hook.IdleGarbageHook;
 import org.opensource.clearpool.core.hook.PoolGrowHook;
@@ -99,28 +101,26 @@ abstract class CommonPoolContainer {
 	}
 
 	/**
-	 * start ShutdownHook,IdleGarbageHook and IdleCheckHook(if necessary).
+	 * init pool chain and start ShutdownHook,IdleGarbageHook and
+	 * IdleCheckHook(if necessary).
 	 */
 	private static void startHooks(boolean needIdleCheck) {
-		ConnectionPoolManager[] poolArray = poolMap.values().toArray(
-				new ConnectionPoolManager[0]);
-		if (idleCheckHook != null) {
-			return;
-		}
-		if (needIdleCheck) {
+		Collection<ConnectionPoolManager> poolCollection = poolMap.values();
+		CommonHook.initPoolChain(poolCollection);
+		if (needIdleCheck && idleCheckHook == null) {
 			PoolLatchUtil.initIdleCheckLatch();
 			// start IdleCheckHook
-			idleCheckHook = IdleCheckHook.startHook(poolArray);
+			idleCheckHook = IdleCheckHook.startHook();
 		}
 		if (idleGarbageHook == null) {
 			// start MBean
 			MBeanFacade.start();
 			// register ShutdownHook
-			ShutdownHook.registerHook(poolArray);
+			ShutdownHook.registerHook();
 			// start IdleGarbageHook
-			idleGarbageHook = IdleGarbageHook.startHook(poolArray);
+			idleGarbageHook = IdleGarbageHook.startHook();
 			// create a daemon thread to get connection if needed
-			poolGrowHook = PoolGrowHook.startHook(poolArray);
+			poolGrowHook = PoolGrowHook.startHook();
 		}
 	}
 

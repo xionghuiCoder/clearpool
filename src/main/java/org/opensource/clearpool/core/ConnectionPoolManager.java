@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
-import org.opensource.clearpool.core.chain.AtomicSingleChain;
+import org.opensource.clearpool.core.chain.ChainFactory;
 import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.datasource.factory.DataSourceAbstractFactory;
@@ -18,7 +18,6 @@ import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
-import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
  * This class save the connection to {@link #connectionChain},it's duty is to
@@ -59,9 +58,8 @@ public class ConnectionPoolManager {
 
 	ConnectionPoolManager(ConfigurationVO cfgVO) {
 		this.cfgVO = cfgVO;
-		// this.connectionChain = new
-		// LockCircleChain<ConnectionProxy>(cfgVO.getMaxPoolSize());
-		this.connectionChain = new AtomicSingleChain<ConnectionProxy>();
+		this.connectionChain = ChainFactory
+				.createSingleChain((ConnectionProxy) null);
 	}
 
 	/**
@@ -99,8 +97,7 @@ public class ConnectionPoolManager {
 				if (e != null) {
 					throw e;
 				}
-				int count = this.lackCount.get();
-				if (count == 0) {
+				if (this.lackCount.get() == 0) {
 					int maxIncrement = this.cfgVO.getMaxPoolSize()
 							- this.poolSize.get();
 					// if pool is full,we shouldn't grow it
@@ -109,11 +106,11 @@ public class ConnectionPoolManager {
 						if (increment > maxIncrement) {
 							increment = maxIncrement;
 						}
-						this.lackCount.compareAndSet(count, increment);
+						this.lackCount.compareAndSet(0, increment);
 					}
 				}
-				// rest for a while
-				ThreadSleepUtil.sleep();
+				// release CPU
+				// ThreadSleepUtil.sleep();
 			}
 		} while (conProxy == null);
 		DataSourceAbstractFactory factory = this.cfgVO.getFactory();
@@ -124,6 +121,12 @@ public class ConnectionPoolManager {
 	 * fill the pool by lackCount
 	 */
 	public void fillPool() {
+		int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
+		// if pool is full,we shouldn't grow it
+		if (maxIncrement == 0) {
+			this.lackCount.set(0);
+			return;
+		}
 		int poolNum = this.lackCount.get();
 		int retryTimes = this.cfgVO.getAcquireRetryTimes();
 		for (int i = 0; i < poolNum; i++) {

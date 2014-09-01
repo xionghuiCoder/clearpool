@@ -1,23 +1,23 @@
 package org.opensource.clearpool.core.hook;
 
-import java.util.Random;
+import java.util.Collection;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.core.chain.AtomicCircleChain;
+import org.opensource.clearpool.core.chain.ChainFactory;
 import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 
-abstract class CommonHook implements Runnable {
+public abstract class CommonHook implements Runnable {
 	private static final PoolLog LOG = PoolLogFactory.getLog(CommonHook.class);
 
-	CommonChain<ConnectionPoolManager> poolChain;
+	static CommonChain<ConnectionPoolManager> poolChain = ChainFactory
+			.createCircleChain((ConnectionPoolManager) null);
 
 	/**
 	 * Set and start a idleHook
 	 */
-	Thread startHook(ConnectionPoolManager[] poolArray, String name) {
-		this.initMixPoolList(poolArray);
+	Thread startHook(String name) {
 		Thread thread = new Thread(this);
 		thread.setName(name);
 		thread.setDaemon(true);
@@ -27,19 +27,19 @@ abstract class CommonHook implements Runnable {
 	}
 
 	/**
-	 * Init poolList and mix up the order of it.
+	 * Init poolChain.
 	 */
-	void initMixPoolList(ConnectionPoolManager[] poolArray) {
-		if (this.poolChain != null) {
-			return;
-		}
-		this.poolChain = new AtomicCircleChain<>();
-		Random random = new Random();
-		// get and mix up the order of poolChain
-		for (int i = 0, length = poolArray.length; i < length; i++) {
-			int index = random.nextInt(length - i) + i;
-			this.poolChain.add(poolArray[index]);
-			poolArray[index] = poolArray[i];
+	public static void initPoolChain(
+			Collection<ConnectionPoolManager> poolCollection) {
+		/*
+		 * Random random = new Random(); for (int i = 0, length =
+		 * poolArray.length; i < length; i++) { int index =
+		 * random.nextInt(length - i) + i; this.poolChain.add(poolArray[index]);
+		 * poolArray[index] = poolArray[i]; }
+		 */
+
+		for (ConnectionPoolManager manager : poolCollection) {
+			poolChain.add(manager);
 		}
 	}
 }

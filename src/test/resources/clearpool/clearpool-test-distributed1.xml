@@ -27,5 +27,5 @@
 		30 chars to support oracle. -->
 	<test-table-name>test</test-table-name>
 	<!-- we will log the sql before we execute it if we set show-sql true and the log is valid -->
-	<show-sql>false</show-sql>
+	<show-sql>true</show-sql>
 </clearpool>

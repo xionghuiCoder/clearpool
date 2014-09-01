@@ -260,7 +260,7 @@ public class ClearPoolDataSource extends AbstractDataSource implements
 	@Override
 	public PooledConnection getPooledConnection(String user, String password)
 			throws SQLException {
-		throw new UnsupportedOperationException("not supported it now");
+		throw new UnsupportedOperationException("not supported yet");
 	}
 
 	@Override
