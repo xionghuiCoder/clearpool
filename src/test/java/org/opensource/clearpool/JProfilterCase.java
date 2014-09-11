@@ -47,7 +47,7 @@ public class JProfilterCase extends TestCase {
 		physicalCon.set(0);
 	}
 
-	public void test_clearpool() throws Exception {
+	public void stop_test_clearpool() throws Exception {
 		ClearPoolDataSource dataSource = new ClearPoolDataSource();
 		dataSource.setCorePoolSize(this.minPoolSize);
 		dataSource.setMaxPoolSize(this.maxPoolSize);
@@ -61,7 +61,7 @@ public class JProfilterCase extends TestCase {
 		System.out.println();
 	}
 
-	public void stop_test_druid() throws Exception {
+	public void test_druid() throws Exception {
 		DruidDataSource dataSource = new DruidDataSource();
 		dataSource.setInitialSize(this.minPoolSize);
 		dataSource.setMaxActive(this.maxPoolSize);

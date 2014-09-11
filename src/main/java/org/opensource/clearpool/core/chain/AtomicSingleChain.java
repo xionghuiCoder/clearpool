@@ -1,5 +1,7 @@
 package org.opensource.clearpool.core.chain;
 
+import java.lang.reflect.Field;
+
 import org.opensource.clearpool.exception.ConnectionPoolException;
 
 import sun.misc.Unsafe;
@@ -15,12 +17,17 @@ import sun.misc.Unsafe;
  * @date 26.07.2014
  * @version 1.0
  */
-class AtomicSingleChain<E> extends AtomicCommonChain<E> {
+class AtomicSingleChain<E> extends CommonChain<E> {
+	private static final Unsafe UNSAFE;
+
 	private static final long HEAD_OFFSET;
 	private static final long TAIL_OFFSET;
 
 	static {
 		try {
+			Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+			unsafeField.setAccessible(true);
+			UNSAFE = (Unsafe) unsafeField.get(null);
 			HEAD_OFFSET = UNSAFE.objectFieldOffset(AtomicSingleChain.class
 					.getDeclaredField("head"));
 			TAIL_OFFSET = UNSAFE.objectFieldOffset(AtomicSingleChain.class

@@ -19,7 +19,7 @@ import org.opensource.clearpool.datasource.AbstractDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 
 /**
- * This class is the provide for IOC container.Or you can't use it to program.
+ * This class is used by IOC container.Or you can use it by programming.
  * 
  * @author xionghui
  * @date 26.07.2014
