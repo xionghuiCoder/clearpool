@@ -47,6 +47,7 @@ public class XMLConfiguration {
 	private final static String MAX_POOL_SIZE = "max-pool-size";
 	private final static String ACQUIRE_INCREMENT = "acquire-increment";
 	private final static String ACQUIRE_RETRY_TIMES = "acquire-retry-times";
+	private final static String USELESS_CONNECTION_EXCEPTION = "useless-connection-exception";
 	private final static String LIMIT_IDLE_TIME = "limit-idle-time";
 	private final static String KEEP_TEST_PERIOD = "keep-test-period";
 	private final static String TEST_TABLE_NAME = "test-table-name";
@@ -55,7 +56,7 @@ public class XMLConfiguration {
 	// the public entry to {@link #Configuration}.
 	public static Map<String, ConfigurationVO> getCfgVO(String path) {
 		path = getRealPath(path);
-		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
+		Map<String, ConfigurationVO> cfgMap = new HashMap<String, ConfigurationVO>();
 		XMLInputFactory xmlFac = XMLInputFactory.newInstance();
 		try {
 			long begin = System.currentTimeMillis();
@@ -132,7 +133,7 @@ public class XMLConfiguration {
 		// hasDistributed means XML has DISTRIBUTE_URL,noDistributed means XML
 		// has other labels except DISTRIBUTE_URL.
 		boolean hasDistributed = false, noDistributed = false;
-		Set<String> urls = new HashSet<>();
+		Set<String> urls = new HashSet<String>();
 		ConfigurationVO cfgVO = new ConfigurationVO();
 		while (reader.hasNext()) {
 			event = reader.next();
@@ -140,13 +141,11 @@ public class XMLConfiguration {
 				continue;
 			}
 			String parsing = reader.getLocalName();
-			switch (parsing) {
-			case ALIAS:
+			if (ALIAS.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setAlias(reader.getElementText().trim());
-				break;
-			case CONSOLE:
+			} else if (CONSOLE.equals(parsing)) {
 				if (!isFirst) {
 					throw new ConnectionPoolXMLParseException(CONSOLE
 							+ " should in the first configuration");
@@ -156,8 +155,7 @@ public class XMLConfiguration {
 				if (ConfigurationVO.getConsole() == null) {
 					ConfigurationVO.setConsole(console);
 				}
-				break;
-			case DISTRIBUTE_URL:
+			} else if (DISTRIBUTE_URL.equals(parsing)) {
 				checkDistributedLegal(noDistributed);
 				if (!urls.add(reader.getElementText().trim())) {
 					throw new ConnectionPoolXMLParseException(DISTRIBUTE_URL
@@ -165,8 +163,7 @@ public class XMLConfiguration {
 				}
 				hasDistributed = true;
 				distributed = true;
-				break;
-			case JDBC:
+			} else if (JDBC.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				if (cfgVO.getCommonDataSource() != null) {
 					throw new ConnectionPoolXMLParseException(
@@ -175,8 +172,7 @@ public class XMLConfiguration {
 				noDistributed = true;
 				CommonDataSource jdbcDs = JDBCConfiguration.parse(reader);
 				cfgVO.setCommonDataSource(jdbcDs);
-				break;
-			case JNDI:
+			} else if (JNDI.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				if (cfgVO.getCommonDataSource() != null) {
 					throw new ConnectionPoolXMLParseException(
@@ -185,61 +181,56 @@ public class XMLConfiguration {
 				noDistributed = true;
 				CommonDataSource jndiDs = JndiConfiguration.parse(reader);
 				cfgVO.setCommonDataSource(jndiDs);
-				break;
-			case JTA_SUPPORT:
+			} else if (JTA_SUPPORT.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setJtaSupport(Boolean.valueOf(reader.getElementText()
 						.trim()));
-				break;
-			case CORE_POOL_SIZE:
+			} else if (CORE_POOL_SIZE.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setCorePoolSize(Integer.valueOf(reader.getElementText()
 						.trim()));
-				break;
-			case MAX_POOL_SIZE:
+			} else if (MAX_POOL_SIZE.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setMaxPoolSize(Integer.valueOf(reader.getElementText()
 						.trim()));
-				break;
-			case ACQUIRE_INCREMENT:
+			} else if (ACQUIRE_INCREMENT.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setAcquireIncrement(Integer.valueOf(reader
 						.getElementText().trim()));
-				break;
-			case ACQUIRE_RETRY_TIMES:
+			} else if (ACQUIRE_RETRY_TIMES.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setAcquireRetryTimes(Integer.valueOf(reader
 						.getElementText().trim()));
-				break;
-			case LIMIT_IDLE_TIME:
+			} else if (USELESS_CONNECTION_EXCEPTION.equals(parsing)) {
+				checkDistributedLegal(hasDistributed);
+				noDistributed = true;
+				cfgVO.setUselessConnectionException(Boolean.valueOf(reader
+						.getElementText().trim()));
+			} else if (LIMIT_IDLE_TIME.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setLimitIdleTime(Integer.valueOf(reader.getElementText()
 						.trim()) * 1000L);
-				break;
-			case KEEP_TEST_PERIOD:
+			} else if (KEEP_TEST_PERIOD.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setKeepTestPeriod(Integer.valueOf(reader.getElementText()
 						.trim()) * 1000L);
-				break;
-			case TEST_TABLE_NAME:
+			} else if (TEST_TABLE_NAME.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setTestTableName(reader.getElementText().trim());
-				break;
-			case SHOW_SQL:
+			} else if (SHOW_SQL.equals(parsing)) {
 				checkDistributedLegal(hasDistributed);
 				noDistributed = true;
 				cfgVO.setShowSql(Boolean
 						.valueOf(reader.getElementText().trim()));
-				break;
-			default:
+			} else {
 				throw new ConnectionPoolXMLParseException(DISTRIBUTE_URL
 						+ " contains illegal element: " + parsing);
 			}

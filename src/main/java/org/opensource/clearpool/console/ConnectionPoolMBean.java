@@ -17,6 +17,8 @@ public interface ConnectionPoolMBean {
 
 	public int getAcquireRetryTimes();
 
+	public boolean getUselessConnectionException();
+
 	public String getLimitIdleTime();
 
 	public String getKeepTestPeriod();

@@ -157,7 +157,7 @@ public class TransactionManagerImpl implements TransactionManager {
 		Transaction tx = txHolder.get();
 		if (tx != null) {
 			if (this.suspendTx == null) {
-				this.suspendTx = new HashSet<>();
+				this.suspendTx = new HashSet<Transaction>();
 			}
 			((TransactionImpl) tx).suspend();
 			TransactionAdapter adapter = new TransactionAdapter(tx);

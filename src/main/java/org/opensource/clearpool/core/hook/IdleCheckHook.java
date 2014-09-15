@@ -9,9 +9,11 @@ import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
+import org.opensource.clearpool.util.ThreadSleepUtil;
 
 /**
- * This class's duty is to check if the connection is valid.
+ * This class's duty is that close the connection which is expired and check if
+ * the connection is valid.
  * 
  * @author xionghui
  * @date 26.07.2014
@@ -40,39 +42,66 @@ public class IdleCheckHook extends CommonHook {
 	public void run() {
 		LOG.info("IdleCheckHook running");
 		// I'm running.
-		PoolLatchUtil.countDownIdleCheckLatch();
+		PoolLatchUtil.countDownStartLatch();
 		Iterator<ConnectionPoolManager> itr = poolChain.iterator();
 		while (itr.hasNext()) {
 			// if pool destroyed,it will interrupt this thread.
 			if (Thread.currentThread().isInterrupted()) {
 				break;
 			}
+			// rest for a while
+			ThreadSleepUtil.sleep();
 			ConnectionPoolManager pool = itr.next();
 			if (pool == null || pool.isClosed()) {
 				itr.remove();
 				continue;
 			}
-			ConfigurationVO cfgVO = pool.getCfgVO();
-			long period = cfgVO.getKeepTestPeriod();
-			// some pool don't need to check
-			if (period == 0) {
+			this.dealGarbage(pool);
+			this.dealIdle(pool);
+		}
+	}
+
+	/**
+	 * Remove garbage connection if necessary.
+	 */
+	private void dealGarbage(ConnectionPoolManager pool) {
+		long period = pool.getCfgVO().getLimitIdleTime();
+		while (pool.isNeedCollected()) {
+			ConnectionProxy conProxy = pool.getConnectionChain().removeIdle(
+					period);
+			if (conProxy == null) {
+				break;
+			}
+			// close connection
+			pool.closeConnection(conProxy);
+			pool.decrementPoolSize();
+		}
+	}
+
+	/**
+	 * Check idle connection if necessary.
+	 */
+	private void dealIdle(ConnectionPoolManager pool) {
+		ConfigurationVO cfgVO = pool.getCfgVO();
+		long period = cfgVO.getKeepTestPeriod();
+		// maybe some pool don't need to check
+		if (period == 0) {
+			return;
+		}
+		CommonChain<ConnectionProxy> chain = pool.getConnectionChain();
+		while (true) {
+			ConnectionProxy conProxy = chain.removeIdle(period);
+			if (conProxy == null) {
+				break;
+			}
+			boolean isValid = pool.checkTestTable(conProxy, false);
+			if (isValid) {
+				chain.add(conProxy);
 				continue;
 			}
-			CommonChain<ConnectionProxy> chain = pool.getConnectionChain();
-			while (true) {
-				ConnectionProxy conProxy = chain.removeIdle(period);
-				if (conProxy == null) {
-					break;
-				}
-				boolean isValid = pool.checkTestTable(conProxy, false);
-				if (isValid) {
-					chain.add(conProxy);
-					continue;
-				}
-				pool.decrementPoolSize();
-				pool.incrementLackCount();
-				pool.closeConnection(conProxy);
-			}
+			pool.decrementPoolSize();
+			pool.closeConnection(conProxy);
+			pool.incrementOneConnection();
 		}
 	}
 }

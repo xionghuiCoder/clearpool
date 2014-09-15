@@ -6,8 +6,6 @@ import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -35,7 +33,7 @@ class CommunicatorServerHandler {
 			.getPlatformMBeanServer();
 
 	// this map is used to unregister ObjectName while remove the pool
-	private static Map<String, ObjectNameCarry> objectNameMap = new HashMap<>();
+	private static Map<String, ObjectNameCarry> objectNameMap = new HashMap<String, ObjectNameCarry>();
 
 	private static CommunicatorServer communicatorServer;
 
@@ -68,7 +66,7 @@ class CommunicatorServerHandler {
 		String mbeanName = carry.mbeanName;
 		try {
 			server.unregisterMBean(objectName);
-		} catch (MBeanRegistrationException | InstanceNotFoundException e) {
+		} catch (Exception e) {
 			throw new ConnectionPoolMBeanException(e);
 		}
 		LOG.info("unregister " + poolName + "'s MBean:" + mbeanName);
@@ -110,7 +108,7 @@ class CommunicatorServerHandler {
 			HtmlAdaptorHook.stop(communicatorServer);
 			// help gc
 			communicatorServer = null;
-			objectNameMap = new HashMap<>();
+			objectNameMap = new HashMap<String, ObjectNameCarry>();
 		}
 	}
 

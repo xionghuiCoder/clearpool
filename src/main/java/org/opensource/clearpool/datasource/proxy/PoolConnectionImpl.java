@@ -10,6 +10,7 @@ import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -43,10 +44,10 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 	private Connection connection;
 	private final ConnectionProxy conProxy;
 
-	private final List<ConnectionEventListener> connectionEventListeners = new ArrayList<ConnectionEventListener>();
-	private final List<StatementEventListener> statementEventListeners = new ArrayList<StatementEventListener>();
+	private List<ConnectionEventListener> connectionEventListeners;
+	private List<StatementEventListener> statementEventListeners;
 
-	private final Set<Statement> statementSet = new HashSet<>();
+	private final Set<Statement> statementSet = new HashSet<Statement>();
 
 	private volatile boolean isClosed;
 
@@ -605,48 +606,25 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 		return struct;
 	}
 
-	@Override
 	public void setSchema(String schema) throws SQLException {
-		this.checkState();
-		try {
-			this.connection.setSchema(schema);
-		} catch (SQLException ex) {
-			this.handleException(ex);
-		}
-		this.conProxy.schema = schema;
+		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public String getSchema() throws SQLException {
-		this.checkState();
-		return this.connection.getSchema();
+		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public void abort(Executor executor) throws SQLException {
-		this.checkState();
-		try {
-			this.connection.abort(executor);
-		} catch (SQLException ex) {
-			this.handleException(ex);
-		}
+		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds)
 			throws SQLException {
-		this.checkState();
-		try {
-			this.connection.setNetworkTimeout(executor, milliseconds);
-		} catch (SQLException ex) {
-			this.handleException(ex);
-		}
+		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public int getNetworkTimeout() throws SQLException {
-		this.checkState();
-		return this.connection.getNetworkTimeout();
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
@@ -664,15 +642,15 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 			stmt.close();
 		}
 		this.statementSet.clear();
-		if (this.connectionEventListeners.size() > 0) {
+		if (this.connectionEventListeners != null) {
 			ConnectionEvent event = new ConnectionEvent(this);
 			for (ConnectionEventListener listener : this.connectionEventListeners) {
 				listener.connectionClosed(event);
 			}
-			this.connectionEventListeners.clear();
+			this.connectionEventListeners = null;
 		}
-		if (this.connectionEventListeners.size() > 0) {
-			this.statementEventListeners.clear();
+		if (this.statementEventListeners != null) {
+			this.statementEventListeners = null;
 		}
 		this.connection = null;
 		this.conProxy.close();
@@ -689,16 +667,24 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 
 	@Override
 	public void addConnectionEventListener(ConnectionEventListener listener) {
+		if (this.connectionEventListeners == null) {
+			this.connectionEventListeners = new ArrayList<ConnectionEventListener>();
+		}
 		this.connectionEventListeners.add(listener);
 	}
 
 	@Override
 	public void removeConnectionEventListener(ConnectionEventListener listener) {
-		this.connectionEventListeners.remove(listener);
+		if (this.connectionEventListeners != null) {
+			this.connectionEventListeners.remove(listener);
+		}
 	}
 
 	@Override
 	public void addStatementEventListener(StatementEventListener listener) {
+		if (this.statementEventListeners == null) {
+			this.statementEventListeners = new ArrayList<StatementEventListener>();
+		}
 		this.statementEventListeners.add(listener);
 	}
 
@@ -708,7 +694,9 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 
 	@Override
 	public void removeStatementEventListener(StatementEventListener listener) {
-		this.statementEventListeners.remove(listener);
+		if (this.statementEventListeners != null) {
+			this.statementEventListeners.remove(listener);
+		}
 	}
 
 	/**
@@ -716,8 +704,10 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 	 */
 	private SQLException handleException(SQLException e) throws SQLException {
 		ConnectionEvent event = new ConnectionEvent(this, e);
-		for (ConnectionEventListener eventListener : this.connectionEventListeners) {
-			eventListener.connectionErrorOccurred(event);
+		if (this.connectionEventListeners != null) {
+			for (ConnectionEventListener eventListener : this.connectionEventListeners) {
+				eventListener.connectionErrorOccurred(event);
+			}
 		}
 		throw e;
 	}

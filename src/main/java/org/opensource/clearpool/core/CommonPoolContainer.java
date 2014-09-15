@@ -15,8 +15,6 @@ import org.opensource.clearpool.configuration.XMLConfiguration;
 import org.opensource.clearpool.console.MBeanFacade;
 import org.opensource.clearpool.core.hook.CommonHook;
 import org.opensource.clearpool.core.hook.IdleCheckHook;
-import org.opensource.clearpool.core.hook.IdleGarbageHook;
-import org.opensource.clearpool.core.hook.PoolGrowHook;
 import org.opensource.clearpool.core.hook.ShutdownHook;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.util.PoolLatchUtil;
@@ -37,15 +35,13 @@ import org.opensource.clearpool.util.PoolLatchUtil;
 abstract class CommonPoolContainer {
 	private static final Lock lock = new ReentrantLock();
 
-	private static Thread idleGarbageHook;
-	private static Thread poolGrowHook;
-	protected static Thread idleCheckHook;
+	private static Thread idleCheckHook;
 
 	/**
 	 * It carry the pool,and it make sure the pool should just be loaded one
 	 * time.
 	 */
-	protected static volatile Map<String, ConnectionPoolManager> poolMap = new HashMap<>();
+	protected static volatile Map<String, ConnectionPoolManager> poolMap = new HashMap<String, ConnectionPoolManager>();
 
 	/**
 	 * Load XML and init pool.
@@ -70,12 +66,12 @@ abstract class CommonPoolContainer {
 			CommonPoolContainer container = ConnectionPoolImpl.poolContainer;
 			// if container is not null,it must be a distributed pool,so we
 			// should fill it instead of create it.
-			if (idleGarbageHook == null) {
+			if (idleCheckHook == null) {
 				container = new DistributedPoolContainer();
 			}
-			boolean needIdleCheck = container.initPool(cfgMap);
+			container.initPool(cfgMap);
 			// start hooks
-			startHooks(needIdleCheck);
+			startHooks();
 			// wait until hook running.
 			PoolLatchUtil.await();
 			return container;
@@ -101,26 +97,18 @@ abstract class CommonPoolContainer {
 	}
 
 	/**
-	 * init pool chain and start ShutdownHook,IdleGarbageHook and
-	 * IdleCheckHook(if necessary).
+	 * Init pool chain and start ShutdownHook,IdleGarbageHook.
 	 */
-	private static void startHooks(boolean needIdleCheck) {
+	private static void startHooks() {
 		Collection<ConnectionPoolManager> poolCollection = poolMap.values();
 		CommonHook.initPoolChain(poolCollection);
-		if (needIdleCheck && idleCheckHook == null) {
-			PoolLatchUtil.initIdleCheckLatch();
-			// start IdleCheckHook
-			idleCheckHook = IdleCheckHook.startHook();
-		}
-		if (idleGarbageHook == null) {
+		if (idleCheckHook == null) {
 			// start MBean
 			MBeanFacade.start();
 			// register ShutdownHook
 			ShutdownHook.registerHook();
-			// start IdleGarbageHook
-			idleGarbageHook = IdleGarbageHook.startHook();
-			// create a daemon thread to get connection if needed
-			poolGrowHook = PoolGrowHook.startHook();
+			// start IdleCheckHook
+			idleCheckHook = IdleCheckHook.startHook();
 		}
 	}
 
@@ -128,17 +116,12 @@ abstract class CommonPoolContainer {
 	 * Interrupt all the daemon hooks.
 	 */
 	static void destoryHooks() {
-		if (poolGrowHook != null) {
-			poolGrowHook.interrupt();
-			poolGrowHook = null;
-		}
-		if (idleGarbageHook != null) {
-			idleGarbageHook.interrupt();
-			idleGarbageHook = null;
+		if (idleCheckHook != null) {
+			idleCheckHook.interrupt();
 		}
 	}
 
-	protected abstract boolean initPool(Map<String, ConfigurationVO> cfgMap);
+	protected abstract void initPool(Map<String, ConfigurationVO> cfgMap);
 
 	protected abstract PooledConnection getConnection() throws SQLException;
 

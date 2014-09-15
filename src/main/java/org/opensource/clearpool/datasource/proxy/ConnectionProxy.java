@@ -34,14 +34,12 @@ public class ConnectionProxy {
 	int holdability;
 	boolean readOnly;
 	int transactionIsolation;
-	String schema;
 
 	boolean newAutoCommit;
 	String newCatalog;
 	int newHoldability;
 	boolean newReadOnly;
 	int newTransactionIsolation;
-	String newSchema;
 
 	boolean clientInfoChanged;
 	boolean typeMapChanged;
@@ -69,7 +67,6 @@ public class ConnectionProxy {
 			this.newReadOnly = this.readOnly = this.connection.isReadOnly();
 			this.newTransactionIsolation = this.transactionIsolation = this.connection
 					.getTransactionIsolation();
-			this.newSchema = this.schema = this.connection.getSchema();
 		} catch (SQLException e) {
 			throw new ConnectionPoolException(e);
 		}
@@ -100,9 +97,6 @@ public class ConnectionProxy {
 		}
 		if (this.newTransactionIsolation != this.transactionIsolation) {
 			this.connection.setTransactionIsolation(this.transactionIsolation);
-		}
-		if (this.newSchema != this.schema) {
-			this.connection.setSchema(this.schema);
 		}
 		if (this.savepoint != null) {
 			this.connection.releaseSavepoint(this.savepoint);
@@ -147,7 +141,7 @@ public class ConnectionProxy {
 		// close connection
 		this.pool.closeConnection(this);
 		this.pool.decrementPoolSize();
-		this.pool.incrementLackCount();
+		this.pool.incrementOneConnection();
 	}
 
 	/**

@@ -194,12 +194,17 @@ class StatementHandler implements InvocationHandler {
 	private void saveParameter(int index, Object value) {
 		// Lazily instantiate parameterMap if necessary
 		if (this.parameterMap == null) {
-			this.parameterMap = new TreeMap<>(new Comparator<Integer>() {
-				@Override
-				public int compare(Integer i1, Integer i2) {
-					return Integer.compare(i1, i2);
-				}
-			});
+			this.parameterMap = new TreeMap<Integer, Object>(
+					new Comparator<Integer>() {
+						@Override
+						public int compare(Integer i1, Integer i2) {
+							return this.compareOrigin(i1, i2);
+						}
+
+						private int compareOrigin(int x, int y) {
+							return (x < y) ? -1 : ((x == y) ? 0 : 1);
+						}
+					});
 		}
 		if (value == null) {
 			this.parameterMap.put(index, "NULL");

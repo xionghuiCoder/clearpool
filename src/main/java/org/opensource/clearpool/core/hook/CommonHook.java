@@ -8,6 +8,13 @@ import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 
+/**
+ * The common hook of the hooks.
+ * 
+ * @author xionghui
+ * @date 16.08.2014
+ * @version 1.0
+ */
 public abstract class CommonHook implements Runnable {
 	private static final PoolLog LOG = PoolLogFactory.getLog(CommonHook.class);
 

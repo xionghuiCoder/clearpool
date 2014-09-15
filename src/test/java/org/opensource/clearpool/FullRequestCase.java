@@ -20,10 +20,10 @@ public class FullRequestCase extends TestCase {
 
 	public void testClearPool() throws Exception {
 		CountDownLatch startLatch = new CountDownLatch(1);
-		CountDownLatch endLatch = new CountDownLatch(500);
-		this.startThreads(startLatch, endLatch, 500);
+		CountDownLatch endLatch = new CountDownLatch(50);
+		this.startThreads(startLatch, endLatch, 50);
 		startLatch.countDown();
-		System.out.println("start 500 threads");
+		System.out.println("start 50 threads");
 		Thread.sleep(60 * 1000);
 		this.sign = true;
 		System.out.println("finish");

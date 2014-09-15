@@ -39,17 +39,12 @@ public class ConnectionPoolManager {
 	private final CommonChain<ConnectionProxy> connectionChain;
 
 	// save all the connection to close in case we shutdown the JVM
-	private volatile Set<ConnectionProxy> connectionSet = new HashSet<>();
+	private volatile Set<ConnectionProxy> connectionSet = new HashSet<ConnectionProxy>();
 
 	// this is the sign of if the pool is removed
 	private volatile boolean closed;
 
 	private ConfigurationVO cfgVO;
-
-	private volatile SQLException createConnectionException;
-
-	// it is the count of how many connection the pool need to increment.
-	private final AtomicInteger lackCount = new AtomicInteger();
 
 	private final AtomicInteger poolSize = new AtomicInteger();
 
@@ -67,8 +62,7 @@ public class ConnectionPoolManager {
 	 */
 	void initPool() {
 		int coreSize = this.cfgVO.getCorePoolSize();
-		this.lackCount.getAndAdd(coreSize);
-		this.fillPool();
+		this.fillPool(coreSize);
 		String tableName = this.cfgVO.getTestTableName();
 		if (tableName != null) {
 			this.initTestTable();
@@ -92,25 +86,17 @@ public class ConnectionPoolManager {
 			// if we couln't get a connection from the pool,we should get new
 			// connection.
 			if (conProxy == null) {
-				// if get connection error,we throw it to user
-				SQLException e = this.createConnectionException;
-				if (e != null) {
-					throw e;
-				}
-				if (this.lackCount.get() == 0) {
-					int maxIncrement = this.cfgVO.getMaxPoolSize()
-							- this.poolSize.get();
-					// if pool is full,we shouldn't grow it
-					if (maxIncrement != 0) {
-						int increment = this.cfgVO.getAcquireIncrement();
-						if (increment > maxIncrement) {
-							increment = maxIncrement;
-						}
-						this.lackCount.compareAndSet(0, increment);
+				int maxIncrement = this.cfgVO.getMaxPoolSize()
+						- this.poolSize.get();
+				// if pool is full,we shouldn't grow it
+				if (maxIncrement == 0) {
+					if (this.cfgVO.getUselessConnectionException()) {
+						throw new ConnectionPoolException(
+								"there is no connection left in the pool");
 					}
+				} else {
+					this.fillPoolByAcquireIncrement();
 				}
-				// release CPU
-				// ThreadSleepUtil.sleep();
 			}
 		} while (conProxy == null);
 		DataSourceAbstractFactory factory = this.cfgVO.getFactory();
@@ -118,16 +104,35 @@ public class ConnectionPoolManager {
 	}
 
 	/**
-	 * fill the pool by lackCount
+	 * fill the pool by acquireIncrement
 	 */
-	public void fillPool() {
+	private synchronized void fillPoolByAcquireIncrement() {
+		int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
+		// double check
+		if (maxIncrement != 0) {
+			int increment = this.cfgVO.getAcquireIncrement();
+			if (increment > maxIncrement) {
+				increment = maxIncrement;
+			}
+			this.fillPool(increment);
+		}
+	}
+
+	/**
+	 * increment one connection
+	 */
+	public synchronized void incrementOneConnection() {
 		int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
 		// if pool is full,we shouldn't grow it
-		if (maxIncrement == 0) {
-			this.lackCount.set(0);
-			return;
+		if (maxIncrement != 0) {
+			this.fillPool(1);
 		}
-		int poolNum = this.lackCount.get();
+	}
+
+	/**
+	 * fill the pool by poolNum
+	 */
+	private void fillPool(int poolNum) {
 		int retryTimes = this.cfgVO.getAcquireRetryTimes();
 		for (int i = 0; i < poolNum; i++) {
 			// try to get a connection
@@ -140,7 +145,6 @@ public class ConnectionPoolManager {
 			this.handlePeakPoolSize(i + 1);
 		}
 		this.poolSize.addAndGet(poolNum);
-		this.lackCount.addAndGet(-poolNum);
 	}
 
 	/**
@@ -155,17 +159,11 @@ public class ConnectionPoolManager {
 			} catch (SQLException e) {
 				LOG.error("try connect error(" + count++ + " time)");
 				if (count > retryTimes) {
-					// record exception
-					this.createConnectionException = e;
 					throw new ConnectionPoolException("get connection error"
 							+ e.getMessage());
 				}
 			}
 		} while (cmnCon == null);
-		// reset exception if necessary
-		if (this.createConnectionException != null) {
-			this.createConnectionException = null;
-		}
 		ConnectionProxy conProxy = new ConnectionProxy(this, cmnCon);
 		this.connectionSet.add(conProxy);
 		return conProxy;
@@ -217,14 +215,6 @@ public class ConnectionPoolManager {
 
 	public boolean isNeedCollected() {
 		return this.poolSize.get() > this.cfgVO.getCorePoolSize();
-	}
-
-	public int getLackCount() {
-		return this.lackCount.get();
-	}
-
-	public void incrementLackCount() {
-		this.lackCount.getAndIncrement();
 	}
 
 	/**
@@ -311,7 +301,7 @@ public class ConnectionPoolManager {
 		this.closed = true;
 		Set<ConnectionProxy> tempSet = this.connectionSet;
 		// help gc
-		this.connectionSet = new HashSet<>();
+		this.connectionSet = new HashSet<ConnectionProxy>();
 		for (ConnectionProxy conProxy : tempSet) {
 			this.closeConnection(conProxy);
 		}

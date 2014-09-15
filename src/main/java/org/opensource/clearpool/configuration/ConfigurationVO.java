@@ -48,6 +48,7 @@ public class ConfigurationVO {
 	private int maxPoolSize = Integer.MAX_VALUE;
 	private int acquireIncrement = 1;
 	private int acquireRetryTimes;
+	private boolean uselessConnectionException;
 	private long limitIdleTime = 60 * 1000L;
 	private long keepTestPeriod;
 	private String testTableName = "clearpool_test";
@@ -141,6 +142,14 @@ public class ConfigurationVO {
 			return;
 		}
 		this.acquireRetryTimes = acquireRetryTimes;
+	}
+
+	public boolean getUselessConnectionException() {
+		return this.uselessConnectionException;
+	}
+
+	public void setUselessConnectionException(boolean uselessConnectionException) {
+		this.uselessConnectionException = uselessConnectionException;
 	}
 
 	public long getLimitIdleTime() {

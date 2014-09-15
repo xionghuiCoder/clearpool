@@ -13,11 +13,8 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
  * @version 1.0
  */
 public class PoolLatchUtil {
-	// 3 hooks: IdleGarbageHook,PoolGrowHook and HtmlAdaptorHook.
-	private static CountDownLatch startLatch = new CountDownLatch(3);
-
-	// IdleCheckHook.
-	private static CountDownLatch idleCheckLatch;
+	// 2 hooks: IdleCheckHook and HtmlAdaptorHook.
+	private static CountDownLatch startLatch = new CountDownLatch(2);
 
 	/**
 	 * Count down startLatch.
@@ -25,22 +22,6 @@ public class PoolLatchUtil {
 	public static void countDownStartLatch() {
 		if (startLatch != null) {
 			startLatch.countDown();
-		}
-	}
-
-	/**
-	 * Init idleCheckLatch.
-	 */
-	public static void initIdleCheckLatch() {
-		idleCheckLatch = new CountDownLatch(1);
-	}
-
-	/**
-	 * Count down idleCheckLatch.
-	 */
-	public static void countDownIdleCheckLatch() {
-		if (idleCheckLatch != null) {
-			idleCheckLatch.countDown();
 		}
 	}
 
@@ -53,11 +34,6 @@ public class PoolLatchUtil {
 				startLatch.await();
 				// help gc
 				startLatch = null;
-			}
-			if (idleCheckLatch != null) {
-				idleCheckLatch.await();
-				// help gc
-				idleCheckLatch = null;
 			}
 		} catch (InterruptedException e) {
 			throw new ConnectionPoolException(e);

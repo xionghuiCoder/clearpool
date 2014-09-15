@@ -27,8 +27,7 @@ public class Security {
 				continue;
 			}
 			String parsing = reader.getLocalName();
-			switch (parsing) {
-			case USER:
+			if (USER.equals(parsing)) {
 				if (this.user != null) {
 					throw new ConnectionPoolXMLParseException(Security.USER
 							+ " is repeat");
@@ -40,8 +39,7 @@ public class Security {
 							+ Security.USER + " in " + Console.SECURITY
 							+ " is illegal");
 				}
-				break;
-			case PASSWORD:
+			} else if (PASSWORD.equals(parsing)) {
 				if (this.password != null) {
 					throw new ConnectionPoolXMLParseException(Security.PASSWORD
 							+ " in " + Console.SECURITY + " is repeat");
@@ -52,8 +50,7 @@ public class Security {
 					throw new ConnectionPoolXMLParseException("the pattern of "
 							+ Security.PASSWORD + " is illegal");
 				}
-				break;
-			default:
+			} else {
 				throw new ConnectionPoolXMLParseException(Console.SECURITY
 						+ " contains illegal elements");
 			}

@@ -28,7 +28,7 @@ import org.opensource.clearpool.log.PoolLogFactory;
  * @date 16.08.2014
  * @version 1.0
  */
-public class TransactionImpl implements Transaction {
+class TransactionImpl implements Transaction {
 	private static final PoolLog LOG = PoolLogFactory
 			.getLog(TransactionImpl.class);
 
@@ -38,12 +38,12 @@ public class TransactionImpl implements Transaction {
 
 	private List<Synchronization> synList;
 
-	private Map<XAResource, Xid> xaResMap = new HashMap<>();
+	private Map<XAResource, Xid> xaResMap = new HashMap<XAResource, Xid>();
 
-	private List<ResourceCarry> resList = new ArrayList<>();
+	private List<ResourceCarry> resList = new ArrayList<ResourceCarry>();
 
 	TransactionImpl(int transactionTimeout) {
-
+		// do something with transactionTimeout
 	}
 
 	@Override
@@ -306,7 +306,7 @@ public class TransactionImpl implements Transaction {
 			throw new IllegalStateException("the transaction is not held");
 		}
 		if (this.synList == null) {
-			this.synList = new ArrayList<>();
+			this.synList = new ArrayList<Synchronization>();
 		}
 		this.synList.add(synchronization);
 	}

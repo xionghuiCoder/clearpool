@@ -1,6 +1,5 @@
 package org.opensource.clearpool.console.hook;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class HtmlAdaptorHook extends HtmlAdaptorServer {
 	private static CommunicatorServer initServer(MBeanServer server) {
 		// we should know that securityMap isn't null
 		Map<String, String> securityMap = MBeanFacade.console.getSecurityMap();
-		List<AuthInfo> infoList = new ArrayList<>();
+		List<AuthInfo> infoList = new ArrayList<AuthInfo>();
 		for (Entry<String, String> e : securityMap.entrySet()) {
 			infoList.add(new AuthInfo(e.getKey(), e.getValue()));
 		}
@@ -99,7 +98,7 @@ public class HtmlAdaptorHook extends HtmlAdaptorServer {
 			ServerSocket sockListen = (ServerSocket) field
 					.get(communicatorServer);
 			sockListen.close();
-		} catch (NoSuchFieldException | IllegalAccessException | IOException e) {
+		} catch (Exception e) {
 			throw new ConnectionPoolMBeanException(e);
 		}
 	}

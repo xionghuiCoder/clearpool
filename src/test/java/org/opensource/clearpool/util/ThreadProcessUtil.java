@@ -76,10 +76,9 @@ public class ThreadProcessUtil {
 
 		System.out.println("thread " + threadCount + " " + name + " millis : "
 				+ NumberFormat.getInstance().format(millis) + "; YGC " + ygc
-				+ " FGC " + fullGC
-				+ " blocked "
-				+ NumberFormat.getInstance().format(blockedCount) //
-				+ " waited " + NumberFormat.getInstance().format(waitedCount)
-				+ " physicalConn " + physicalConnStat.get());
+				+ "; FGC " + fullGC + "; blocked "
+				+ NumberFormat.getInstance().format(blockedCount) + "; waited "
+				+ NumberFormat.getInstance().format(waitedCount)
+				+ "; physicalConn " + physicalConnStat.get() + ";");
 	}
 }

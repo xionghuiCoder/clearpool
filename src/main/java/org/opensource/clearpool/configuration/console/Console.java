@@ -15,7 +15,7 @@ public class Console {
 	final static String SECURITY = "security";
 
 	private int port = 8082;
-	private Map<String, String> securityMap = new HashMap<>();
+	private Map<String, String> securityMap = new HashMap<String, String>();
 
 	public void parse(XMLStreamReader reader) throws XMLStreamException {
 		boolean repeatPort = false;
@@ -29,8 +29,7 @@ public class Console {
 				continue;
 			}
 			String parsing = reader.getLocalName();
-			switch (parsing) {
-			case PORT:
+			if (PORT.equals(parsing)) {
 				if (repeatPort) {
 					throw new ConnectionPoolXMLParseException(Console.PORT
 							+ " repeat");
@@ -38,8 +37,7 @@ public class Console {
 				repeatPort = true;
 				int port = (Integer.valueOf(reader.getElementText().trim()));
 				this.setPort(port);
-				break;
-			case SECURITY:
+			} else if (SECURITY.equals(parsing)) {
 				Security security = new Security();
 				security.parse(reader);
 				if (this.securityMap.put(security.getUser(),
@@ -47,8 +45,7 @@ public class Console {
 					throw new ConnectionPoolXMLParseException(Security.USER
 							+ " in " + Console.SECURITY + " repeat");
 				}
-				break;
-			default:
+			} else {
 				throw new ConnectionPoolXMLParseException(
 						XMLConfiguration.CONSOLE + " contains illegal elements");
 			}
@@ -73,7 +70,7 @@ public class Console {
 
 	public void setSecurityMap(Map<String, String> securityMap) {
 		if (securityMap == null) {
-			securityMap = new HashMap<>();
+			securityMap = new HashMap<String, String>();
 		}
 		this.securityMap = securityMap;
 	}

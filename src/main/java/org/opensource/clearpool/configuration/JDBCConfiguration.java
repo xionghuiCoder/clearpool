@@ -44,18 +44,15 @@ public class JDBCConfiguration {
 				continue;
 			}
 			String parsing = reader.getLocalName();
-			switch (parsing) {
-			case CLASS:
+			if (CLASS.equals(parsing)) {
 				clazz = reader.getElementText().trim();
-				break;
-			case URL:
+			} else if (URL.equals(parsing)) {
 				if (url != null) {
 					throw new ConnectionPoolException(JDBCConfiguration.URL
 							+ " repeat");
 				}
 				url = reader.getElementText().trim();
-				break;
-			case USER:
+			} else if (USER.equals(parsing)) {
 				if (user != null) {
 					throw new ConnectionPoolException(JDBCConfiguration.USER
 							+ " repeat");
@@ -67,8 +64,7 @@ public class JDBCConfiguration {
 							+ JDBCConfiguration.USER + " in "
 							+ XMLConfiguration.JDBC + " is illegal");
 				}
-				break;
-			case PASSWORD:
+			} else if (PASSWORD.equals(parsing)) {
 				if (password != null) {
 					throw new ConnectionPoolException(
 							JDBCConfiguration.PASSWORD + " repeat");
@@ -80,8 +76,7 @@ public class JDBCConfiguration {
 							+ JDBCConfiguration.PASSWORD + " in "
 							+ XMLConfiguration.JDBC + " is illegal");
 				}
-				break;
-			default:
+			} else {
 				throw new ConnectionPoolXMLParseException(XMLConfiguration.JDBC
 						+ " contains illegal element: " + parsing);
 			}

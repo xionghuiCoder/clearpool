@@ -19,13 +19,11 @@ public class ChainFactory {
 	private static boolean unsafeExist;
 
 	static {
-		if (unsafeExist) {
-			try {
-				Class.forName(CLAZZ);
-				unsafeExist = true;
-			} catch (ClassNotFoundException e) {
-				LOG.info("\"" + CLAZZ + "\" is not existed");
-			}
+		try {
+			Class.forName(CLAZZ);
+			unsafeExist = true;
+		} catch (ClassNotFoundException e) {
+			LOG.info("\"" + CLAZZ + "\" is not existed");
 		}
 	}
 

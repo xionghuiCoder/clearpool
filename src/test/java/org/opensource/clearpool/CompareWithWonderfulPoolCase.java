@@ -25,7 +25,7 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
 	private int loopCount = 5;
-	private int LOOP_COUNT = 1000_000 / this.threadCount;
+	private int LOOP_COUNT = 1000000 / this.threadCount;
 
 	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
 

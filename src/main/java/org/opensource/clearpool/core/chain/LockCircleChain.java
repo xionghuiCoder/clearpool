@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 class LockCircleChain<E> extends CommonChain<E> {
 	private Lock lock = new ReentrantLock();
 
-	private Node<E> head = new CircleNode<>(null);
+	private Node<E> head = new CircleNode<E>(null);
 
 	{
 		this.head.next = this.head;
@@ -25,7 +25,7 @@ class LockCircleChain<E> extends CommonChain<E> {
 	 */
 	@Override
 	public void add(E e) {
-		Node<E> newNode = new CircleNode<>(e);
+		Node<E> newNode = new CircleNode<E>(e);
 		this.lock.lock();
 		try {
 			newNode.next = this.head.next;

@@ -1,9 +1,7 @@
 package org.opensource.clearpool.datasource.proxy.dynamic;
 
-import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
@@ -36,7 +34,7 @@ class XAStatementHandler extends StatementHandler {
 				try {
 					XAResource xaRes = this.xaCon.getXAResource();
 					ts.enlistResource(xaRes);
-				} catch (SQLException | RollbackException e) {
+				} catch (Exception e) {
 					throw new TransactionException(e);
 				}
 			}

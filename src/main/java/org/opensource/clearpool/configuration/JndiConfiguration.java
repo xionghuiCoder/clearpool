@@ -28,7 +28,7 @@ public class JndiConfiguration {
 	public static CommonDataSource parse(XMLStreamReader reader)
 			throws XMLStreamException {
 		String jndiName = null;
-		Hashtable<String, String> environment = new Hashtable<>();
+		Hashtable<String, String> environment = new Hashtable<String, String>();
 		while (reader.hasNext()) {
 			int event = reader.next();
 			if (event == XMLStreamConstants.END_ELEMENT
@@ -39,15 +39,13 @@ public class JndiConfiguration {
 				continue;
 			}
 			String parsing = reader.getLocalName();
-			switch (parsing) {
-			case JNDI_NAME:
+			if (JNDI_NAME.equals(parsing)) {
 				if (jndiName != null) {
 					throw new ConnectionPoolException(
 							JndiConfiguration.JNDI_NAME + " repeat");
 				}
 				jndiName = reader.getElementText().trim();
-				break;
-			case PROP:
+			} else if (PROP.equals(parsing)) {
 				String key = reader.getAttributeValue(null, KEY);
 				if (key == null) {
 					throw new ConnectionPoolXMLParseException(PROP
@@ -58,8 +56,7 @@ public class JndiConfiguration {
 							+ " repeat");
 				}
 				environment.put(key, reader.getElementText().trim());
-				break;
-			default:
+			} else {
 				throw new ConnectionPoolXMLParseException(XMLConfiguration.JNDI
 						+ " contains illegal element: " + parsing);
 			}

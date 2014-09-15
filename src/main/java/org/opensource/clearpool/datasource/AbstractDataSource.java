@@ -40,7 +40,6 @@ public abstract class AbstractDataSource implements DataSource {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		throw new UnsupportedOperationException();
 	}

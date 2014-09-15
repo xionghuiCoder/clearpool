@@ -35,11 +35,13 @@
 	<!--max connection:default value is Integer.MAX_VALUE -->
 	<max-pool-size>50</max-pool-size>
 	<!-- we get acquire-increment connection to fill the pool when there is 
-		no connection could be used,the defalut value is 1. -->
+		no connection could be used,the default value is 1. -->
 	<acquire-increment>5</acquire-increment>
 	<!-- when we get connection fail,we try acquire-retry-times,default value 
 		is 0. -->
 	<acquire-retry-times>3</acquire-retry-times>
+	<!-- if useless-connection-exception is true,we throw a exception when we get connection from the pool and there is no connection left. -->
+	<useless-connection-exception>false</useless-connection-exception>
 	<!--when the connection is more than max-connection and free for more than 
 		limit-idle-time(s),it will be released.The default value is 60(s). -->
 	<limit-idle-time>60</limit-idle-time>

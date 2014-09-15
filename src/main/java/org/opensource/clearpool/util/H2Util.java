@@ -45,6 +45,6 @@ public class H2Util {
 					.getDeclaredMethod("getNextId", int.class);
 			method.setAccessible(true);
 		}
-		return (int) method.invoke(null, type);
+		return (Integer) method.invoke(null, type);
 	}
 }

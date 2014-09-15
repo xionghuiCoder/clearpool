@@ -99,7 +99,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	 */
 	@Override
 	public void initVO(ConfigurationVO vo) {
-		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
+		Map<String, ConfigurationVO> cfgMap = new HashMap<String, ConfigurationVO>();
 		vo.init();
 		cfgMap.put(vo.getAlias(), vo);
 		this.load(null, cfgMap);
@@ -110,7 +110,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	 */
 	@Override
 	public void initVOList(List<ConfigurationVO> voList) {
-		Map<String, ConfigurationVO> cfgMap = new HashMap<>();
+		Map<String, ConfigurationVO> cfgMap = new HashMap<String, ConfigurationVO>();
 		for (ConfigurationVO vo : voList) {
 			vo.init();
 			if (cfgMap.put(vo.getAlias(), vo) != null) {
@@ -133,7 +133,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 		if (container != null) {
 			poolContainer = container;
 			LOG.info("connection pool initialized.it cost "
-					+ (System.currentTimeMillis() - begin) + "ms\n");
+					+ (System.currentTimeMillis() - begin) + "ms");
 		}
 		this.checkDestroyed();
 		this.state = 1;

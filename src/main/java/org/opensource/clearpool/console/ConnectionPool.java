@@ -21,7 +21,11 @@ class ConnectionPool implements ConnectionPoolMBean {
 
 	@Override
 	public String getAlias() {
-		return this.pool.getCfgVO().getAlias();
+		String alias = this.pool.getCfgVO().getAlias();
+		if (alias == null) {
+			alias = "-";
+		}
+		return alias;
 	}
 
 	@Override
@@ -34,7 +38,9 @@ class ConnectionPool implements ConnectionPoolMBean {
 		if (this.dataSource instanceof JDBCDataSource) {
 			JDBCDataSource jdbcDataSource = (JDBCDataSource) this.dataSource;
 			String url = jdbcDataSource.getUrl();
-			return url;
+			if (url != null) {
+				return url;
+			}
 		}
 		return "-";
 	}
@@ -72,6 +78,11 @@ class ConnectionPool implements ConnectionPoolMBean {
 	}
 
 	@Override
+	public boolean getUselessConnectionException() {
+		return this.pool.getCfgVO().getUselessConnectionException();
+	}
+
+	@Override
 	public String getLimitIdleTime() {
 		long time = this.pool.getCfgVO().getLimitIdleTime();
 		if (time != 0) {
@@ -83,12 +94,19 @@ class ConnectionPool implements ConnectionPoolMBean {
 	@Override
 	public String getKeepTestPeriod() {
 		long period = this.pool.getCfgVO().getKeepTestPeriod() / 1000;
+		if (period == 0) {
+			period = -1;
+		}
 		return period + "(s)";
 	}
 
 	@Override
 	public String getTestTableName() {
-		return this.pool.getCfgVO().getTestTableName();
+		String name = this.pool.getCfgVO().getTestTableName();
+		if (name == null) {
+			name = "-";
+		}
+		return name;
 	}
 
 	@Override

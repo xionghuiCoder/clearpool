@@ -17,7 +17,7 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 /**
- * Compare with other Database Pool.
+ * Compare with popular Database Pool.
  */
 public class CompareWithPopularPoolCase extends TestCase {
 	private String jdbcUrl;
@@ -28,7 +28,7 @@ public class CompareWithPopularPoolCase extends TestCase {
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
 	private int loopCount = 5;
-	private int LOOP_COUNT = 100_000 / this.threadCount;
+	private int LOOP_COUNT = 100000 / this.threadCount;
 
 	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
 

@@ -40,14 +40,14 @@ public class JtaDistributedCase extends TestCase {
 		int count = 0;
 		String tableName = null;
 		for (;;) {
-			tableName = "clearpool_jta_" + RANDOM.nextInt(1_000_000_000);
+			tableName = "clearpool_jta_" + RANDOM.nextInt(1000000000);
 			try {
 				st.execute("select 1 from " + tableName);
 			} catch (SQLException e) {
 				break;
 			}
 			count++;
-			if (count > 100_000_000) {
+			if (count > 100000000) {
 				throw new RuntimeException(
 						"you got too many tables which's name begin with clearpool_jta_ in the database");
 			}
