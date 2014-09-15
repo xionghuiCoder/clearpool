@@ -41,6 +41,7 @@ xmlns="http://www.w3school.com.cn">
 			<xs:element name="max-pool-size" type="xs:integer"/>
 			<xs:element name="acquire-increment" type="xs:integer"/>
 			<xs:element name="acquire-retry-times" type="xs:integer"/>
+			<xs:element name="useless-connection-exception" type="xs:boolean"/>
 			<xs:element name="limit-idle-time" type="xs:integer"/>
 			<xs:element name="keep-test-period" type="xs:integer"/>
 			<xs:element name="test-table-name" type="xs:string"/>
