@@ -603,28 +603,23 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 		return struct;
 	}
 
-	@Override
 	public void setSchema(String schema) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public String getSchema() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public void abort(Executor executor) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds)
 			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	@Override
 	public int getNetworkTimeout() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
