@@ -29,12 +29,6 @@ public class MockTestDriver extends MockDriver {
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
 		physicalCon.incrementAndGet();
-		// to support clearpool
-		return new MockConnection(this, "jdbc:mock:case", info) {
-			@Override
-			public String getSchema() throws SQLException {
-				return null;
-			}
-		};
+		return new MockConnection(this, "jdbc:mock:case", info);
 	}
 }

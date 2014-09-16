@@ -3,8 +3,6 @@ package org.opensource.clearpool.datasource.proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.HashMap;
-import java.util.Properties;
 
 import javax.sql.XAConnection;
 
@@ -41,8 +39,6 @@ public class ConnectionProxy {
 	boolean newReadOnly;
 	int newTransactionIsolation;
 
-	boolean clientInfoChanged;
-	boolean typeMapChanged;
 	Savepoint savepoint;
 
 	public ConnectionProxy(ConnectionPoolManager pool, CommonConnection cmnCon) {
@@ -57,8 +53,6 @@ public class ConnectionProxy {
 	 */
 	private void saveValue() {
 		try {
-			this.connection.setClientInfo(new Properties());
-			this.connection.setTypeMap(new HashMap<String, Class<?>>());
 			this.newAutoCommit = this.autoCommit = this.connection
 					.getAutoCommit();
 			this.newCatalog = this.catalog = this.connection.getCatalog();
@@ -100,12 +94,6 @@ public class ConnectionProxy {
 		}
 		if (this.savepoint != null) {
 			this.connection.releaseSavepoint(this.savepoint);
-		}
-		if (this.clientInfoChanged) {
-			this.connection.setClientInfo(new Properties());
-		}
-		if (this.typeMapChanged) {
-			this.connection.setTypeMap(new HashMap<String, Class<?>>());
 		}
 		// clear warnings before return connection to pool
 		this.connection.clearWarnings();

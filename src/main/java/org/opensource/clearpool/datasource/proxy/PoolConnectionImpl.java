@@ -317,7 +317,6 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 		} catch (SQLException ex) {
 			this.handleException(ex);
 		}
-		this.conProxy.typeMapChanged = true;
 	}
 
 	@Override
@@ -555,7 +554,6 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 			throw new SQLClientInfoException();
 		}
 		this.connection.setClientInfo(name, value);
-		this.conProxy.clientInfoChanged = true;
 	}
 
 	@Override
@@ -565,7 +563,6 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 			throw new SQLClientInfoException();
 		}
 		this.connection.setClientInfo(properties);
-		this.conProxy.clientInfoChanged = true;
 	}
 
 	@Override
@@ -606,23 +603,28 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 		return struct;
 	}
 
+	@Override
 	public void setSchema(String schema) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	@Override
 	public String getSchema() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	@Override
 	public void abort(Executor executor) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds)
 			throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	@Override
 	public int getNetworkTimeout() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
