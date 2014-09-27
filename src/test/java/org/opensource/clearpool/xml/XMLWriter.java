@@ -47,7 +47,7 @@ public class XMLWriter extends TestCase {
 	}
 
 	private String getWholePath() {
-		String path = PATH.startsWith("/") ? PATH.substring(1) : PATH;
+		String path = PATH;
 		ClassLoader classLoader = Thread.currentThread()
 				.getContextClassLoader();
 		if (classLoader == null) {

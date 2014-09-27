@@ -44,7 +44,7 @@ public class JDBCConfiguration {
 	private final static String USER = "user";
 	private final static String PASSWORD = "password";
 	private final static String SECURITY_CLASS = "security-class";
-	private final static String FILE_URL = "file-url";
+	private final static String FILE_PATH = "file-path";
 	private final static String STATUS = "status";
 	private final static String ENCRYPT = "encrypt";
 	private final static String DECRYPT = "decrypt";
@@ -56,7 +56,7 @@ public class JDBCConfiguration {
 		String user = null;
 		String password = null;
 		String securityClass = null;
-		String fileUrl = null;
+		String filePath = null;
 
 		NodeList children = element.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; i++) {
@@ -76,11 +76,11 @@ public class JDBCConfiguration {
 					password = nodeValue;
 				} else if (SECURITY_CLASS.equals(nodeName)) {
 					securityClass = nodeValue.trim();
-				} else if (FILE_URL.equals(nodeName)) {
-					fileUrl = nodeValue.trim();
+				} else if (FILE_PATH.equals(nodeName)) {
+					filePath = nodeValue.trim();
 				} else if (STATUS.equals(nodeName)) {
 					String status = nodeValue.trim();
-					password = handlerPassword(securityClass, fileUrl, status,
+					password = handlerPassword(securityClass, filePath, status,
 							password, child, document);
 				}
 			}
@@ -132,8 +132,9 @@ public class JDBCConfiguration {
 	/**
 	 * Handle the password
 	 */
-	private static String handlerPassword(String securityClass, String fileUrl,
-			String status, String password, Element element, Document document) {
+	private static String handlerPassword(String securityClass,
+			String filePath, String status, String password, Element element,
+			Document document) {
 		if (password == null) {
 			throw new ConnectionPoolException(PASSWORD
 					+ " shouldn't be null when we are using STATUS");
@@ -153,11 +154,11 @@ public class JDBCConfiguration {
 				Element pwdElem = (Element) parent.getElementsByTagName(
 						PASSWORD).item(0);
 				pwdElem.setTextContent(cipher);
-				if (fileUrl == null) {
-					throw new ConnectionPoolXMLParseException(FILE_URL
+				if (filePath == null) {
+					throw new ConnectionPoolXMLParseException(FILE_PATH
 							+ " shouldn't be null");
 				}
-				saveXML(document, fileUrl);
+				saveXML(document, filePath);
 			} else {
 				password = handler.decrypt(password);
 			}
@@ -171,10 +172,10 @@ public class JDBCConfiguration {
 	 * Save the configuration.
 	 * 
 	 * @param document
-	 * @param fileUrl
+	 * @param filePath
 	 * @throws Exception
 	 */
-	private static void saveXML(Document document, String fileUrl)
+	private static void saveXML(Document document, String filePath)
 			throws Exception {
 		TransformerFactory transformerFactory = TransformerFactory
 				.newInstance();
@@ -182,7 +183,7 @@ public class JDBCConfiguration {
 		String encoding = XMLConfiguration.getEncoding();
 		transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
 		Source domSource = new DOMSource(document);
-		Writer writer = getResourceAsWriter(encoding, fileUrl);
+		Writer writer = getResourceAsWriter(encoding, filePath);
 		Result result = new StreamResult(writer);
 		// save it
 		transformer.transform(domSource, result);
@@ -192,14 +193,14 @@ public class JDBCConfiguration {
 	 * Get writer by path and {@link XMLConfiguration#encoding}.
 	 * 
 	 * @param encoding
-	 * @param fileUrl
+	 * @param filePath
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws UnsupportedEncodingException
 	 */
-	private static Writer getResourceAsWriter(String encoding, String fileUrl)
+	private static Writer getResourceAsWriter(String encoding, String filePath)
 			throws FileNotFoundException, UnsupportedEncodingException {
-		OutputStream outStream = new FileOutputStream(fileUrl);
+		OutputStream outStream = new FileOutputStream(filePath);
 		Writer writer = new OutputStreamWriter(outStream, encoding);
 		return writer;
 	}

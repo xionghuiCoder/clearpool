@@ -94,8 +94,8 @@ class ConnectionPool implements ConnectionPoolMBean {
 	@Override
 	public String getKeepTestPeriod() {
 		long period = this.pool.getCfgVO().getKeepTestPeriod() / 1000;
-		if (period == 0) {
-			period = -1;
+		if (period == -1) {
+			return "";
 		}
 		return period + "(s)";
 	}

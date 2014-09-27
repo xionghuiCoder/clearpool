@@ -57,7 +57,7 @@ class CommunicatorServerHandler {
 	/**
 	 * Unregister a MBean
 	 */
-	public static void UnregisterMBean(String poolName) {
+	public static void unregisterMBean(String poolName) {
 		ObjectNameCarry carry = objectNameMap.get(poolName);
 		if (carry == null) {
 			return;
@@ -67,7 +67,9 @@ class CommunicatorServerHandler {
 		try {
 			server.unregisterMBean(objectName);
 		} catch (Exception e) {
-			throw new ConnectionPoolMBeanException(e);
+			// If we use Unregister button to stop it,we will get this exception
+			// and log it.
+			LOG.info(e);
 		}
 		LOG.info("unregister " + poolName + "'s MBean:" + mbeanName);
 	}

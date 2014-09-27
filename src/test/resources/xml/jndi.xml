@@ -5,16 +5,17 @@
 		<port>8085</port>
 		<security>
 			<user>1</user>
-			<password>2</password>
+			<password>1</password>
 		</security>
 	</console>
-	<alias>myclearpool</alias>
-	<jdbc>
-		<jdbc-class>org.opensource.clearpool.util.MockTestDriver</jdbc-class>
-		<url>jdbc:mock:case</url>
-		<user>1</user>
-		<password>2</password>
-	</jdbc>
+	<alias>jndiclearpool</alias>
+	<jndi>
+		<jndi-name>jndi</jndi-name>
+		<prop key="java.naming.factory.initial">initial</prop>
+		<prop key="java.naming.provider.url">url</prop>
+		<prop key="java.naming.security.principal">user</prop>
+		<prop key="java.naming.security.credentials">password</prop>
+	</jndi>
 	<core-pool-size>10</core-pool-size>
 	<max-pool-size>50</max-pool-size>
 	<acquire-increment>5</acquire-increment>

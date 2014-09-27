@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="clearpool.xsd">  
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<console>
 		<port>8085</port>
 		<security>
@@ -12,7 +14,8 @@
 		<url>jdbc:mock:case</url>
 		<user>1</user>
 		<password>WDroom5uAqkPfQwgOMCQGQ==</password>
-		<file-url>E:\WorkSpace\clearpool\src\test\resources\clearpool\clearpool-test-unique.xml</file-url>
+		<file-path>E:\WorkSpace\clearpool\src\test\resources\clearpool\clearpool-test-unique.xml
+		</file-path>
 		<status>decrypt</status>
 	</jdbc>
 	<core-pool-size>10</core-pool-size>

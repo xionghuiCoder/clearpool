@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="clearpool.xsd">
+	<!-- alias -->
+	<alias>jdbcclearpool</alias>
+	<!-- we can get datasource by jdbc.-->
+	<jdbc>
+		<jdbc-class>class</jdbc-class>
+		<url>url</url>
+		<user>user</user>
+		<password>password</password>
+		<security-class>org.opensource.clearpool.security.SecretAES
+		</security-class>
+		<file-path>path</file-path>
+		<!-- valid value is encrypt or decrypt -->
+		<status>encrypt</status>
+	</jdbc>
+	<!-- support distributed transaction -->
+	<jta-support>true</jta-support>
+	<!-- core connection:default value is 0 -->
+	<core-pool-size>10</core-pool-size>
+	<!-- max connection:default value is Integer.MAX_VALUE -->
+	<max-pool-size>50</max-pool-size>
+	<!-- we get acquire-increment connection to fill the pool when there is 
+		no connection could be used,default value is 1. -->
+	<acquire-increment>5</acquire-increment>
+	<!-- we try acquire-retry-times times when we get connection fail,default 
+		value is 0. -->
+	<acquire-retry-times>3</acquire-retry-times>
+	<!-- if useless-connection-exception is true,we throw a exception when we 
+		get connection from the pool and there is no connection left. -->
+	<useless-connection-exception>true</useless-connection-exception>
+	<!-- when the connection is more than max-connection and free for more than 
+		limit-idle-time(s),it will be released.The default value is 60(s). -->
+	<limit-idle-time>60</limit-idle-time>
+	<!-- we test if connection is valid during keep-test-period(s), default 
+		value is -1 which means we don't have to test the connection. -->
+	<keep-test-period>60</keep-test-period>
+	<!-- we create keep-test-table to test the connection, default table value 
+		is "clearpool_test".Note: suggest that set test-table-name less than 30 chars 
+		to support oracle. -->
+	<test-table-name>test</test-table-name>
+	<!-- we will log the sql after we execute it if we set show-sql true and 
+		the log is valid -->
+	<show-sql>true</show-sql>
+</clearpool>

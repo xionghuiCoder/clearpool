@@ -50,7 +50,7 @@ public class ConfigurationVO {
 	private int acquireRetryTimes;
 	private boolean uselessConnectionException;
 	private long limitIdleTime = 60 * 1000L;
-	private long keepTestPeriod;
+	private long keepTestPeriod = -1;
 	private String testTableName = "clearpool_test";
 	private String testQuerySql;
 	private String testCreateSql;
@@ -209,7 +209,7 @@ public class ConfigurationVO {
 			throw new ConnectionPoolXMLParseException(
 					"the maxPoolsize less than corePoolsize");
 		}
-		if (this.keepTestPeriod == 0) {
+		if (this.keepTestPeriod == -1) {
 			this.testTableName = null;
 		} else {
 			boolean right = false;

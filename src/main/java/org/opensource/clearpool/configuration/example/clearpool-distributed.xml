@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<console>
@@ -8,6 +8,7 @@
 			<password>1</password>
 		</security>
 	</console>
-	<distribute-url>clearpool/jta/clearpool-test-jta-distributed1.xml</distribute-url>
-	<distribute-url>clearpool/jta/clearpool-test-jta-distributed2.xml</distribute-url>
+	<!-- we get cfgs by distribute-url. -->
+	<distribute-url>clearpool-jdbc.xml</distribute-url>
+	<distribute-url>clearpool-jndi.xml</distribute-url>
 </clearpool>

@@ -86,7 +86,7 @@ class DistributedPoolContainer extends CommonPoolContainer {
 		name = (name == null ? null : name.trim());
 		ConnectionPoolManager realPool = poolMap.remove(name);
 		if (realPool != null) {
-			MBeanFacade.UnregisterMBean(name);
+			MBeanFacade.unregisterMBean(name);
 			realPool.remove();
 		}
 	}
@@ -101,7 +101,7 @@ class DistributedPoolContainer extends CommonPoolContainer {
 		poolMap = new HashMap<String, ConnectionPoolManager>();
 		for (Entry<String, ConnectionPoolManager> e : tempMap.entrySet()) {
 			String poolName = e.getKey();
-			MBeanFacade.UnregisterMBean(poolName);
+			MBeanFacade.unregisterMBean(poolName);
 			ConnectionPoolManager pool = e.getValue();
 			pool.remove();
 		}

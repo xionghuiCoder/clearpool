@@ -26,7 +26,7 @@ public class JProfilter extends TestCase {
 	private String user;
 	private String password;
 	private String driverClass;
-	private int minPoolSize = 10;
+	private int corePoolSize = 10;
 	private int maxPoolSize = 50;
 	private int threadCount = 10;
 
@@ -45,7 +45,7 @@ public class JProfilter extends TestCase {
 
 	public void test_clearpool() throws Exception {
 		ClearPoolDataSource dataSource = new ClearPoolDataSource();
-		dataSource.setCorePoolSize(this.minPoolSize);
+		dataSource.setCorePoolSize(this.corePoolSize);
 		dataSource.setMaxPoolSize(this.maxPoolSize);
 		dataSource.setDriverClass(this.driverClass);
 		dataSource.setJdbcUrl(this.jdbcUrl);
@@ -56,9 +56,9 @@ public class JProfilter extends TestCase {
 
 	public void stop_test_druid() throws Exception {
 		DruidDataSource dataSource = new DruidDataSource();
-		dataSource.setInitialSize(this.minPoolSize);
+		dataSource.setInitialSize(this.corePoolSize);
 		dataSource.setMaxActive(this.maxPoolSize);
-		dataSource.setMinIdle(this.minPoolSize);
+		dataSource.setMinIdle(this.corePoolSize);
 		dataSource.setPoolPreparedStatements(true);
 		dataSource.setDriverClassName(this.driverClass);
 		dataSource.setUrl(this.jdbcUrl);
@@ -70,9 +70,6 @@ public class JProfilter extends TestCase {
 		this.process(dataSource, this.threadCount);
 	}
 
-	/**
-	 * Fight for connection
-	 */
 	private void process(final DataSource dataSource, int threadCount)
 			throws Exception {
 		final CountDownLatch startLatch = new CountDownLatch(1);

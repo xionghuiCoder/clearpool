@@ -149,6 +149,7 @@ public class XMLConfiguration {
 						}
 						Console console = new Console();
 						console.parse(child);
+						ConfigurationVO.setConsole(console);
 					} else if (JDBC.equals(nodeName)) {
 						CommonDataSource jdbcDs = JDBCConfiguration.parse(
 								child, document, path);

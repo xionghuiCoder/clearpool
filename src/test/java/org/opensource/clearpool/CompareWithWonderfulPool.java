@@ -22,7 +22,7 @@ public class CompareWithWonderfulPool extends TestCase {
 	private String user;
 	private String password;
 	private String driverClass;
-	private int minPoolSize = 20;
+	private int corePoolSize = 20;
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
 	private int loop = 5;
@@ -53,7 +53,7 @@ public class CompareWithWonderfulPool extends TestCase {
 
 	public void test_clearpool() throws Exception {
 		ClearPoolDataSource dataSource = new ClearPoolDataSource();
-		dataSource.setCorePoolSize(this.minPoolSize);
+		dataSource.setCorePoolSize(this.corePoolSize);
 		dataSource.setMaxPoolSize(this.maxPoolSize);
 		dataSource.setDriverClass(this.driverClass);
 		dataSource.setJdbcUrl(this.jdbcUrl);
@@ -68,9 +68,9 @@ public class CompareWithWonderfulPool extends TestCase {
 
 	public void test_druid() throws Exception {
 		DruidDataSource dataSource = new DruidDataSource();
-		dataSource.setInitialSize(this.minPoolSize);
+		dataSource.setInitialSize(this.corePoolSize);
 		dataSource.setMaxActive(this.maxPoolSize);
-		dataSource.setMinIdle(this.minPoolSize);
+		dataSource.setMinIdle(this.corePoolSize);
 		dataSource.setPoolPreparedStatements(true);
 		dataSource.setDriverClassName(this.driverClass);
 		dataSource.setUrl(this.jdbcUrl);
@@ -89,7 +89,7 @@ public class CompareWithWonderfulPool extends TestCase {
 	public void test_tomcat_jdbc() throws Exception {
 		org.apache.tomcat.jdbc.pool.DataSource dataSource = new org.apache.tomcat.jdbc.pool.DataSource();
 		dataSource.setMaxIdle(this.maxPoolSize);
-		dataSource.setMinIdle(this.minPoolSize);
+		dataSource.setMinIdle(this.corePoolSize);
 		dataSource.setMaxActive(this.maxPoolSize);
 		dataSource.setDriverClassName(this.driverClass);
 		dataSource.setUrl(this.jdbcUrl);

@@ -31,11 +31,11 @@ public class MBeanFacade {
 	}
 
 	/**
-	 * {@see CommunicatorServerHandler#UnregisterMBean(String)}
+	 * {@see CommunicatorServerHandler#unregisterMBean(String)}
 	 */
-	public static void UnregisterMBean(String poolName) {
+	public static void unregisterMBean(String poolName) {
 		if (console != null) {
-			CommunicatorServerHandler.UnregisterMBean(poolName);
+			CommunicatorServerHandler.unregisterMBean(poolName);
 		}
 	}
 

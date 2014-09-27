@@ -36,9 +36,9 @@
 			<xs:element name="jta-support" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="core-pool-size" type="xs:integer"
-				maxOccurs="1" />
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="max-pool-size" type="xs:integer"
-				maxOccurs="1" />
+				minOccurs="0" maxOccurs="1" />
 			<xs:element name="acquire-increment" type="xs:integer"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="acquire-retry-times" type="xs:integer"
@@ -66,7 +66,8 @@
 	<xs:element name="jndi">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="jndi-name" type="xs:string" minOccurs="1" maxOccurs="1" />
+				<xs:element name="jndi-name" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
 				<xs:element name="prop" minOccurs="0" maxOccurs="unbounded">
 					<xs:complexType mixed="true">
 						<xs:attribute name="key" type="xs:string" use="required" />
@@ -79,14 +80,20 @@
 	<xs:element name="jdbc">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="jdbc-class" type="xs:string" minOccurs="0" maxOccurs="1" />
-				<xs:element name="url" type="xs:string" minOccurs="1" maxOccurs="1" />
-				<xs:element name="user" type="xs:string" minOccurs="0" maxOccurs="1" />
-				<xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1" />
+				<xs:element name="jdbc-class" type="xs:string" minOccurs="0"
+					maxOccurs="1" />
+				<xs:element name="url" type="xs:string" minOccurs="1"
+					maxOccurs="1" />
+				<xs:element name="user" type="xs:string" minOccurs="0"
+					maxOccurs="1" />
+				<xs:element name="password" type="xs:string" minOccurs="0"
+					maxOccurs="1" />
 				<xs:element name="security-class" type="xs:string"
 					minOccurs="0" maxOccurs="1" />
-				<xs:element name="file-url" type="xs:string" minOccurs="0"  maxOccurs="1"/>
-				<xs:element name="status" type="statusType" minOccurs="0"  maxOccurs="1"/>
+				<xs:element name="file-path" type="xs:string" minOccurs="0"
+					maxOccurs="1" />
+				<xs:element name="status" type="statusType" minOccurs="0"
+					maxOccurs="1" />
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>

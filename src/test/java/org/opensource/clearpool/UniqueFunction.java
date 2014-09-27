@@ -13,7 +13,7 @@ public class UniqueFunction extends TestCase {
 
 	private volatile boolean[] signs = new boolean[10];
 
-	private int time = 30;
+	private int time = 10;
 
 	@Override
 	public void setUp() throws Exception {

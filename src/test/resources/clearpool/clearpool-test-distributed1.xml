@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
-       xsi:noNamespaceSchemaLocation="clearpool.xsd">  
+<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<alias>myclearpool1</alias>
 	<jdbc>
 		<jdbc-class>org.opensource.clearpool.util.MockTestDriver</jdbc-class>

@@ -51,12 +51,12 @@ public class DistributedFunction extends TestCase {
 							if (DistributedFunction.this.showSql.get()) {
 								if (DistributedFunction.this.showSql
 										.compareAndSet(true, false)) {
-									PreparedStatement stm = conn
+									PreparedStatement stmt = conn
 											.prepareStatement("select 1 from geek where name=? and age=?");
-									stm.setString(1, "Bill Joy");
-									stm.setInt(2, 60);
-									stm.execute();
-									stm.close();
+									stmt.setString(1, "Bill Joy");
+									stmt.setInt(2, 60);
+									stmt.execute();
+									stmt.close();
 								}
 							}
 							try {
