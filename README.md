@@ -9,12 +9,11 @@ The function of the pool:
 <li>It support jta.</li>
 <li>It can be monitor by JMX.</li>
 <li>It will release the connection and get new connection if the connection is invalid.</li>
-<li>It will collect the idle connection if necessary.
+<li>It will collect the idle connection if necessary.</li>
+<li>It can encrypt the password of the database.</li>
 </ol>
 
-Note:
-Thread will fight for the connection in the pool all the time because we abandoned the lock,so the CPU may be busy,thus the program will be a little delayed.
-
-If you want to compare the performance with other popular database pools,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPoolCase.java.
 Here is the result of comparing with druid and tomcat-jdbc.
-![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/comparewithWonderfulpool.jpg)
+![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/compare.jpg)
+
+If you want to compare the performance with other popular database pools,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPool.java.
