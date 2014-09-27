@@ -1,22 +1,31 @@
 package org.opensource.clearpool.configuration;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.sql.CommonDataSource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 import org.opensource.clearpool.configuration.console.Console;
-import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.util.XMLEntityResolver;
+import org.opensource.clearpool.util.XMLErrorHandler;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * This class load,check and resolve XML.You can get the details of how to
@@ -30,6 +39,20 @@ public class XMLConfiguration {
 	private static final PoolLog LOG = PoolLogFactory
 			.getLog(XMLConfiguration.class);
 
+	/**
+	 * encoding used to read and write xml.
+	 */
+	private static String encoding = "UTF-8";
+
+	/**
+	 * JAXP attribute used to configure the schema language for validation.
+	 */
+	private static final String SCHEMA_LANGUAGE_ATTRIBUTE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+	/**
+	 * JAXP attribute value indicating the XSD schema language.
+	 */
+	private static final String XSD_SCHEMA_LANGUAGE = "http://www.w3.org/2001/XMLSchema";
+
 	// we can set the configuration's path by the SYSTEM_KEY
 	private final static String SYSTEM_PATH_KEY = "clearpool.cfg.path";
 	// the configuration's default path
@@ -39,7 +62,6 @@ public class XMLConfiguration {
 	public final static String JDBC = "jdbc";
 	public final static String JNDI = "jndi";
 
-	private final static String DOCUMENT_NAME = "clearpool";
 	private final static String ALIAS = "alias";
 	private final static String DISTRIBUTE_URL = "distribute-url";
 	private final static String JTA_SUPPORT = "jta-support";
@@ -58,14 +80,10 @@ public class XMLConfiguration {
 		path = getRealPath(path);
 		Map<String, ConfigurationVO> cfgMap = new HashMap<String, ConfigurationVO>();
 		XMLInputFactory xmlFac = XMLInputFactory.newInstance();
-		try {
-			long begin = System.currentTimeMillis();
-			parseXML(cfgMap, path, xmlFac, true, false);
-			long cost = System.currentTimeMillis() - begin;
-			LOG.info("XML parsing cost " + cost + "ms");
-		} catch (XMLStreamException e) {
-			throw new ConnectionPoolXMLParseException(e);
-		}
+		long begin = System.currentTimeMillis();
+		parseXML(cfgMap, path, xmlFac, true, false);
+		long cost = System.currentTimeMillis() - begin;
+		LOG.info("XML parsing cost " + cost + "ms");
 		return cfgMap;
 	}
 
@@ -89,11 +107,7 @@ public class XMLConfiguration {
 	}
 
 	/**
-	 * Parse XML recursive.If reader has {@code DISTRIBUTE_URL} and we get a
-	 * repeat path from {@code DISTRIBUTE_URL},we throw a
-	 * {@link ConnectionPoolXMLParseException} .If we get a element in
-	 * {@code DISTRIBUTE_URL} which isn't {@code DISTRIBUTE_VALUE},we throw a
-	 * {@link ConnectionPoolXMLParseException}.
+	 * If xml has {@code DISTRIBUTE_URL},we parse XML recursive.
 	 * 
 	 * If reader don't has {@code DISTRIBUTE_URL},we treat the XML as a
 	 * {@link ConfigurationVO}.After we fill {@link ConfigurationVO},we check if
@@ -111,128 +125,56 @@ public class XMLConfiguration {
 	 *            if is the first cfg
 	 * @param distributed
 	 *            if is distributed
-	 * @throws XMLStreamException
-	 *             {@link XMLStreamException}
 	 */
 	private static void parseXML(Map<String, ConfigurationVO> cfgMap,
 			String path, XMLInputFactory xmlFac, boolean isFirst,
-			boolean distributed) throws XMLStreamException {
-		InputStream inStream = getResourceAsStream(path);
-		XMLStreamReader reader = xmlFac.createXMLStreamReader(inStream);
-		int event = reader.getEventType();
-		while (reader.hasNext()) {
-			if (event == XMLStreamConstants.START_ELEMENT) {
-				if (!DOCUMENT_NAME.equals(reader.getLocalName())) {
-					throw new ConnectionPoolXMLParseException(
-							"cfg's name should be " + DOCUMENT_NAME);
-				}
-				break;
-			}
-			event = reader.next();
-		}
-		// hasDistributed means XML has DISTRIBUTE_URL,noDistributed means XML
-		// has other labels except DISTRIBUTE_URL.
-		boolean hasDistributed = false, noDistributed = false;
+			boolean distributed) {
 		Set<String> urls = new HashSet<String>();
 		ConfigurationVO cfgVO = new ConfigurationVO();
-		while (reader.hasNext()) {
-			event = reader.next();
-			if (event != XMLStreamConstants.START_ELEMENT) {
-				continue;
+		// get the Reader by path.
+		Reader reader = getResourceAsReader(path);
+		try {
+			Document document = createDocument(reader);
+			Element rootElement = document.getDocumentElement();
+			NodeList children = rootElement.getChildNodes();
+			for (int i = 0, size = children.getLength(); i < size; i++) {
+				Node childNode = children.item(i);
+				if (childNode instanceof Element) {
+					Element child = (Element) childNode;
+					String nodeName = child.getNodeName();
+					if (CONSOLE.equals(nodeName)) {
+						if (!isFirst) {
+							throw new ConnectionPoolXMLParseException(CONSOLE
+									+ " should set in the first configuration");
+						}
+						Console console = new Console();
+						console.parse(child);
+					} else if (JDBC.equals(nodeName)) {
+						CommonDataSource jdbcDs = JDBCConfiguration.parse(
+								child, document, path);
+						cfgVO.setCommonDataSource(jdbcDs);
+					} else if (JNDI.equals(nodeName)) {
+						CommonDataSource jndiDs = JndiConfiguration
+								.parse(child);
+						cfgVO.setCommonDataSource(jndiDs);
+					} else {
+						String nodeValue = child.getTextContent().trim();
+						if (DISTRIBUTE_URL.equals(nodeName)) {
+							distributed = true;
+							urls.add(nodeValue);
+						} else {
+							fillNodeValue(nodeName, nodeValue, cfgVO);
+						}
+					}
+				}
 			}
-			String parsing = reader.getLocalName();
-			if (ALIAS.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setAlias(reader.getElementText().trim());
-			} else if (CONSOLE.equals(parsing)) {
-				if (!isFirst) {
-					throw new ConnectionPoolXMLParseException(CONSOLE
-							+ " should in the first configuration");
-				}
-				Console console = new Console();
-				console.parse(reader);
-				if (ConfigurationVO.getConsole() == null) {
-					ConfigurationVO.setConsole(console);
-				}
-			} else if (DISTRIBUTE_URL.equals(parsing)) {
-				checkDistributedLegal(noDistributed);
-				if (!urls.add(reader.getElementText().trim())) {
-					throw new ConnectionPoolXMLParseException(DISTRIBUTE_URL
-							+ " repeat");
-				}
-				hasDistributed = true;
-				distributed = true;
-			} else if (JDBC.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				if (cfgVO.getCommonDataSource() != null) {
-					throw new ConnectionPoolXMLParseException(
-							"we should set only one " + JDBC + " or " + JNDI);
-				}
-				noDistributed = true;
-				CommonDataSource jdbcDs = JDBCConfiguration.parse(reader);
-				cfgVO.setCommonDataSource(jdbcDs);
-			} else if (JNDI.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				if (cfgVO.getCommonDataSource() != null) {
-					throw new ConnectionPoolXMLParseException(
-							"we should set only one " + JNDI + " or " + JDBC);
-				}
-				noDistributed = true;
-				CommonDataSource jndiDs = JndiConfiguration.parse(reader);
-				cfgVO.setCommonDataSource(jndiDs);
-			} else if (JTA_SUPPORT.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setJtaSupport(Boolean.valueOf(reader.getElementText()
-						.trim()));
-			} else if (CORE_POOL_SIZE.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setCorePoolSize(Integer.valueOf(reader.getElementText()
-						.trim()));
-			} else if (MAX_POOL_SIZE.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setMaxPoolSize(Integer.valueOf(reader.getElementText()
-						.trim()));
-			} else if (ACQUIRE_INCREMENT.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setAcquireIncrement(Integer.valueOf(reader
-						.getElementText().trim()));
-			} else if (ACQUIRE_RETRY_TIMES.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setAcquireRetryTimes(Integer.valueOf(reader
-						.getElementText().trim()));
-			} else if (USELESS_CONNECTION_EXCEPTION.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setUselessConnectionException(Boolean.valueOf(reader
-						.getElementText().trim()));
-			} else if (LIMIT_IDLE_TIME.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setLimitIdleTime(Integer.valueOf(reader.getElementText()
-						.trim()) * 1000L);
-			} else if (KEEP_TEST_PERIOD.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setKeepTestPeriod(Integer.valueOf(reader.getElementText()
-						.trim()) * 1000L);
-			} else if (TEST_TABLE_NAME.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setTestTableName(reader.getElementText().trim());
-			} else if (SHOW_SQL.equals(parsing)) {
-				checkDistributedLegal(hasDistributed);
-				noDistributed = true;
-				cfgVO.setShowSql(Boolean
-						.valueOf(reader.getElementText().trim()));
-			} else {
-				throw new ConnectionPoolXMLParseException(DISTRIBUTE_URL
-						+ " contains illegal element: " + parsing);
+		} catch (Exception e) {
+			throw new ConnectionPoolXMLParseException(e);
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				LOG.error(e);
 			}
 		}
 		if (urls.size() > 0) {
@@ -247,6 +189,57 @@ public class XMLConfiguration {
 						+ cfgVO.getAlias() + " repeat");
 			}
 		}
+	}
+
+	/**
+	 * Fill normal node value.
+	 * 
+	 * @param nodeName
+	 * @param nodeValue
+	 * @param cfgVO
+	 */
+	private static void fillNodeValue(String nodeName, String nodeValue,
+			ConfigurationVO cfgVO) {
+		if (ALIAS.equals(nodeName)) {
+			cfgVO.setAlias(nodeValue);
+		} else if (JTA_SUPPORT.equals(nodeName)) {
+			cfgVO.setJtaSupport(Boolean.valueOf(nodeValue));
+		} else if (CORE_POOL_SIZE.equals(nodeName)) {
+			cfgVO.setCorePoolSize(Integer.valueOf(nodeValue));
+		} else if (MAX_POOL_SIZE.equals(nodeName)) {
+			cfgVO.setMaxPoolSize(Integer.valueOf(nodeValue));
+		} else if (ACQUIRE_INCREMENT.equals(nodeName)) {
+			cfgVO.setAcquireIncrement(Integer.valueOf(nodeValue));
+		} else if (ACQUIRE_RETRY_TIMES.equals(nodeName)) {
+			cfgVO.setAcquireRetryTimes(Integer.valueOf(nodeValue));
+		} else if (USELESS_CONNECTION_EXCEPTION.equals(nodeName)) {
+			cfgVO.setUselessConnectionException(Boolean.valueOf(nodeValue));
+		} else if (LIMIT_IDLE_TIME.equals(nodeName)) {
+			cfgVO.setLimitIdleTime(Integer.valueOf(nodeValue) * 1000L);
+		} else if (KEEP_TEST_PERIOD.equals(nodeName)) {
+			cfgVO.setKeepTestPeriod(Integer.valueOf(nodeValue) * 1000L);
+		} else if (TEST_TABLE_NAME.equals(nodeName)) {
+			cfgVO.setTestTableName(nodeValue);
+		} else if (SHOW_SQL.equals(nodeName)) {
+			cfgVO.setShowSql(Boolean.valueOf(nodeValue));
+		}
+	}
+
+	/**
+	 * Get reader by path and {@link #encoding}.
+	 * 
+	 * @param resource
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	private static Reader getResourceAsReader(String path) {
+		Reader reader = null;
+		try {
+			reader = new InputStreamReader(getResourceAsStream(path), encoding);
+		} catch (UnsupportedEncodingException e) {
+			throw new ConnectionPoolXMLParseException(e);
+		}
+		return reader;
 	}
 
 	/**
@@ -268,18 +261,36 @@ public class XMLConfiguration {
 			inStream = classLoader.getResourceAsStream(path);
 		}
 		if (inStream == null) {
-			throw new ConnectionPoolException(path + " not found");
+			throw new ConnectionPoolXMLParseException(path + " not found");
 		}
 		return inStream;
 	}
 
 	/**
-	 * Check if XML have distributed and the other labels at the same time
+	 * Create document by reader.
+	 * 
+	 * @param reader
+	 * @return
+	 * @throws Exception
 	 */
-	private static void checkDistributedLegal(boolean hasDistributed) {
-		if (hasDistributed) {
-			throw new ConnectionPoolXMLParseException("we shouldn't have "
-					+ DISTRIBUTE_URL + " and other labels at the same time");
-		}
+	private static Document createDocument(Reader reader) throws Exception {
+		InputSource inputSource = new InputSource(reader);
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setValidating(true);
+		factory.setNamespaceAware(true);
+		factory.setAttribute(SCHEMA_LANGUAGE_ATTRIBUTE, XSD_SCHEMA_LANGUAGE);
+
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		builder.setEntityResolver(new XMLEntityResolver());
+		builder.setErrorHandler(new XMLErrorHandler());
+		return builder.parse(inputSource);
+	}
+
+	public static String getEncoding() {
+		return encoding;
+	}
+
+	public static void setEncoding(String encoding) {
+		XMLConfiguration.encoding = encoding;
 	}
 }

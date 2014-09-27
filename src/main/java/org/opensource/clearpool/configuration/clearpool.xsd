@@ -1,51 +1,100 @@
-<?xml version="1.0"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-xmlns="http://www.w3school.com.cn">
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xs:element name="clearpool">
 		<xs:complexType>
-			<xs:element name="console">
-				<xsd:complexType>
-					<xs:element name="port" type="xs:integer"/>
-					<xs:element name="security">
-						<xsd:complexType>
-							<xs:element name="user" type="xs:string"/>
-							<xs:element name="password" type="xs:string"/>
-						</xsd:complexType>
-					</xs:element*>
-				</xsd:complexType>
-			<xs:element/>
-			<xs:element name="alias" type="xs:string"/>
-			<xs:element name="distribute-url" type="xs:string"/>
-			<xs:choice>
-				<xs:element name="jndi"/>
-					<xsd:complexType>
-						<xs:element name="jndi-name" type="xs:string"/>
-						<xs:element name="prop">
-							<xsd:complexType>
-    							<xs:attribute name="key" type="xs:string" />
-							</xsd:complexType>
-  						</xs:element*>
-					</xsd:complexType>
-				<xs:element/>
-				<xs:element name="jdbc">
-					<xsd:complexType>
-						<xs:element name="class" type="xs:string"/>
-						<xs:element name="url" type="xs:string"/>
-						<xs:element name="user" type="xs:string"/>
-						<xs:element name="password" type="xs:string"/>
-					</xsd:complexType>
-				<xs:element/>
-			</xs:choice>
-			<xs:element name="jta-support" type="xs:boolean"/>
-			<xs:element name="core-pool-size" type="xs:integer"/>
-			<xs:element name="max-pool-size" type="xs:integer"/>
-			<xs:element name="acquire-increment" type="xs:integer"/>
-			<xs:element name="acquire-retry-times" type="xs:integer"/>
-			<xs:element name="useless-connection-exception" type="xs:boolean"/>
-			<xs:element name="limit-idle-time" type="xs:integer"/>
-			<xs:element name="keep-test-period" type="xs:integer"/>
-			<xs:element name="test-table-name" type="xs:string"/>
-			<xs:element name="show-sql" type="xs:boolean"/>
+			<xs:sequence>
+				<xs:element ref="console" minOccurs="0" maxOccurs="1" />
+				<xs:choice>
+					<xs:element name="distribute-url" type="xs:string"
+						minOccurs="1" maxOccurs="unbounded" />
+					<xs:group ref="otherElements" />
+				</xs:choice>
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+
+	<xs:element name="console">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="port" type="xs:integer" />
+				<xs:element name="security" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:all>
+							<xs:element name="user" type="xs:string" />
+							<xs:element name="password" type="xs:string" />
+						</xs:all>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:group name="otherElements">
+		<xs:sequence>
+			<xs:element name="alias" type="xs:string" maxOccurs="1" />
+			<xs:group ref="database" />
+			<xs:element name="jta-support" type="xs:boolean"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="core-pool-size" type="xs:integer"
+				maxOccurs="1" />
+			<xs:element name="max-pool-size" type="xs:integer"
+				maxOccurs="1" />
+			<xs:element name="acquire-increment" type="xs:integer"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="acquire-retry-times" type="xs:integer"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="useless-connection-exception" type="xs:boolean"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="limit-idle-time" type="xs:integer"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="keep-test-period" type="xs:integer"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="test-table-name" type="xs:string"
+				minOccurs="0" maxOccurs="1" />
+			<xs:element name="show-sql" type="xs:boolean" minOccurs="0"
+				maxOccurs="1" />
+		</xs:sequence>
+	</xs:group>
+
+	<xs:group name="database">
+		<xs:choice>
+			<xs:element ref="jndi" />
+			<xs:element ref="jdbc" />
+		</xs:choice>
+	</xs:group>
+
+	<xs:element name="jndi">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="jndi-name" type="xs:string" minOccurs="1" maxOccurs="1" />
+				<xs:element name="prop" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType mixed="true">
+						<xs:attribute name="key" type="xs:string" use="required" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="jdbc">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="jdbc-class" type="xs:string" minOccurs="0" maxOccurs="1" />
+				<xs:element name="url" type="xs:string" minOccurs="1" maxOccurs="1" />
+				<xs:element name="user" type="xs:string" minOccurs="0" maxOccurs="1" />
+				<xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1" />
+				<xs:element name="security-class" type="xs:string"
+					minOccurs="0" maxOccurs="1" />
+				<xs:element name="file-url" type="xs:string" minOccurs="0"  maxOccurs="1"/>
+				<xs:element name="status" type="statusType" minOccurs="0"  maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:simpleType name="statusType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="encrypt" />
+			<xs:enumeration value="decrypt" />
+		</xs:restriction>
+	</xs:simpleType>
 </xs:schema>

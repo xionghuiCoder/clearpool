@@ -5,28 +5,28 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import junit.framework.TestCase;
 
-public class LockInterruptCase extends TestCase {
+public class LockInterrupt extends TestCase {
 	private Lock lock = new ReentrantLock();
 	private volatile boolean sign = true;
 
-	public void test() {
+	public void test_lockInterrupt() {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (LockInterruptCase.this.sign) {
+				while (LockInterrupt.this.sign) {
 				}
 				try {
-					LockInterruptCase.this.lock.lockInterruptibly();
+					LockInterrupt.this.lock.lockInterruptibly();
 				} catch (InterruptedException e) {
 					System.out.println("interrupt it");
 				}
-				LockInterruptCase.this.sign = true;
+				LockInterrupt.this.sign = true;
 			}
 		});
 		t.start();
 		t.interrupt();
 		this.sign = false;
-		while (!LockInterruptCase.this.sign) {
+		while (!LockInterrupt.this.sign) {
 		}
 		this.lock.lock();
 		this.lock.unlock();

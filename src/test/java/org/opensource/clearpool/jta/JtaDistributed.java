@@ -13,7 +13,7 @@ import junit.framework.TestCase;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.log.PoolLogFactory;
 
-public class JtaDistributedCase extends TestCase {
+public class JtaDistributed extends TestCase {
 	private static final Random RANDOM = new Random();
 
 	private static ClearPoolDataSource dataSource;
@@ -31,7 +31,6 @@ public class JtaDistributedCase extends TestCase {
 		dataSource.initPath("clearpool/jta/clearpool-test-jta-distributed.xml");
 		this.tableName1 = this.init("myclearpool1");
 		this.tableName2 = this.init("myclearpool2");
-		System.out.println("init");
 	}
 
 	private String init(String poolName) throws Exception {
@@ -157,6 +156,5 @@ public class JtaDistributedCase extends TestCase {
 			}
 		}
 		dataSource.close();
-		System.out.println("destory");
 	}
 }

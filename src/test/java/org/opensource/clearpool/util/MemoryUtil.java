@@ -11,6 +11,5 @@ public class MemoryUtil {
 		int nTotalMemory = (int) (currRuntime.totalMemory() / 1024 / 1024);
 		String message = nFreeMemory + "M/" + nTotalMemory + "M(free/total)";
 		System.out.println("memory:" + message);
-		System.out.println();
 	}
 }

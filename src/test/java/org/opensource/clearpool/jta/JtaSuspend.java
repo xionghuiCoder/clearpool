@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
+import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -13,14 +14,7 @@ import junit.framework.TestCase;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.log.PoolLogFactory;
 
-/**
- * We need database which support XA such as mySql or oracle to run this case.
- * 
- * @author xionghui
- * @date 16.08.2014
- * @version 1.0
- */
-public class JtaUniqueCase extends TestCase {
+public class JtaSuspend extends TestCase {
 	private static final Random RANDOM = new Random();
 
 	private static ClearPoolDataSource dataSource;
@@ -36,7 +30,6 @@ public class JtaUniqueCase extends TestCase {
 		dataSource = new ClearPoolDataSource();
 		dataSource.initPath("clearpool/jta/clearpool-test-jta-unique.xml");
 		this.init();
-		System.out.println("init");
 	}
 
 	private void init() throws Exception {
@@ -62,50 +55,30 @@ public class JtaUniqueCase extends TestCase {
 		con.close();
 	}
 
-	public void testJta_commit() throws Exception {
+	public void testJta_suspend() throws Exception {
 		if (this.tableName == null) {
 			return;
 		}
-		System.out.println("test commit:");
 		Connection con = dataSource.getConnection();
 		// con.setAutoCommit(false);
 		UserTransaction tx = new UserTransactionImpl();
 		Statement st = con.createStatement();
+		tx.begin();
 		st.execute("insert into " + this.tableName
 				+ "(id,name) values(1,'name1')");
-		System.out.print("normal query:");
+		System.out.print("between the jtx:");
 		this.showQueryResult(1);
-		tx.begin();
+		Transaction ac = ((UserTransactionImpl) tx).suspend();
+		System.out.println("test suspend:");
 		st.execute("insert into " + this.tableName
 				+ "(id,name) values(2,'name2')");
-		System.out.print("between the jtx:");
 		this.showQueryResult(2);
+		((UserTransactionImpl) tx).resume(ac);
 		tx.commit();
 		System.out.print("end the jtx:");
+		this.showQueryResult(1);
 		this.showQueryResult(2);
 		con.close();
-	}
-
-	public void testJta_rollback() throws Exception {
-		if (this.tableName == null) {
-			return;
-		}
-		System.out.println("test rollback:");
-		Connection con = dataSource.getConnection();
-		UserTransaction tx = new UserTransactionImpl();
-		Statement st = con.createStatement();
-		st.execute("insert into " + this.tableName
-				+ "(id,name) values(3,'name3')");
-		System.out.print("normal query:");
-		this.showQueryResult(3);
-		tx.begin();
-		st.execute("insert into " + this.tableName
-				+ "(id,name) values(4,'name4')");
-		System.out.print("between the jtx:");
-		this.showQueryResult(4);
-		tx.rollback();
-		System.out.print("end the jtx:");
-		this.showQueryResult(4);
 	}
 
 	private void showQueryResult(int id) throws Exception {
@@ -133,6 +106,5 @@ public class JtaUniqueCase extends TestCase {
 			}
 		}
 		dataSource.close();
-		System.out.println("destory");
 	}
 }

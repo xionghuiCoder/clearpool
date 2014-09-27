@@ -16,7 +16,8 @@ public class ThreadSleepUtil {
 	 */
 	public static void sleep() {
 		try {
-			Thread.sleep(0, 1);
+			// Thread.sleep(0, 1);
+			Thread.sleep(0);
 		} catch (InterruptedException e) {
 			// swallow the exception
 		}

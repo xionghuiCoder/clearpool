@@ -14,7 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<javadoc.skip>true</javadoc.skip>
-		<jdk.version>1.7</jdk.version>
+		<jdk.version>1.6</jdk.version>
 	</properties>
 
 	<dependencies>
@@ -193,6 +193,15 @@
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>${project.build.sourceDirectory}</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 
 	<scm>

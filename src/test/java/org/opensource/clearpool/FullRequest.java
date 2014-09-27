@@ -7,26 +7,25 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
-public class FullRequestCase extends TestCase {
+public class FullRequest extends TestCase {
 	private volatile boolean sign = false;
 
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
+	private final static int TIME = 60;
+
 	@Override
 	public void setUp() throws Exception {
 		this.dataSource.initPath("clearpool/clearpool-test-unique.xml");
-		System.out.println("init");
 	}
 
-	public void testClearPool() throws Exception {
+	public void test_clearPool() throws Exception {
 		CountDownLatch startLatch = new CountDownLatch(1);
 		CountDownLatch endLatch = new CountDownLatch(50);
 		this.startThreads(startLatch, endLatch, 50);
 		startLatch.countDown();
-		System.out.println("start 50 threads");
-		Thread.sleep(60 * 1000);
+		Thread.sleep(TIME * 1000);
 		this.sign = true;
-		System.out.println("finish");
 		endLatch.await();
 	}
 
@@ -39,10 +38,10 @@ public class FullRequestCase extends TestCase {
 					try {
 						startLatch.await();
 						for (;;) {
-							if (FullRequestCase.this.sign) {
+							if (FullRequest.this.sign) {
 								break;
 							}
-							Connection conn = FullRequestCase.this.dataSource
+							Connection conn = FullRequest.this.dataSource
 									.getConnection();
 							try {
 								Thread.sleep(10);
@@ -64,6 +63,5 @@ public class FullRequestCase extends TestCase {
 	@Override
 	public void tearDown() throws Exception {
 		this.dataSource.destory();
-		System.out.println("destory");
 	}
 }

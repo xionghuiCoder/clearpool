@@ -9,29 +9,28 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
-public class DistributedFunctionCase extends TestCase {
+public class DistributedFunction extends TestCase {
 	private volatile boolean sign = false;
 
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
 	private volatile AtomicBoolean showSql = new AtomicBoolean(true);
 
+	private static final int TIME = 10;
+
 	@Override
 	public void setUp() throws Exception {
 		this.dataSource.initPath("clearpool/clearpool-test-distributed.xml");
-		System.out.println("init");
 	}
 
-	public void testClearPool() throws Exception {
+	public void test_clearPool() throws Exception {
 		CountDownLatch startLatch = new CountDownLatch(1);
 		CountDownLatch endLatch = new CountDownLatch(10);
 		this.startThreads(startLatch, endLatch, 5, "myclearpool1");
 		this.startThreads(startLatch, endLatch, 5, "myclearpool2");
 		startLatch.countDown();
-		System.out.println("start 10 threads");
-		Thread.sleep(30 * 1000);
+		Thread.sleep(TIME * 1000);
 		this.sign = true;
-		System.out.println("finish");
 		endLatch.await();
 	}
 
@@ -44,19 +43,20 @@ public class DistributedFunctionCase extends TestCase {
 					try {
 						startLatch.await();
 						for (;;) {
-							if (DistributedFunctionCase.this.sign) {
+							if (DistributedFunction.this.sign) {
 								break;
 							}
-							Connection conn = DistributedFunctionCase.this.dataSource
+							Connection conn = DistributedFunction.this.dataSource
 									.getConnection(name);
-							if (DistributedFunctionCase.this.showSql.get()) {
-								if (DistributedFunctionCase.this.showSql
+							if (DistributedFunction.this.showSql.get()) {
+								if (DistributedFunction.this.showSql
 										.compareAndSet(true, false)) {
-									PreparedStatement s = conn
-											.prepareStatement("select 1 from ?");
-									s.setString(1, "hello");
-									s.execute();
-									s.close();
+									PreparedStatement stm = conn
+											.prepareStatement("select 1 from geek where name=? and age=?");
+									stm.setString(1, "Bill Joy");
+									stm.setInt(2, 60);
+									stm.execute();
+									stm.close();
 								}
 							}
 							try {
@@ -79,6 +79,5 @@ public class DistributedFunctionCase extends TestCase {
 	@Override
 	public void tearDown() throws Exception {
 		this.dataSource.destory();
-		System.out.println("destory");
 	}
 }

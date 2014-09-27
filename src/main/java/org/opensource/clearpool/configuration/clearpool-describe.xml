@@ -23,10 +23,12 @@
 		</jndi> -->
 	<!-- jdbc defined JDBC deriver.Note:it can't be used when jndi is using-->
 	<jdbc>
-		<class>class</class>
+		<jdbc-class>class</jdbc-class>
 		<url>url</url>
 		<user>user</user>
 		<password>password</password>
+		<security-class>org.opensource.clearpool.security.SecretAES</security-class>
+		<status>encrypt</status>
 	</jdbc>
 	<!-- if we should support distributed transaction -->
 	<jta-support>true</jta-support>

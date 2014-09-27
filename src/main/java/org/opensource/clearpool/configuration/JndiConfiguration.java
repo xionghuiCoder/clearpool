@@ -6,12 +6,12 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * How to parse jndi.
@@ -25,40 +25,27 @@ public class JndiConfiguration {
 	private final static String PROP = "prop";
 	private final static String KEY = "key";
 
-	public static CommonDataSource parse(XMLStreamReader reader)
-			throws XMLStreamException {
+	public static CommonDataSource parse(Element element) {
 		String jndiName = null;
 		Hashtable<String, String> environment = new Hashtable<String, String>();
-		while (reader.hasNext()) {
-			int event = reader.next();
-			if (event == XMLStreamConstants.END_ELEMENT
-					&& XMLConfiguration.JNDI == reader.getLocalName()) {
-				break;
-			}
-			if (event != XMLStreamConstants.START_ELEMENT) {
-				continue;
-			}
-			String parsing = reader.getLocalName();
-			if (JNDI_NAME.equals(parsing)) {
-				if (jndiName != null) {
-					throw new ConnectionPoolException(
-							JndiConfiguration.JNDI_NAME + " repeat");
+
+		NodeList children = element.getChildNodes();
+		for (int i = 0, size = children.getLength(); i < size; i++) {
+			Node childNode = children.item(i);
+			if (childNode instanceof Element) {
+				Element child = (Element) childNode;
+				String nodeName = child.getNodeName();
+				String nodeValue = child.getTextContent().trim();
+				if (JNDI_NAME.equals(nodeName)) {
+					if (jndiName != null) {
+						throw new ConnectionPoolException(
+								JndiConfiguration.JNDI_NAME + " repeat");
+					}
+					jndiName = nodeValue;
+				} else if (PROP.equals(nodeName)) {
+					String key = child.getAttributeNode(KEY).getNodeValue();
+					environment.put(key, nodeValue);
 				}
-				jndiName = reader.getElementText().trim();
-			} else if (PROP.equals(parsing)) {
-				String key = reader.getAttributeValue(null, KEY);
-				if (key == null) {
-					throw new ConnectionPoolXMLParseException(PROP
-							+ " should has a " + KEY);
-				}
-				if (environment.contains(key)) {
-					throw new ConnectionPoolException(JndiConfiguration.KEY
-							+ " repeat");
-				}
-				environment.put(key, reader.getElementText().trim());
-			} else {
-				throw new ConnectionPoolXMLParseException(XMLConfiguration.JNDI
-						+ " contains illegal element: " + parsing);
 			}
 		}
 		return getDataSource(jndiName, environment);

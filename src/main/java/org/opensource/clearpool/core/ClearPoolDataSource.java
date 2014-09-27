@@ -14,6 +14,7 @@ import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.configuration.JDBCConfiguration;
+import org.opensource.clearpool.configuration.XMLConfiguration;
 import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.datasource.AbstractDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
@@ -44,6 +45,14 @@ public class ClearPoolDataSource extends AbstractDataSource implements
 	private String jdbcUrl;
 	private String JdbcUser;
 	private String JdbcPassword;
+
+	public static String getEncoding() {
+		return XMLConfiguration.getEncoding();
+	}
+
+	public static void setEncoding(String encoding) {
+		XMLConfiguration.setEncoding(encoding);
+	}
 
 	public void setPoolPath(String poolPath) {
 		if (this.isUseVO) {

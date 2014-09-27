@@ -15,13 +15,13 @@ import org.opensource.clearpool.util.MockTestDriver;
 import com.alibaba.druid.pool.DruidDataSource;
 
 /**
- * This class is used to monitor the jvm by JProfilter.
+ * This TestCase is used to monitor the jvm by JProfilter.
  * 
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0
  */
-public class JProfilterCase extends TestCase {
+public class JProfilter extends TestCase {
 	private String jdbcUrl;
 	private String user;
 	private String password;

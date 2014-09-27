@@ -2,12 +2,11 @@ package org.opensource.clearpool.configuration.console;
 
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class Security {
 	static final String USER = "user";
@@ -16,46 +15,34 @@ public class Security {
 	private String user;
 	private String password;
 
-	public void parse(XMLStreamReader reader) throws XMLStreamException {
-		while (reader.hasNext()) {
-			int event = reader.next();
-			if (event == XMLStreamConstants.END_ELEMENT
-					&& Console.SECURITY == reader.getLocalName()) {
-				break;
-			}
-			if (event != XMLStreamConstants.START_ELEMENT) {
-				continue;
-			}
-			String parsing = reader.getLocalName();
-			if (USER.equals(parsing)) {
-				if (this.user != null) {
-					throw new ConnectionPoolXMLParseException(Security.USER
-							+ " is repeat");
+	public void parse(Element element) {
+		NodeList children = element.getChildNodes();
+		for (int i = 0, size = children.getLength(); i < size; i++) {
+			Node childNode = children.item(i);
+			if (childNode instanceof Element) {
+				Element child = (Element) childNode;
+				String nodeName = child.getNodeName();
+				String nodeValue = child.getTextContent();
+				if (USER.equals(nodeName)) {
+					this.user = nodeValue;
+					boolean rightUser = this.checkSecurityPattern(this.user);
+					if (!rightUser) {
+						throw new ConnectionPoolXMLParseException(
+								"the pattern of " + Security.USER + " in "
+										+ Console.SECURITY + " is illegal");
+					}
+				} else if (PASSWORD.equals(nodeName)) {
+					this.password = nodeValue;
+					boolean rightPsd = this.checkSecurityPattern(this.password);
+					if (!rightPsd) {
+						throw new ConnectionPoolXMLParseException(
+								"the pattern of " + Security.PASSWORD
+										+ " is illegal");
+					}
 				}
-				this.user = reader.getElementText();
-				boolean rightUser = this.checkSecurityPattern(this.user);
-				if (!rightUser) {
-					throw new ConnectionPoolXMLParseException("the pattern of "
-							+ Security.USER + " in " + Console.SECURITY
-							+ " is illegal");
-				}
-			} else if (PASSWORD.equals(parsing)) {
-				if (this.password != null) {
-					throw new ConnectionPoolXMLParseException(Security.PASSWORD
-							+ " in " + Console.SECURITY + " is repeat");
-				}
-				this.password = reader.getElementText();
-				boolean rightPsd = this.checkSecurityPattern(this.password);
-				if (!rightPsd) {
-					throw new ConnectionPoolXMLParseException("the pattern of "
-							+ Security.PASSWORD + " is illegal");
-				}
-			} else {
-				throw new ConnectionPoolXMLParseException(Console.SECURITY
-						+ " contains illegal elements");
 			}
 		}
-		this.volidate();
+		this.validate();
 	}
 
 	/**
@@ -72,7 +59,7 @@ public class Security {
 	 * We throw a {@link ConnectionPoolException} if user or password is empty
 	 * or null.
 	 */
-	private void volidate() {
+	private void validate() {
 		if (this.user == null) {
 			throw new ConnectionPoolXMLParseException(Security.USER
 					+ " shouldn't be null");

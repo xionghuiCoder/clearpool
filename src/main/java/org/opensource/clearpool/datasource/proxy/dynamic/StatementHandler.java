@@ -289,6 +289,11 @@ class StatementHandler implements InvocationHandler {
 	 *            so we can log how long the sql cost
 	 */
 	private void trace(long startTime) {
+		int len = this.sqlLog.length();
+		if (len > 0) {
+			// delete the last "\n"
+			this.sqlLog.deleteCharAt(len - 1);
+		}
 		// log sql and the time it cost
 		LOG.info("SHOWSQL(" + (System.currentTimeMillis() - startTime)
 				+ "ms):\n" + this.sqlLog.toString());

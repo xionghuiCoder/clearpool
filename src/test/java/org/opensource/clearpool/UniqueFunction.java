@@ -8,27 +8,26 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
-public class UniqueFunctionCase extends TestCase {
+public class UniqueFunction extends TestCase {
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
 	private volatile boolean[] signs = new boolean[10];
 
-	private int time = 10;
+	private int time = 30;
 
 	@Override
 	public void setUp() throws Exception {
 		this.dataSource.initPath("clearpool/clearpool-test-unique.xml");
-		System.out.println("init");
 		Thread.sleep(this.time * 1000);
 	}
 
-	public void testClearPool() throws Exception {
+	public void test_clearPool() throws Exception {
 		CountDownLatch startLatch = new CountDownLatch(1);
 		CountDownLatch endLatch = new CountDownLatch(100);
 		this.startThreads(startLatch, endLatch, 10, 0);
 		startLatch.countDown();
 		System.out.println("start 10 threads");
-		// add 100 thread every 30s
+		// add 10 thread every time(s)
 		for (int i = 1; i < 10; i++) {
 			Thread.sleep(this.time * 1000);
 			startLatch = new CountDownLatch(1);
@@ -36,7 +35,7 @@ public class UniqueFunctionCase extends TestCase {
 			startLatch.countDown();
 			System.out.println("start " + ((1 + i) * 10) + " threads");
 		}
-		// remove 100 thread every 30s
+		// remove 10 thread every time(s)
 		for (int i = 0; i < 10; i++) {
 			Thread.sleep(this.time * 1000);
 			this.signs[i] = true;
@@ -55,14 +54,14 @@ public class UniqueFunctionCase extends TestCase {
 					try {
 						startLatch.await();
 						for (;;) {
-							if (UniqueFunctionCase.this.signs[order]) {
+							if (UniqueFunction.this.signs[order]) {
 								break;
 							}
-							Connection conn = UniqueFunctionCase.this.dataSource
+							Connection conn = UniqueFunction.this.dataSource
 									.getConnection();
 							conn.setReadOnly(true);
 							Statement s = conn.createStatement();
-							s.execute("select 1 from hello");
+							s.execute("select 1 from table");
 							s.close();
 							conn.close();
 						}
@@ -80,6 +79,5 @@ public class UniqueFunctionCase extends TestCase {
 	public void tearDown() throws Exception {
 		Thread.sleep(this.time * 1000);
 		this.dataSource.destory();
-		System.out.println("destory");
 	}
 }

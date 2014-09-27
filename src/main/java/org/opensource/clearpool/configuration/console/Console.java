@@ -3,12 +3,10 @@ package org.opensource.clearpool.configuration.console;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.opensource.clearpool.configuration.XMLConfiguration;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class Console {
 	public final static String PORT = "port";
@@ -17,37 +15,26 @@ public class Console {
 	private int port = 8082;
 	private Map<String, String> securityMap = new HashMap<String, String>();
 
-	public void parse(XMLStreamReader reader) throws XMLStreamException {
-		boolean repeatPort = false;
-		while (reader.hasNext()) {
-			int event = reader.next();
-			if (event == XMLStreamConstants.END_ELEMENT
-					&& XMLConfiguration.CONSOLE == reader.getLocalName()) {
-				break;
-			}
-			if (event != XMLStreamConstants.START_ELEMENT) {
-				continue;
-			}
-			String parsing = reader.getLocalName();
-			if (PORT.equals(parsing)) {
-				if (repeatPort) {
-					throw new ConnectionPoolXMLParseException(Console.PORT
-							+ " repeat");
+	public void parse(Element element) {
+		NodeList children = element.getChildNodes();
+		for (int i = 0, size = children.getLength(); i < size; i++) {
+			Node childNode = children.item(i);
+			if (childNode instanceof Element) {
+				Element child = (Element) childNode;
+				String nodeName = child.getNodeName();
+				if (PORT.equals(nodeName)) {
+					String nodeValue = child.getTextContent().trim();
+					int port = (Integer.valueOf(nodeValue));
+					this.setPort(port);
+				} else if (SECURITY.equals(nodeName)) {
+					Security security = new Security();
+					security.parse(child);
+					if (this.securityMap.put(security.getUser(),
+							security.getPassword()) != null) {
+						throw new ConnectionPoolXMLParseException(Security.USER
+								+ " in " + Console.SECURITY + " repeat");
+					}
 				}
-				repeatPort = true;
-				int port = (Integer.valueOf(reader.getElementText().trim()));
-				this.setPort(port);
-			} else if (SECURITY.equals(parsing)) {
-				Security security = new Security();
-				security.parse(reader);
-				if (this.securityMap.put(security.getUser(),
-						security.getPassword()) != null) {
-					throw new ConnectionPoolXMLParseException(Security.USER
-							+ " in " + Console.SECURITY + " repeat");
-				}
-			} else {
-				throw new ConnectionPoolXMLParseException(
-						XMLConfiguration.CONSOLE + " contains illegal elements");
 			}
 		}
 	}

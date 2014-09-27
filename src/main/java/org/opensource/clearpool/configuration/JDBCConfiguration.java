@@ -1,22 +1,38 @@
 package org.opensource.clearpool.configuration;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import javax.sql.CommonDataSource;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.opensource.clearpool.datasource.JDBCDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.opensource.clearpool.security.Secret;
+import org.opensource.clearpool.security.SecretAES;
 import org.opensource.clearpool.util.JdbcUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
- * How to parse JDBC.
+ * This class used to parse JDBC.
  * 
  * @author xionghui
  * @date 16.08.2014
@@ -27,71 +43,62 @@ public class JDBCConfiguration {
 	private final static String URL = "url";
 	private final static String USER = "user";
 	private final static String PASSWORD = "password";
+	private final static String SECURITY_CLASS = "security-class";
+	private final static String FILE_URL = "file-url";
+	private final static String STATUS = "status";
+	private final static String ENCRYPT = "encrypt";
+	private final static String DECRYPT = "decrypt";
 
-	public static CommonDataSource parse(XMLStreamReader reader)
-			throws XMLStreamException {
+	public static CommonDataSource parse(Element element, Document document,
+			String path) {
 		String clazz = null;
 		String url = null;
 		String user = null;
 		String password = null;
-		while (reader.hasNext()) {
-			int event = reader.next();
-			if (event == XMLStreamConstants.END_ELEMENT
-					&& XMLConfiguration.JDBC == reader.getLocalName()) {
-				break;
-			}
-			if (event != XMLStreamConstants.START_ELEMENT) {
-				continue;
-			}
-			String parsing = reader.getLocalName();
-			if (CLASS.equals(parsing)) {
-				clazz = reader.getElementText().trim();
-			} else if (URL.equals(parsing)) {
-				if (url != null) {
-					throw new ConnectionPoolException(JDBCConfiguration.URL
-							+ " repeat");
+		String securityClass = null;
+		String fileUrl = null;
+
+		NodeList children = element.getChildNodes();
+		for (int i = 0, size = children.getLength(); i < size; i++) {
+			Node childNode = children.item(i);
+			if (childNode instanceof Element) {
+				Element child = (Element) childNode;
+				String nodeName = child.getNodeName();
+				String nodeValue = child.getTextContent();
+				if (CLASS.equals(nodeName)) {
+					clazz = nodeValue.trim();
+				} else if (URL.equals(nodeName)) {
+					url = nodeValue.trim();
+				} else if (USER.equals(nodeName)) {
+					user = nodeValue;
+					checkUserPattern(user);
+				} else if (PASSWORD.equals(nodeName)) {
+					password = nodeValue;
+				} else if (SECURITY_CLASS.equals(nodeName)) {
+					securityClass = nodeValue.trim();
+				} else if (FILE_URL.equals(nodeName)) {
+					fileUrl = nodeValue.trim();
+				} else if (STATUS.equals(nodeName)) {
+					String status = nodeValue.trim();
+					password = handlerPassword(securityClass, fileUrl, status,
+							password, child, document);
 				}
-				url = reader.getElementText().trim();
-			} else if (USER.equals(parsing)) {
-				if (user != null) {
-					throw new ConnectionPoolException(JDBCConfiguration.USER
-							+ " repeat");
-				}
-				user = reader.getElementText();
-				boolean rightUser = checkSecurityPattern(user);
-				if (!rightUser) {
-					throw new ConnectionPoolXMLParseException("the pattern of "
-							+ JDBCConfiguration.USER + " in "
-							+ XMLConfiguration.JDBC + " is illegal");
-				}
-			} else if (PASSWORD.equals(parsing)) {
-				if (password != null) {
-					throw new ConnectionPoolException(
-							JDBCConfiguration.PASSWORD + " repeat");
-				}
-				password = reader.getElementText();
-				boolean rightPsd = checkSecurityPattern(password);
-				if (!rightPsd) {
-					throw new ConnectionPoolXMLParseException("the pattern of "
-							+ JDBCConfiguration.PASSWORD + " in "
-							+ XMLConfiguration.JDBC + " is illegal");
-				}
-			} else {
-				throw new ConnectionPoolXMLParseException(XMLConfiguration.JDBC
-						+ " contains illegal element: " + parsing);
 			}
 		}
 		return getDataSource(clazz, url, user, password);
 	}
 
 	/**
-	 * Check if the pattern of user and password is valid.
+	 * Check if the pattern of user is valid.
 	 */
-	private static boolean checkSecurityPattern(String value) {
+	private static void checkUserPattern(String value) {
 		// note:the regex has a blank
 		String regex = "[\\w" + " " + "]*";
 		boolean right = Pattern.matches(regex, value);
-		return right;
+		if (!right) {
+			throw new ConnectionPoolXMLParseException(value + " of " + USER
+					+ " is illegal");
+		}
 	}
 
 	/**
@@ -120,5 +127,80 @@ public class JDBCConfiguration {
 			connectProperties.put("password", password);
 		}
 		return new JDBCDataSource(clazz, url, driver, connectProperties);
+	}
+
+	/**
+	 * Handle the password
+	 */
+	private static String handlerPassword(String securityClass, String fileUrl,
+			String status, String password, Element element, Document document) {
+		if (password == null) {
+			throw new ConnectionPoolException(PASSWORD
+					+ " shouldn't be null when we are using STATUS");
+		}
+		try {
+			Secret handler = null;
+			if (securityClass == null) {
+				handler = new SecretAES();
+			} else {
+				Class<?> clzz = Class.forName(securityClass);
+				handler = (Secret) clzz.newInstance();
+			}
+			if (ENCRYPT.equals(status)) {
+				String cipher = handler.encrypt(password);
+				element.setTextContent(DECRYPT);
+				Element parent = (Element) element.getParentNode();
+				Element pwdElem = (Element) parent.getElementsByTagName(
+						PASSWORD).item(0);
+				pwdElem.setTextContent(cipher);
+				if (fileUrl == null) {
+					throw new ConnectionPoolXMLParseException(FILE_URL
+							+ " shouldn't be null");
+				}
+				saveXML(document, fileUrl);
+			} else {
+				password = handler.decrypt(password);
+			}
+		} catch (Exception e) {
+			throw new ConnectionPoolException(e.getMessage());
+		}
+		return password;
+	}
+
+	/**
+	 * Save the configuration.
+	 * 
+	 * @param document
+	 * @param fileUrl
+	 * @throws Exception
+	 */
+	private static void saveXML(Document document, String fileUrl)
+			throws Exception {
+		TransformerFactory transformerFactory = TransformerFactory
+				.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
+		String encoding = XMLConfiguration.getEncoding();
+		transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
+		Source domSource = new DOMSource(document);
+		Writer writer = getResourceAsWriter(encoding, fileUrl);
+		Result result = new StreamResult(writer);
+		// save it
+		transformer.transform(domSource, result);
+	}
+
+	/**
+	 * Get writer by path and {@link XMLConfiguration#encoding}.
+	 * 
+	 * @param encoding
+	 * @param fileUrl
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
+	 */
+	private static Writer getResourceAsWriter(String encoding, String fileUrl)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		OutputStream outStream = new FileOutputStream(fileUrl);
+		Writer writer = new OutputStreamWriter(outStream, encoding);
+		return writer;
 	}
 }

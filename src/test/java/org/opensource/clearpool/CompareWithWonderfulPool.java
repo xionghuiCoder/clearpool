@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.log.PoolLogFactory;
 import org.opensource.clearpool.util.MemoryUtil;
@@ -14,9 +15,9 @@ import org.opensource.clearpool.util.ThreadProcessUtil;
 import com.alibaba.druid.pool.DruidDataSource;
 
 /**
- * Compare with other Database Pool.
+ * Compare with wonderful Database Pool.
  */
-public class CompareWithWonderfulPoolCase extends TestCase {
+public class CompareWithWonderfulPool extends TestCase {
 	private String jdbcUrl;
 	private String user;
 	private String password;
@@ -24,10 +25,19 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 	private int minPoolSize = 20;
 	private int maxPoolSize = 50;
 	private int threadCount = 100;
-	private int loopCount = 5;
-	private int LOOP_COUNT = 1000000 / this.threadCount;
+	private int loop = 5;
+	private int count = 1000000 / this.threadCount;
 
 	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
+
+	private static final String PATH = "log4j/special_log4j.properties";
+
+	static {
+		ClassLoader classLoader = Thread.currentThread()
+				.getContextClassLoader();
+		String path = classLoader.getResource(PATH).getPath();
+		PropertyConfigurator.configure(path);
+	}
 
 	@Override
 	public void setUp() throws Exception {
@@ -49,8 +59,8 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setJdbcUrl(this.jdbcUrl);
 		dataSource.setJdbcUser(this.user);
 		dataSource.setJdbcPassword(this.password);
-		for (int i = 0; i < this.loopCount; ++i) {
-			ThreadProcessUtil.process(dataSource, "clearpool", this.LOOP_COUNT,
+		for (int i = 0; i < this.loop; ++i) {
+			ThreadProcessUtil.process(dataSource, "clearpool", this.count,
 					this.threadCount, physicalCon);
 		}
 		System.out.println();
@@ -69,8 +79,8 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setPassword(this.password);
 		dataSource.setValidationQuery("select 1");
 		dataSource.setTestOnBorrow(false);
-		for (int i = 0; i < this.loopCount; ++i) {
-			ThreadProcessUtil.process(dataSource, "druid", this.LOOP_COUNT,
+		for (int i = 0; i < this.loop; ++i) {
+			ThreadProcessUtil.process(dataSource, "druid", this.count,
 					this.threadCount, physicalCon);
 		}
 		System.out.println();
@@ -85,9 +95,9 @@ public class CompareWithWonderfulPoolCase extends TestCase {
 		dataSource.setUrl(this.jdbcUrl);
 		dataSource.setUsername(this.user);
 		dataSource.setPassword(this.password);
-		for (int i = 0; i < this.loopCount; ++i) {
-			ThreadProcessUtil.process(dataSource, "tomcat-jdbc",
-					this.LOOP_COUNT, this.threadCount, physicalCon);
+		for (int i = 0; i < this.loop; ++i) {
+			ThreadProcessUtil.process(dataSource, "tomcat-jdbc", this.count,
+					this.threadCount, physicalCon);
 		}
 		System.out.println();
 	}
