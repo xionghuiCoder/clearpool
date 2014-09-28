@@ -85,7 +85,7 @@ public class IdleCheckHook extends CommonHook {
 		ConfigurationVO cfgVO = pool.getCfgVO();
 		long period = cfgVO.getKeepTestPeriod();
 		// maybe some pool don't need to check
-		if (period == 0) {
+		if (period == -1) {
 			return;
 		}
 		CommonChain<ConnectionProxy> chain = pool.getConnectionChain();
