@@ -3,8 +3,10 @@ package org.opensource.clearpool;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -22,6 +24,8 @@ public class DataSourceHolderFunction extends TestCase {
 	@Override
 	public void setUp() throws Exception {
 		Map<String, CommonDataSource> dataSourceMap = new HashMap<String, CommonDataSource>();
+		// just use the method
+		new MockDataSource().getParentLogger();
 		dataSourceMap.put("testholder", new MockDataSource());
 		DataSourceHolder.setDataSourceMap(dataSourceMap);
 		this.dataSource.initPath("clearpool/clearpool-test-holder.xml");
@@ -78,5 +82,8 @@ public class DataSourceHolderFunction extends TestCase {
 			return new MockConnection();
 		}
 
+		public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+			return null;
+		}
 	}
 }
