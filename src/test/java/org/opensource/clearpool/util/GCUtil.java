@@ -31,7 +31,7 @@ public class GCUtil {
 			return (Long) mbeanServer.getAttribute(objectName,
 					"CollectionCount");
 		} catch (Exception e) {
-			throw new RuntimeException("error");
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -57,7 +57,7 @@ public class GCUtil {
 			return (Long) mbeanServer.getAttribute(objectName,
 					"CollectionCount");
 		} catch (Exception e) {
-			throw new RuntimeException("error");
+			throw new RuntimeException(e);
 		}
 	}
 }

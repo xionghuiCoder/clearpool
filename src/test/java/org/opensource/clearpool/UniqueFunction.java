@@ -9,16 +9,16 @@ import junit.framework.TestCase;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
 public class UniqueFunction extends TestCase {
+	private final static int TIME = 10;
+
 	private ClearPoolDataSource dataSource = new ClearPoolDataSource();
 
 	private volatile boolean[] signs = new boolean[10];
 
-	private int time = 10;
-
 	@Override
 	public void setUp() throws Exception {
 		this.dataSource.initPath("clearpool/clearpool-test-unique.xml");
-		Thread.sleep(this.time * 1000);
+		Thread.sleep(TIME * 1000);
 	}
 
 	public void test_clearPool() throws Exception {
@@ -27,21 +27,21 @@ public class UniqueFunction extends TestCase {
 		this.startThreads(startLatch, endLatch, 10, 0);
 		startLatch.countDown();
 		System.out.println("start 10 threads");
-		// add 10 thread every time(s)
+		// add 10 thread every TIME(s)
 		for (int i = 1; i < 10; i++) {
-			Thread.sleep(this.time * 1000);
+			Thread.sleep(TIME * 1000);
 			startLatch = new CountDownLatch(1);
 			this.startThreads(startLatch, endLatch, 10, i);
 			startLatch.countDown();
 			System.out.println("start " + ((1 + i) * 10) + " threads");
 		}
-		// remove 10 thread every time(s)
+		// remove 10 thread every TIME(s)
 		for (int i = 0; i < 10; i++) {
-			Thread.sleep(this.time * 1000);
+			Thread.sleep(TIME * 1000);
 			this.signs[i] = true;
 			System.out.println("left " + ((9 - i) * 10) + " threads");
 		}
-		Thread.sleep(this.time * 1000);
+		Thread.sleep(TIME * 1000);
 		endLatch.await();
 	}
 
@@ -77,7 +77,7 @@ public class UniqueFunction extends TestCase {
 
 	@Override
 	public void tearDown() throws Exception {
-		Thread.sleep(this.time * 1000);
+		Thread.sleep(TIME * 1000);
 		this.dataSource.destory();
 	}
 }

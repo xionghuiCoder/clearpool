@@ -58,8 +58,8 @@
 
 	<xs:group name="database">
 		<xs:choice>
-			<xs:element ref="jndi" />
-			<xs:element ref="jdbc" />
+			<xs:element ref="jndi" minOccurs="0" maxOccurs="1" />
+			<xs:element ref="jdbc" minOccurs="0" maxOccurs="1" />
 		</xs:choice>
 	</xs:group>
 

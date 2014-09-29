@@ -46,9 +46,9 @@ public class ThreadProcessUtil {
 			threads[i] = thread;
 			thread.start();
 		}
-		long startMillis = System.currentTimeMillis();
 		long startYGC = GCUtil.getYoungGC();
 		long startFullGC = GCUtil.getFullGC();
+		long startMillis = System.currentTimeMillis();
 
 		startLatch.countDown();
 		endLatch.await();
