@@ -85,17 +85,14 @@ class ConnectionPool implements ConnectionPoolMBean {
 	@Override
 	public String getLimitIdleTime() {
 		long time = this.pool.getCfgVO().getLimitIdleTime();
-		if (time != 0) {
-			return time / 1000 + "(s)";
-		}
-		return null;
+		return time / 1000 + "(s)";
 	}
 
 	@Override
 	public String getKeepTestPeriod() {
 		long period = this.pool.getCfgVO().getKeepTestPeriod() / 1000;
 		if (period == -1) {
-			return "";
+			return "-";
 		}
 		return period + "(s)";
 	}
