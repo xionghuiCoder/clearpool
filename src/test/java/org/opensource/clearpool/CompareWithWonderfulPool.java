@@ -24,15 +24,18 @@ public class CompareWithWonderfulPool extends TestCase {
 	private String driverClass;
 	private int corePoolSize = 20;
 	private int maxPoolSize = 50;
-	private int threadCount = 100;
+	private static final int threadCount;
 	private int loop = 5;
-	private int count = 1000000 / this.threadCount;
+	private int count = 1000000 / threadCount;
 
 	private static AtomicLong physicalCon = MockTestDriver.physicalCon;
 
 	private static final String PATH = "log4j/special_log4j.properties";
 
 	static {
+		threadCount = Runtime.getRuntime().availableProcessors();
+		System.out.println("available processors: " + threadCount);
+		System.out.println();
 		ClassLoader classLoader = Thread.currentThread()
 				.getContextClassLoader();
 		String path = classLoader.getResource(PATH).getPath();
@@ -61,7 +64,7 @@ public class CompareWithWonderfulPool extends TestCase {
 		dataSource.setJdbcPassword(this.password);
 		for (int i = 0; i < this.loop; ++i) {
 			ThreadProcessUtil.process(dataSource, "clearpool", this.count,
-					this.threadCount, physicalCon);
+					threadCount, physicalCon);
 		}
 		System.out.println();
 	}
@@ -81,7 +84,7 @@ public class CompareWithWonderfulPool extends TestCase {
 		dataSource.setTestOnBorrow(false);
 		for (int i = 0; i < this.loop; ++i) {
 			ThreadProcessUtil.process(dataSource, "druid", this.count,
-					this.threadCount, physicalCon);
+					threadCount, physicalCon);
 		}
 		System.out.println();
 	}
@@ -97,9 +100,8 @@ public class CompareWithWonderfulPool extends TestCase {
 		dataSource.setPassword(this.password);
 		for (int i = 0; i < this.loop; ++i) {
 			ThreadProcessUtil.process(dataSource, "tomcat-jdbc", this.count,
-					this.threadCount, physicalCon);
+					threadCount, physicalCon);
 		}
 		System.out.println();
 	}
-
 }
