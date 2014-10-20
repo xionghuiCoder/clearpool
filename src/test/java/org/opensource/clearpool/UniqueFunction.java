@@ -8,6 +8,14 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 
+/**
+ * Note: replace file-path which is in clearpool-test-unique.xml with your xml's
+ * real absolute path please.
+ * 
+ * @author xionghui
+ * @date 24.09.2014
+ * @version 1.0
+ */
 public class UniqueFunction extends TestCase {
 	private final static int TIME = 10;
 

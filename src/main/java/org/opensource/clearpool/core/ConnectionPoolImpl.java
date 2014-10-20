@@ -53,7 +53,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	private volatile int state = 0;
 
 	// it is used to handle the pool.
-	static volatile CommonPoolContainer poolContainer;
+	static volatile ConnectionPoolContainer poolContainer;
 
 	/**
 	 * Hide the constructor
@@ -129,7 +129,8 @@ class ConnectionPoolImpl implements IConnectionPool {
 	private void load(String path, Map<String, ConfigurationVO> cfgMap) {
 		long begin = System.currentTimeMillis();
 		// load cfg to init pool
-		CommonPoolContainer container = CommonPoolContainer.load(path, cfgMap);
+		ConnectionPoolContainer container = ConnectionPoolContainer.load(
+				path, cfgMap);
 		if (container != null) {
 			poolContainer = container;
 			LOG.info("connection pool initialized.it cost "
@@ -172,7 +173,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	@Override
 	public void close(String name) {
 		this.checkDestroyed();
-		CommonPoolContainer tempContainer = poolContainer;
+		ConnectionPoolContainer tempContainer = poolContainer;
 		if (tempContainer == null) {
 			return;
 		}
@@ -192,7 +193,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 	 * Remove all the pool.
 	 */
 	private void removeAll() {
-		CommonPoolContainer tempContainer = poolContainer;
+		ConnectionPoolContainer tempContainer = poolContainer;
 		if (tempContainer == null) {
 			return;
 		}
@@ -210,7 +211,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 		 */
 		instance = null;
 		this.state = 2;
-		CommonPoolContainer.destoryHooks();
+		ConnectionPoolContainer.destoryHooks();
 		// remove all the pool
 		this.removeAll();
 		MBeanFacade.stop();

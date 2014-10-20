@@ -74,6 +74,7 @@ public class XMLConfiguration {
 	private final static String KEEP_TEST_PERIOD = "keep-test-period";
 	private final static String TEST_TABLE_NAME = "test-table-name";
 	private final static String SHOW_SQL = "show-sql";
+	private final static String SQL_TIME_FILTER = "sql-time-filter";
 
 	// the public entry to {@link #Configuration}.
 	public static Map<String, ConfigurationVO> getCfgVO(String path) {
@@ -223,6 +224,8 @@ public class XMLConfiguration {
 			cfgVO.setTestTableName(nodeValue);
 		} else if (SHOW_SQL.equals(nodeName)) {
 			cfgVO.setShowSql(Boolean.valueOf(nodeValue));
+		} else if (SQL_TIME_FILTER.equals(nodeName)) {
+			cfgVO.setSqlTimeFilter(Integer.valueOf(nodeValue));
 		}
 	}
 

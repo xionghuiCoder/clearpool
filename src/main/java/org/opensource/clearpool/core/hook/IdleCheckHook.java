@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
@@ -67,8 +66,7 @@ public class IdleCheckHook extends CommonHook {
 	private void dealGarbage(ConnectionPoolManager pool) {
 		long period = pool.getCfgVO().getLimitIdleTime();
 		while (pool.isNeedCollected()) {
-			ConnectionProxy conProxy = pool.getConnectionChain().removeIdle(
-					period);
+			ConnectionProxy conProxy = pool.exitPool(period);
 			if (conProxy == null) {
 				break;
 			}
@@ -88,15 +86,14 @@ public class IdleCheckHook extends CommonHook {
 		if (period == -1) {
 			return;
 		}
-		CommonChain<ConnectionProxy> chain = pool.getConnectionChain();
 		while (true) {
-			ConnectionProxy conProxy = chain.removeIdle(period);
+			ConnectionProxy conProxy = pool.exitPool(period);
 			if (conProxy == null) {
 				break;
 			}
 			boolean isValid = pool.checkTestTable(conProxy, false);
 			if (isValid) {
-				chain.add(conProxy);
+				pool.entryPool(conProxy);
 				continue;
 			}
 			pool.decrementPoolSize();

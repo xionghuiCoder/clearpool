@@ -21,4 +21,5 @@
 	<keep-test-period>20</keep-test-period>
 	<test-table-name>test</test-table-name>
 	<show-sql>false</show-sql>
+	<sql-time-filter>500</sql-time-filter>
 </clearpool>

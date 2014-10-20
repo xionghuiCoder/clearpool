@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @date 26.07.2014
  * @version 1.0
  */
-class LockCircleChain<E> extends CommonChain<E> {
+public class LockCircleChain<E> extends CommonChain<E> {
 	private Lock lock = new ReentrantLock();
 
 	private Node<E> head = new CircleNode<E>(null);

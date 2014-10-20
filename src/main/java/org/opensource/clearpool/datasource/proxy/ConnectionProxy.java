@@ -3,9 +3,12 @@ package org.opensource.clearpool.datasource.proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.sql.XAConnection;
 
+import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.exception.ConnectionPoolException;
@@ -19,13 +22,19 @@ import org.opensource.clearpool.log.PoolLogFactory;
  * @date 26.07.2014
  * @version 1.0
  */
-public class ConnectionProxy {
+public class ConnectionProxy implements Comparable<ConnectionProxy> {
 	private static final PoolLog LOG = PoolLogFactory
 			.getLog(ConnectionProxy.class);
+
+	// Dummy value to associate with an Object in the backing Map
+	private static final Object PRESENT = new Object();
 
 	private final ConnectionPoolManager pool;
 	private final Connection connection;
 	private final XAConnection xaConnection;
+
+	private Map<String, Object> sqlMap = new WeakHashMap<String, Object>();
+	private int sqlCount;
 
 	boolean autoCommit;
 	String catalog;
@@ -132,11 +141,25 @@ public class ConnectionProxy {
 		this.pool.incrementOneConnection();
 	}
 
+	public ConfigurationVO getCfgVO() {
+		return this.pool.getCfgVO();
+	}
+
 	/**
-	 * need to show sql?
+	 * deal if we need to increment {@link #sqlCount};
+	 * 
+	 * @param sql
 	 */
-	boolean isShowSql() {
-		boolean showSql = this.pool.getCfgVO().isShowSql();
-		return showSql;
+	public void dealSqlCount(String sql) {
+		if (this.sqlMap.put(sql, PRESENT) == null) {
+			this.sqlCount++;
+		}
+	}
+
+	@Override
+	public int compareTo(ConnectionProxy anoConnProxy) {
+		int x = this.sqlCount;
+		int y = anoConnProxy.sqlCount;
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 }

@@ -42,7 +42,7 @@ import org.opensource.clearpool.exception.ConnectionPoolException;
 public class PoolConnectionImpl implements PooledConnection, Connection {
 
 	private Connection connection;
-	private final ConnectionProxy conProxy;
+	protected final ConnectionProxy conProxy;
 
 	private List<ConnectionEventListener> connectionEventListeners;
 	private List<StatementEventListener> statementEventListeners;
@@ -489,7 +489,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 	 */
 	protected Statement createProxyStatement(Statement statement, String sql) {
 		Statement statementProxy = ProxyFactory.createProxyStatement(statement,
-				this, sql);
+				this, this.conProxy, sql);
 		return statementProxy;
 	}
 
@@ -707,14 +707,6 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 			}
 		}
 		throw e;
-	}
-
-	/**
-	 * need to show sql?
-	 */
-	public boolean isShowSql() {
-		boolean showSql = this.conProxy.isShowSql();
-		return showSql;
 	}
 
 	/**

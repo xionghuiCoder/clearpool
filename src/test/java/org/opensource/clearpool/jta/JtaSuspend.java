@@ -14,6 +14,21 @@ import junit.framework.TestCase;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.log.PoolLogFactory;
 
+/**
+ * Note: <br />
+ * 1.replace jdbcClass which is in clearpool-test-jta-unique.xml with your
+ * database's jdbc-class please; <br />
+ * 2.replace url which is in clearpool-test-jta-unique.xml with your database's
+ * url please; <br />
+ * 3.replace user which is in clearpool-test-jta-unique.xml with your database's
+ * user please; <br />
+ * 4.replace password which is in clearpool-test-jta-unique.xml with your
+ * database's password please.
+ * 
+ * @author xionghui
+ * @date 16.08.2014
+ * @version 1.0
+ */
 public class JtaSuspend extends TestCase {
 	private static final Random RANDOM = new Random();
 

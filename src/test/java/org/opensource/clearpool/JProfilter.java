@@ -17,6 +17,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 /**
  * This TestCase is used to monitor the jvm by JProfilter.
  * 
+ * Note: we should stop it by ourself.
+ * 
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0

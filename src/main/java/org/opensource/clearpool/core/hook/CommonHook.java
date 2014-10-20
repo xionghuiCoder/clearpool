@@ -3,8 +3,8 @@ package org.opensource.clearpool.core.hook;
 import java.util.Collection;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.core.chain.ChainFactory;
 import org.opensource.clearpool.core.chain.CommonChain;
+import org.opensource.clearpool.core.chain.LockCircleChain;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
 
@@ -18,8 +18,7 @@ import org.opensource.clearpool.log.PoolLogFactory;
 public abstract class CommonHook implements Runnable {
 	private static final PoolLog LOG = PoolLogFactory.getLog(CommonHook.class);
 
-	static CommonChain<ConnectionPoolManager> poolChain = ChainFactory
-			.createCircleChain((ConnectionPoolManager) null);
+	static CommonChain<ConnectionPoolManager> poolChain = new LockCircleChain<ConnectionPoolManager>();
 
 	/**
 	 * Set and start a idleHook

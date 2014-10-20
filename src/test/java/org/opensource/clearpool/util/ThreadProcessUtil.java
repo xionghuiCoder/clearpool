@@ -3,6 +3,7 @@ package org.opensource.clearpool.util;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.text.NumberFormat;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,12 +11,23 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
 
 public class ThreadProcessUtil {
-	/**
-	 * Fight for connection
-	 */
 	public static void process(final DataSource dataSource, String name,
 			final int loop, int threadCount, final AtomicLong physicalConnStat)
 			throws Exception {
+		realProcess(dataSource, name, loop, threadCount, physicalConnStat, null);
+	}
+
+	public static void processSql(final DataSource dataSource, String name,
+			final int loop, int threadCount, final String sql) throws Exception {
+		realProcess(dataSource, name, loop, threadCount, null, sql);
+	}
+
+	/**
+	 * Fight for connection
+	 */
+	public static void realProcess(final DataSource dataSource, String name,
+			final int loop, int threadCount, final AtomicLong physicalConnStat,
+			final String sql) throws Exception {
 		final CountDownLatch startLatch = new CountDownLatch(1);
 		final CountDownLatch endLatch = new CountDownLatch(threadCount);
 		final CountDownLatch dumpLatch = new CountDownLatch(1);
@@ -30,6 +42,12 @@ public class ThreadProcessUtil {
 						startLatch.await();
 						for (int i = 0; i < loop; i++) {
 							Connection conn = dataSource.getConnection();
+							if (sql != null) {
+								PreparedStatement pstm = conn
+										.prepareStatement(sql);
+								pstm.execute();
+								pstm.close();
+							}
 							conn.close();
 						}
 					} catch (Exception ex) {
@@ -74,11 +92,21 @@ public class ThreadProcessUtil {
 			waitedCount += threadInfo.getWaitedCount();
 		}
 
-		System.out.println("thread " + threadCount + " " + name + " millis : "
-				+ NumberFormat.getInstance().format(millis) + "; YGC " + ygc
-				+ "; FGC " + fullGC + "; blocked "
-				+ NumberFormat.getInstance().format(blockedCount) + "; waited "
+		System.out.println("thread "
+				+ threadCount
+				+ " "
+				+ name
+				+ " millis : "
+				+ NumberFormat.getInstance().format(millis)
+				+ "; YGC "
+				+ ygc
+				+ "; FGC "
+				+ fullGC
+				+ "; blocked "
+				+ NumberFormat.getInstance().format(blockedCount)
+				+ "; waited "
 				+ NumberFormat.getInstance().format(waitedCount)
-				+ "; physicalConn " + physicalConnStat.get() + ";");
+				+ (physicalConnStat == null ? "" : "; physicalConn "
+						+ physicalConnStat.get()) + ";");
 	}
 }

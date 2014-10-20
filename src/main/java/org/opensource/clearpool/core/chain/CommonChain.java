@@ -1,10 +1,9 @@
 package org.opensource.clearpool.core.chain;
 
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class CommonChain<E> implements Iterable<E> {
-	protected AtomicInteger size = new AtomicInteger();
+	protected int size;
 
 	/**
 	 * Add a element.
@@ -23,11 +22,8 @@ public abstract class CommonChain<E> implements Iterable<E> {
 		throw new UnsupportedOperationException("not supported by CommonChain");
 	}
 
-	/**
-	 * Get the number of the connection in the pool.
-	 */
 	public int size() {
-		return this.size.get();
+		return this.size;
 	}
 
 	@Override
@@ -50,7 +46,7 @@ public abstract class CommonChain<E> implements Iterable<E> {
 
 		/**
 		 * we should know that entryTime is used by {@link AtomicSingleChain} or
-		 * {@link LockSingleChain}
+		 * {@link LockHeapChain}
 		 */
 		long entryTime;
 

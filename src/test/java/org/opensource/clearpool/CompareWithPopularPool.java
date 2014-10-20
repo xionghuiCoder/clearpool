@@ -17,9 +17,6 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-/**
- * Compare with popular Database Pool.
- */
 public class CompareWithPopularPool extends TestCase {
 	private String jdbcUrl;
 	private String user;
@@ -27,7 +24,7 @@ public class CompareWithPopularPool extends TestCase {
 	private String driverClass;
 	private int corePoolSize = 20;
 	private int maxPoolSize = 50;
-	private static final int threadCount;
+	private static final int threadCount = 100;
 	private int loop = 5;
 	private int count = 100000 / threadCount;
 
@@ -36,9 +33,9 @@ public class CompareWithPopularPool extends TestCase {
 	private static final String PATH = "log4j/special_log4j.properties";
 
 	static {
-		threadCount = Runtime.getRuntime().availableProcessors();
-		System.out.println("available processors: " + threadCount);
-		System.out.println();
+		// threadCount = Runtime.getRuntime().availableProcessors();
+		// System.out.println("available processors: " + threadCount);
+		// System.out.println();
 		ClassLoader classLoader = Thread.currentThread()
 				.getContextClassLoader();
 		String path = classLoader.getResource(PATH).getPath();

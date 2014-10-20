@@ -8,6 +8,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 
+import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
 import org.opensource.clearpool.jta.xa.XAConnectionImpl;
 
@@ -23,7 +24,8 @@ public class ProxyFactory {
 	 * this method is used to create the handler of {@link Statement}
 	 */
 	public static Statement createProxyStatement(Statement statement,
-			PoolConnectionImpl pooledConnection, String sql) {
+			PoolConnectionImpl pooledConnection, ConnectionProxy conProxy,
+			String sql) {
 		Class<?>[] interfaces = new Class[1];
 		if (statement instanceof CallableStatement) {
 			interfaces[0] = CallableStatement.class;
@@ -33,7 +35,7 @@ public class ProxyFactory {
 			interfaces[0] = Statement.class;
 		}
 		InvocationHandler handler = new StatementHandler(statement,
-				pooledConnection, sql);
+				pooledConnection, conProxy, sql);
 		return (Statement) Proxy.newProxyInstance(
 				ProxyFactory.class.getClassLoader(), interfaces, handler);
 	}
@@ -42,7 +44,7 @@ public class ProxyFactory {
 	 * this method is used to create the handler of XAStatement
 	 */
 	public static Statement createProxyXAStatement(Statement statement,
-			XAConnectionImpl xaCon, String sql) {
+			XAConnectionImpl xaCon, ConnectionProxy conProxy, String sql) {
 		Class<?>[] interfaces = new Class[1];
 		if (statement instanceof CallableStatement) {
 			interfaces[0] = CallableStatement.class;
@@ -52,7 +54,7 @@ public class ProxyFactory {
 			interfaces[0] = Statement.class;
 		}
 		InvocationHandler handler = new XAStatementHandler(statement, xaCon,
-				sql);
+				conProxy, sql);
 		return (Statement) Proxy.newProxyInstance(
 				ProxyFactory.class.getClassLoader(), interfaces, handler);
 	}

@@ -3,9 +3,13 @@
 	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<alias>myclearpool1</alias>
 	<jdbc>
+		<!-- replace jdbcClass with your database's jdbc-class please -->
 		<jdbc-class>com.mysql.jdbc.Driver</jdbc-class>
+		<!-- replace url with your database's url please -->
 		<url>jdbc:mysql://127.0.0.1:3306/test</url>
+		<!-- replace user with your database's user please -->
 		<user>root</user>
+		<!-- replace password with your database's password please -->
 		<password>1</password>
 	</jdbc>
 	<jta-support>true</jta-support>

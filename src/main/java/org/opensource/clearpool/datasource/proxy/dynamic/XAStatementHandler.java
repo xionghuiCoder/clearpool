@@ -7,6 +7,7 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
+import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.exception.TransactionException;
 import org.opensource.clearpool.jta.TransactionManagerImpl;
 import org.opensource.clearpool.jta.xa.XAConnectionImpl;
@@ -16,8 +17,9 @@ class XAStatementHandler extends StatementHandler {
 
 	private XAConnectionImpl xaCon;
 
-	XAStatementHandler(Statement statement, XAConnectionImpl xaCon, String sql) {
-		super(statement, xaCon, sql);
+	XAStatementHandler(Statement statement, XAConnectionImpl xaCon,
+			ConnectionProxy conProxy, String sql) {
+		super(statement, xaCon, conProxy, sql);
 		this.xaCon = xaCon;
 	}
 

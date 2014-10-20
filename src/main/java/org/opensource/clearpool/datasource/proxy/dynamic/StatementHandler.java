@@ -7,8 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.sql.StatementEvent;
@@ -16,6 +18,8 @@ import javax.sql.StatementEventListener;
 import javax.transaction.SystemException;
 import javax.transaction.xa.XAException;
 
+import org.opensource.clearpool.configuration.ConfigurationVO;
+import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
 import org.opensource.clearpool.log.PoolLog;
 import org.opensource.clearpool.log.PoolLogFactory;
@@ -46,21 +50,29 @@ class StatementHandler implements InvocationHandler {
 
 	private Statement statement;
 	private PoolConnectionImpl pooledConnection;
+	private ConnectionProxy conProxy;
 	private String sql;
+	private Set<String> sqlSet = new HashSet<String>();
 
 	// need to show sql?
 	private boolean showSql;
+	// filter sql
+	private int sqlTimeFilter;
 
 	private StringBuilder sqlLog = new StringBuilder();
 
 	private Map<Integer, Object> parameterMap;
 
 	StatementHandler(Statement statement, PoolConnectionImpl pooledConnection,
-			String sql) {
+			ConnectionProxy conProxy, String sql) {
 		this.statement = statement;
 		this.pooledConnection = pooledConnection;
-		this.showSql = pooledConnection.isShowSql();
+		this.conProxy = conProxy;
+		ConfigurationVO cfgVO = conProxy.getCfgVO();
+		this.showSql = cfgVO.isShowSql();
+		this.sqlTimeFilter = cfgVO.getSqlTimeFilter();
 		this.sql = sql;
+		this.sqlSet.add(sql);
 	}
 
 	@Override
@@ -80,14 +92,16 @@ class StatementHandler implements InvocationHandler {
 			this.beforeInvoke(methodName);
 			/**
 			 * setAccessible could improve the performance of the reflection.you
-			 * want the reason?ha,go to see the source of jdk.With simple
-			 * test,it shows setAccessible(true) is about 3 times faster than
-			 * original.
+			 * want the reason? ha,check the source of jdk please.<br />
+			 * With simple test,it shows that setAccessible(true) is about 3
+			 * times faster than original.
 			 */
 			method.setAccessible(true);
 			long startTime = (this.showSql ? System.currentTimeMillis() : 0);
 			try {
 				result = method.invoke(this.statement, args);
+				// deal sqlCount if there is no exception
+				this.dealSqlCount(methodName, args);
 			} catch (InvocationTargetException e) {
 				Throwable t = e.getTargetException();
 				if (t instanceof SQLException) {
@@ -97,7 +111,10 @@ class StatementHandler implements InvocationHandler {
 				}
 			} finally {
 				if (this.showSql) {
-					this.dealLogSql(methodName, startTime, args);
+					long sqlTime = System.currentTimeMillis() - startTime;
+					if (sqlTime >= this.sqlTimeFilter) {
+						this.dealLogSql(methodName, sqlTime, args);
+					}
 				}
 			}
 		}
@@ -105,11 +122,28 @@ class StatementHandler implements InvocationHandler {
 	}
 
 	/**
-	 * This invoked before execute update.
+	 * This method invoked before execute update.
 	 */
 	protected void beforeInvoke(String methodName) throws XAException,
 			SystemException {
 
+	}
+
+	/**
+	 * deal sqlCount by {@link ConnectionProxy}
+	 */
+	private void dealSqlCount(String methodName, Object[] args) {
+		if (ADD_BATCH_METHOD.equals(methodName)) {
+			int argCount = (args != null ? args.length : 0);
+			if (argCount > 0 && args[0] instanceof String && this.sql == null) {
+				this.sqlSet.add((String) args[0]);
+			}
+		} else if (methodName.startsWith(EXECUTE)) {
+			for (String sql : this.sqlSet) {
+				this.conProxy.dealSqlCount(sql);
+			}
+			this.sqlSet.clear();
+		}
 	}
 
 	/**
@@ -158,7 +192,7 @@ class StatementHandler implements InvocationHandler {
 	/**
 	 * Set sql parameters and log the sql.
 	 */
-	private void dealLogSql(String methodName, long startTime, Object[] args) {
+	private void dealLogSql(String methodName, long sqlTime, Object[] args) {
 		if (CLEARPARAMETERS_METHOD.equals(methodName)) {
 			// clear parameters
 			if (this.parameterMap != null) {
@@ -180,7 +214,7 @@ class StatementHandler implements InvocationHandler {
 			this.appendToSqlLog();
 		} else if (EXECUTE_BATCH_METHOD.equals(methodName)) {
 			// executing a batch should do a trace
-			this.trace(startTime);
+			this.trace(sqlTime);
 		} else if (methodName.startsWith(EXECUTE)) {
 			// executing should update the log and do a trace
 			int argCount = (args != null ? args.length : 0);
@@ -188,7 +222,7 @@ class StatementHandler implements InvocationHandler {
 				this.setSqlStatementIfNull((String) args[0]);
 			}
 			this.appendToSqlLog();
-			this.trace(startTime);
+			this.trace(sqlTime);
 		}
 	}
 
@@ -285,18 +319,17 @@ class StatementHandler implements InvocationHandler {
 	/**
 	 * Trace the sql and the time it cost.
 	 * 
-	 * @param startTime
+	 * @param sqlTime
 	 *            so we can log how long the sql cost
 	 */
-	private void trace(long startTime) {
+	private void trace(long sqlTime) {
 		int len = this.sqlLog.length();
 		if (len > 0) {
 			// delete the last "\n"
 			this.sqlLog.deleteCharAt(len - 1);
 		}
 		// log sql and the time it cost
-		LOG.info("SHOWSQL(" + (System.currentTimeMillis() - startTime)
-				+ "ms):\n" + this.sqlLog.toString());
+		LOG.info("SHOWSQL(" + sqlTime + "ms):\n" + this.sqlLog.toString());
 		// Clear parameterMap for next time
 		if (this.parameterMap != null) {
 			this.parameterMap.clear();

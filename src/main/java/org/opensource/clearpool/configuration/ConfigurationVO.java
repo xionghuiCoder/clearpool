@@ -55,6 +55,7 @@ public class ConfigurationVO {
 	private String testQuerySql;
 	private String testCreateSql;
 	private boolean showSql;
+	private int sqlTimeFilter;
 
 	public static Console getConsole() {
 		return console;
@@ -200,6 +201,18 @@ public class ConfigurationVO {
 		this.showSql = showSql;
 	}
 
+	public int getSqlTimeFilter() {
+		return this.sqlTimeFilter;
+	}
+
+	public void setSqlTimeFilter(int sqlTimeFilter) {
+		if (sqlTimeFilter < 0) {
+			LOG.warn("the sqlFilter is negative");
+			return;
+		}
+		this.sqlTimeFilter = sqlTimeFilter;
+	}
+
 	/**
 	 * We check if this object is legal,and reset its default values.
 	 */
@@ -226,6 +239,10 @@ public class ConfigurationVO {
 					+ " where 0=1";
 			this.testCreateSql = "create table " + this.testTableName
 					+ "(id char(1) primary key)";
+		}
+		if (this.sqlTimeFilter > 0 && !this.showSql) {
+			throw new ConnectionPoolXMLParseException(
+					"sqlTimeFilter shouldn't be set when showSql is false");
 		}
 	}
 

@@ -1,6 +1,7 @@
 package org.opensource.clearpool.core.chain;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opensource.clearpool.exception.ConnectionPoolException;
 
@@ -17,7 +18,8 @@ import sun.misc.Unsafe;
  * @date 26.07.2014
  * @version 1.0
  */
-class AtomicSingleChain<E> extends CommonChain<E> {
+@Deprecated
+public class AtomicSingleChain<E> extends CommonChain<E> {
 	private static final Unsafe UNSAFE;
 
 	private static final long HEAD_OFFSET;
@@ -39,6 +41,8 @@ class AtomicSingleChain<E> extends CommonChain<E> {
 
 	private volatile Node<E> head = this.tail = new SingleNode<E>(null);
 	private volatile Node<E> tail;
+
+	protected AtomicInteger size = new AtomicInteger();
 
 	/**
 	 * Add a element to {@link #tail} atomically.
@@ -135,6 +139,11 @@ class AtomicSingleChain<E> extends CommonChain<E> {
 	 */
 	private boolean compareAndSetTail(Node<E> expect, Node<E> update) {
 		return UNSAFE.compareAndSwapObject(this, TAIL_OFFSET, expect, update);
+	}
+
+	@Override
+	public int size() {
+		return this.size.get();
 	}
 
 	/**

@@ -32,7 +32,7 @@ public class XAConnectionImpl extends PoolConnectionImpl implements
 	@Override
 	public Statement createProxyStatement(Statement statement, String sql) {
 		Statement statementProxy = ProxyFactory.createProxyXAStatement(
-				statement, this, sql);
+				statement, this, this.conProxy, sql);
 		return statementProxy;
 	}
 
