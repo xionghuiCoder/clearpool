@@ -1,7 +1,7 @@
 package org.opensource.clearpool.security;
 
 /**
- * The interface to Encrypt and Encrypt the text.
+ * The interface to encrypt or decrypt the text.
  * 
  * @author xionghui
  * @date 24.09.2014
