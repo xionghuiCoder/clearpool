@@ -5,13 +5,14 @@ import java.util.Arrays;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 
 /**
- * This is a lock-control heap chain.
+ * This is a binary heap.<br />
+ * It makes sure that the connection is most often reused.
  * 
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
-public class LockHeapChain {
+public class BinaryHeap {
 	private static final int MAXIMUM_CAPACITY = 1 << 30;
 
 	/**
@@ -24,11 +25,11 @@ public class LockHeapChain {
 
 	private volatile int size;
 
-	public LockHeapChain() {
+	public BinaryHeap() {
 		this(DEFAULT_INITIAL_CAPACITY);
 	}
 
-	public LockHeapChain(int initialCapacity) {
+	public BinaryHeap(int initialCapacity) {
 		if (initialCapacity <= 0) {
 			throw new IllegalArgumentException("Illegal initial capacity: "
 					+ initialCapacity);
@@ -39,7 +40,6 @@ public class LockHeapChain {
 	}
 
 	private int roundUpToPowerOf2(int number) {
-		// assert number >= 0 : "number must be non-negative";
 		return number >= MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY
 				: (number > 1) ? Integer.highestOneBit((number - 1) << 1) : 1;
 	}
@@ -59,16 +59,16 @@ public class LockHeapChain {
 	/**
 	 * Establishes the heap invariant (described above) assuming the heap
 	 * satisfies the invariant except possibly for the leaf-node indexed by k
-	 * (which may have a nextExecutionTime less than its parent's).
+	 * (which may have a element greater than its parent's).
 	 * 
 	 * This method functions by "promoting" queue[k] up the hierarchy (by
-	 * swapping it with its parent) repeatedly until queue[k]'s
-	 * nextExecutionTime is greater than or equal to that of its parent.
+	 * swapping it with its parent) repeatedly until queue[k]'s element is less
+	 * than or equal to that of its parent.
 	 */
 	private void fixUp(int k) {
 		while (k > 1) {
 			int j = k >> 1;
-			if (this.queue[j].element.compareTo(this.queue[k].element) <= 0) {
+			if (this.queue[j].element.compareTo(this.queue[k].element) >= 0) {
 				break;
 			}
 			ProxyNode tmp = this.queue[j];
@@ -96,23 +96,22 @@ public class LockHeapChain {
 	/**
 	 * Establishes the heap invariant (described above) in the subtree rooted at
 	 * k, which is assumed to satisfy the heap invariant except possibly for
-	 * node k itself (which may have a nextExecutionTime greater than its
-	 * children's).
+	 * node k itself (which may have a element less than its children's).
 	 * 
 	 * This method functions by "demoting" queue[k] down the hierarchy (by
-	 * swapping it with its smaller child) repeatedly until queue[k]'s
-	 * nextExecutionTime is less than or equal to those of its children.
+	 * swapping it with its smaller child) repeatedly until queue[k]'s element
+	 * is greater than or equal to those of its children.
 	 */
 	private void fixDown(int k) {
 		int j;
 		while ((j = k << 1) <= this.size && j > 0) {
 			if (j < this.size
 					&& this.queue[j].element
-							.compareTo(this.queue[j + 1].element) > 0) {
-				// j indexes smallest kid
+							.compareTo(this.queue[j + 1].element) < 0) {
+				// j indexes bigger kid
 				j++;
 			}
-			if (this.queue[k].element.compareTo(this.queue[j].element) <= 0) {
+			if (this.queue[k].element.compareTo(this.queue[j].element) >= 0) {
 				break;
 			}
 			ProxyNode tmp = this.queue[j];
@@ -154,7 +153,7 @@ public class LockHeapChain {
 
 		/**
 		 * we should know that entryTime is used by {@link AtomicSingleChain} or
-		 * {@link LockHeapChain}
+		 * {@link BinaryHeap}
 		 */
 		long entryTime;
 

@@ -46,7 +46,7 @@ public abstract class CommonChain<E> implements Iterable<E> {
 
 		/**
 		 * we should know that entryTime is used by {@link AtomicSingleChain} or
-		 * {@link LockHeapChain}
+		 * {@link BinaryHeap}
 		 */
 		long entryTime;
 

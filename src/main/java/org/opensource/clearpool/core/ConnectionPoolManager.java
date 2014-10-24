@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.sql.PooledConnection;
 
 import org.opensource.clearpool.configuration.ConfigurationVO;
-import org.opensource.clearpool.core.chain.LockHeapChain;
+import org.opensource.clearpool.core.chain.BinaryHeap;
 import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.datasource.factory.DataSourceAbstractFactory;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
@@ -38,9 +38,7 @@ public class ConnectionPoolManager {
 	private Lock lock = new ReentrantLock();
 	private Condition notEmpty = this.lock.newCondition();
 
-	// private final CommonChain<ConnectionProxy> connectionChain = new
-	// AtomicSingleChain<ConnectionProxy>();
-	private final LockHeapChain connectionChain = new LockHeapChain();;
+	private final BinaryHeap connectionChain = new BinaryHeap();;
 
 	// save all the connection to close in case we shutdown the JVM
 	private volatile Set<ConnectionProxy> connectionSet = new HashSet<ConnectionProxy>();
@@ -230,7 +228,7 @@ public class ConnectionPoolManager {
 		}
 	}
 
-	public LockHeapChain getConnectionChain() {
+	public BinaryHeap getConnectionChain() {
 		return this.connectionChain;
 	}
 

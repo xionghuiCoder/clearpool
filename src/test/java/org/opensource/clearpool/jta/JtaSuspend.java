@@ -12,6 +12,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
+import org.opensource.clearpool.jta.UserTransactionImpl;
 import org.opensource.clearpool.log.PoolLogFactory;
 
 /**

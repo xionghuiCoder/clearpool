@@ -14,21 +14,16 @@ import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.log.PoolLogFactory;
 
 /**
- * Note: <br />
- * 1.replace jdbcClass which is in clearpool-test-jta-distributed1.xml and
- * clearpool-test-jta-distributed2.xml with your database's jdbc-class please; <br />
- * 2.replace url which is in clearpool-test-jta-distributed1.xml and
- * clearpool-test-jta-distributed2.xml with your database's url please; <br />
- * 3.replace user which is in clearpool-test-jta-distributed1.xml and
- * clearpool-test-jta-distributed2.xml with your database's user please; <br />
- * 4.replace password which is in clearpool-test-jta-distributed1.xml and
- * clearpool-test-jta-distributed2.xml with your database's password please.
+ * Note: replace database configuration in
+ * clearpool-test-jta-mysql-distributed1.xml and
+ * clearpool-test-jta-mysql-distributed2.xml with your MySQL's real
+ * configuration please.
  * 
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0
  */
-public class JtaDistributed extends TestCase {
+public class JtaDistributedInMySQL extends TestCase {
 	private static final Random RANDOM = new Random();
 
 	private static ClearPoolDataSource dataSource;
@@ -43,7 +38,8 @@ public class JtaDistributed extends TestCase {
 	@Override
 	public void setUp() throws Exception {
 		dataSource = new ClearPoolDataSource();
-		dataSource.initPath("clearpool/jta/clearpool-test-jta-distributed.xml");
+		dataSource
+				.initPath("clearpool/jta/clearpool-test-jta-mysql-distributed.xml");
 		this.tableName1 = this.init("myclearpool1");
 		this.tableName2 = this.init("myclearpool2");
 	}

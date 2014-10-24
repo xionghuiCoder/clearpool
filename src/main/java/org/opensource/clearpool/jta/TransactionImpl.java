@@ -265,12 +265,12 @@ class TransactionImpl implements Transaction {
 		}
 		if (!this.xaResMap.containsKey(xaresource)) {
 			try {
-				for (ResourceCarry carry : this.resList) {
-					if (carry.xaRes.isSameRM(xaresource)) {
-						xaresource.start(carry.xid, XAResource.TMJOIN);
-						return true;
-					}
-				}
+				/*
+				 * for (ResourceCarry carry : this.resList) { if
+				 * (carry.xaRes.isSameRM(xaresource)) {
+				 * xaresource.start(carry.xid, XAResource.TMJOIN); return true;
+				 * } }
+				 */
 				ResourceCarry carry = new ResourceCarry(xaresource);
 				xaresource.start(carry.xid, XAResource.TMNOFLAGS);
 				this.resList.add(carry);

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="clearpool.xsd">
+	<alias>myclearpool1</alias>
+	<jdbc>
+		<!-- replace jdbcClass with your database's jdbc-class please -->
+		<jdbc-class>oracle.jdbc.driver.OracleDriver</jdbc-class>
+		<!-- replace url with your database's url please -->
+		<url>jdbc:oracle:thin:@20.10.1.224:1521:ora10g</url>
+		<!-- replace user with your database's user please -->
+		<user>cm65dev</user>
+		<!-- replace password with your database's password please -->
+		<password>1</password>
+	</jdbc>
+	<jta-support>true</jta-support>
+	<core-pool-size>10</core-pool-size>
+	<max-pool-size>50</max-pool-size>
+	<acquire-increment>10</acquire-increment>
+	<acquire-retry-times>3</acquire-retry-times>
+	<limit-idle-time>5</limit-idle-time>
+	<keep-test-period>20</keep-test-period>
+	<test-table-name>test</test-table-name>
+	<show-sql>false</show-sql>
+</clearpool>
