@@ -20,35 +20,34 @@ import org.opensource.clearpool.util.JdbcUtil;
  * @version 1.0
  */
 public class OpenAndCloseConnection extends TestCase {
-	private String jdbcClass = "com.mysql.jdbc.Driver";
-	private String url = "jdbc:mysql://127.0.0.1:3306/test";
-	private String user = "root";
-	private String password = "1";
+  private String jdbcClass = "com.mysql.jdbc.Driver";
+  private String url = "jdbc:mysql://127.0.0.1:3306/test";
+  private String user = "root";
+  private String password = "1";
 
-	private Driver driver;
-	private Properties connectProperties = new Properties();
+  private Driver driver;
+  private Properties connectProperties = new Properties();
 
-	private int loop = 5;
-	private int count = 100;
+  private int loop = 5;
+  private int count = 100;
 
-	@Override
-	public void setUp() throws Exception {
-		System.setProperty("jdbc.drivers", this.jdbcClass);
-		this.driver = JdbcUtil.createDriver(this.jdbcClass);
-		this.connectProperties.put("user", this.user);
-		this.connectProperties.put("password", this.password);
-	}
+  @Override
+  public void setUp() throws Exception {
+    System.setProperty("jdbc.drivers", this.jdbcClass);
+    this.driver = JdbcUtil.createDriver(this.jdbcClass);
+    this.connectProperties.put("user", this.user);
+    this.connectProperties.put("password", this.password);
+  }
 
-	public void test_Statement() throws Exception {
-		System.out.print("time:	");
-		for (int i = 0; i < this.loop; i++) {
-			long begin = System.currentTimeMillis();
-			for (int j = 0; j < this.count; j++) {
-				Connection conn = this.driver.connect(this.url,
-						this.connectProperties);
-				conn.close();
-			}
-			System.out.print((System.currentTimeMillis() - begin) + "ms	");
-		}
-	}
+  public void test_Statement() throws Exception {
+    System.out.print("time:	");
+    for (int i = 0; i < this.loop; i++) {
+      long begin = System.currentTimeMillis();
+      for (int j = 0; j < this.count; j++) {
+        Connection conn = this.driver.connect(this.url, this.connectProperties);
+        conn.close();
+      }
+      System.out.print((System.currentTimeMillis() - begin) + "ms	");
+    }
+  }
 }

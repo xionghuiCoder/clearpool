@@ -14,21 +14,20 @@ import org.xml.sax.SAXParseException;
  * @version 1.0
  */
 public class XMLErrorHandler implements ErrorHandler {
-	private static final PoolLog LOG = PoolLogFactory
-			.getLog(XMLErrorHandler.class);
+  private static final PoolLog LOG = PoolLogFactory.getLog(XMLErrorHandler.class);
 
-	@Override
-	public void warning(SAXParseException exception) throws SAXException {
-		LOG.warn(exception);
-	}
+  @Override
+  public void warning(SAXParseException exception) throws SAXException {
+    LOG.warn(exception);
+  }
 
-	@Override
-	public void error(SAXParseException exception) throws SAXException {
-		throw exception;
-	}
+  @Override
+  public void error(SAXParseException exception) throws SAXException {
+    throw exception;
+  }
 
-	@Override
-	public void fatalError(SAXParseException exception) throws SAXException {
-		throw exception;
-	}
+  @Override
+  public void fatalError(SAXParseException exception) throws SAXException {
+    throw exception;
+  }
 }

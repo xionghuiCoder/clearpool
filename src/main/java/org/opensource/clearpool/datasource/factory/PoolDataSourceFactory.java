@@ -11,15 +11,14 @@ import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
 
 public class PoolDataSourceFactory extends DataSourceAbstractFactory {
 
-	@Override
-	public AbstractDataSource createDataSource(
-			CommonDataSource commonDataSource) {
-		return new PoolDataSource((ConnectionPoolDataSource) commonDataSource);
-	}
+  @Override
+  public AbstractDataSource createDataSource(CommonDataSource commonDataSource) {
+    return new PoolDataSource((ConnectionPoolDataSource) commonDataSource);
+  }
 
-	@Override
-	public PooledConnection createPooledConnection(ConnectionProxy conProxy) {
-		PooledConnection pooledConnection = new PoolConnectionImpl(conProxy);
-		return pooledConnection;
-	}
+  @Override
+  public PooledConnection createPooledConnection(ConnectionProxy conProxy) {
+    PooledConnection pooledConnection = new PoolConnectionImpl(conProxy);
+    return pooledConnection;
+  }
 }

@@ -5,7 +5,7 @@ import java.sql.Connection;
 import javax.sql.XAConnection;
 
 public abstract class CommonConnection {
-	public abstract Connection getConnection();
+  public abstract Connection getConnection();
 
-	public abstract XAConnection getXAConnection();
+  public abstract XAConnection getXAConnection();
 }

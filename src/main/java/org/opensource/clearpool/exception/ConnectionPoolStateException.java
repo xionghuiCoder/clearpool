@@ -8,13 +8,13 @@ package org.opensource.clearpool.exception;
  * @version 1.0
  */
 public class ConnectionPoolStateException extends RuntimeException {
-	private static final long serialVersionUID = -1428257858942209361L;
+  private static final long serialVersionUID = -1428257858942209361L;
 
-	public ConnectionPoolStateException() {
-		super();
-	}
+  public ConnectionPoolStateException() {
+    super();
+  }
 
-	public ConnectionPoolStateException(String meassage) {
-		super(meassage);
-	}
+  public ConnectionPoolStateException(String meassage) {
+    super(meassage);
+  }
 }

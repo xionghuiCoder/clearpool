@@ -3,7 +3,7 @@
 	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<!-- alias -->
 	<alias>jdbcclearpool</alias>
-	<!-- we can get datasource by jdbc.-->
+	<!-- we can get datasource by jdbc. -->
 	<jdbc>
 		<jdbc-class>class</jdbc-class>
 		<url>url</url>

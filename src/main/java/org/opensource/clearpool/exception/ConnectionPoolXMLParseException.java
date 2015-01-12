@@ -8,17 +8,17 @@ package org.opensource.clearpool.exception;
  * @version 1.0
  */
 public class ConnectionPoolXMLParseException extends RuntimeException {
-	private static final long serialVersionUID = -1428257858942209361L;
+  private static final long serialVersionUID = -1428257858942209361L;
 
-	public ConnectionPoolXMLParseException() {
-		super();
-	}
+  public ConnectionPoolXMLParseException() {
+    super();
+  }
 
-	public ConnectionPoolXMLParseException(String meassage) {
-		super(meassage);
-	}
+  public ConnectionPoolXMLParseException(String meassage) {
+    super(meassage);
+  }
 
-	public ConnectionPoolXMLParseException(Throwable cause) {
-		super(cause);
-	}
+  public ConnectionPoolXMLParseException(Throwable cause) {
+    super(cause);
+  }
 }

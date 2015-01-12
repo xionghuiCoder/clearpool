@@ -8,17 +8,17 @@ package org.opensource.clearpool.exception;
  * @version 1.0
  */
 public class ConnectionPoolMBeanException extends RuntimeException {
-	private static final long serialVersionUID = -1428257858942209361L;
+  private static final long serialVersionUID = -1428257858942209361L;
 
-	public ConnectionPoolMBeanException() {
-		super();
-	}
+  public ConnectionPoolMBeanException() {
+    super();
+  }
 
-	public ConnectionPoolMBeanException(String meassage) {
-		super(meassage);
-	}
+  public ConnectionPoolMBeanException(String meassage) {
+    super(meassage);
+  }
 
-	public ConnectionPoolMBeanException(Throwable cause) {
-		super(cause);
-	}
+  public ConnectionPoolMBeanException(Throwable cause) {
+    super(cause);
+  }
 }

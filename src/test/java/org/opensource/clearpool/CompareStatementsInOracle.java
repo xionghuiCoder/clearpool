@@ -23,80 +23,76 @@ import junit.framework.TestCase;
  * @version 1.0
  */
 public class CompareStatementsInOracle extends TestCase {
-	private String jdbcClass = "oracle.jdbc.driver.OracleDriver";
-	private String url = "jdbc:oracle:thin:@20.10.1.224:1521:ora10g";
-	private String user = "cm65dev";
-	private String password = "1";
+  private String jdbcClass = "oracle.jdbc.driver.OracleDriver";
+  private String url = "jdbc:oracle:thin:@20.10.1.224:1521:ora10g";
+  private String user = "cm65dev";
+  private String password = "1";
 
-	private String preparedSql = "select count(1) from cm_stuff where dr=?";
-	private String statementSql = "select count(1) from cm_stuff where dr=";
+  private String preparedSql = "select count(1) from cm_stuff where dr=?";
+  private String statementSql = "select count(1) from cm_stuff where dr=";
 
-	private int loop = 5;
-	private int count = 5000;
+  private int loop = 5;
+  private int count = 5000;
 
-	static {
-		System.out.println("Oracle:");
-	}
+  static {
+    System.out.println("Oracle:");
+  }
 
-	@Override
-	public void setUp() throws Exception {
-		System.setProperty("jdbc.drivers", this.jdbcClass);
-	}
+  @Override
+  public void setUp() throws Exception {
+    System.setProperty("jdbc.drivers", this.jdbcClass);
+  }
 
-	public void test_Statement() throws Exception {
-		System.out.print("Statement cost: ");
-		for (int i = 0; i < this.loop; i++) {
-			Connection conn = DriverManager.getConnection(this.url, this.user,
-					this.password);
-			long begin = System.currentTimeMillis();
-			for (int j = 0; j < this.count; j++) {
-				Statement stm = conn.createStatement();
-				stm.executeQuery(this.statementSql + j);
-				stm.close();
-			}
-			System.out.print((System.currentTimeMillis() - begin) + "ms	");
-			conn.close();
-		}
-		System.out.println();
-	}
+  public void test_Statement() throws Exception {
+    System.out.print("Statement cost: ");
+    for (int i = 0; i < this.loop; i++) {
+      Connection conn = DriverManager.getConnection(this.url, this.user, this.password);
+      long begin = System.currentTimeMillis();
+      for (int j = 0; j < this.count; j++) {
+        Statement stm = conn.createStatement();
+        stm.executeQuery(this.statementSql + j);
+        stm.close();
+      }
+      System.out.print((System.currentTimeMillis() - begin) + "ms	");
+      conn.close();
+    }
+    System.out.println();
+  }
 
-	public void test_PreparedStatement() throws Exception {
-		System.out.print("PreparedStatement cost: ");
-		Connection conn = DriverManager.getConnection(this.url, this.user,
-				this.password);
-		for (int i = 0; i < this.loop; i++) {
-			long begin = System.currentTimeMillis();
-			for (int j = 0; j < this.count; j++) {
-				PreparedStatement stm = conn.prepareStatement(this.preparedSql);
-				stm.setInt(1, j);
-				stm.executeQuery();
-				stm.close();
-			}
-			System.out.print((System.currentTimeMillis() - begin) + "ms	");
-		}
-		conn.close();
-		System.out.println();
-	}
+  public void test_PreparedStatement() throws Exception {
+    System.out.print("PreparedStatement cost: ");
+    Connection conn = DriverManager.getConnection(this.url, this.user, this.password);
+    for (int i = 0; i < this.loop; i++) {
+      long begin = System.currentTimeMillis();
+      for (int j = 0; j < this.count; j++) {
+        PreparedStatement stm = conn.prepareStatement(this.preparedSql);
+        stm.setInt(1, j);
+        stm.executeQuery();
+        stm.close();
+      }
+      System.out.print((System.currentTimeMillis() - begin) + "ms	");
+    }
+    conn.close();
+    System.out.println();
+  }
 
-	public void test_CallableStatement() throws Exception {
-		System.out.print("CallableStatement cost: ");
-		Connection conn = DriverManager.getConnection(this.url, this.user,
-				this.password);
-		for (int i = 0; i < this.loop; i++) {
-			long begin = System.currentTimeMillis();
-			for (int j = 0; j < this.count; j++) {
-				CallableStatement stm = conn.prepareCall(this.preparedSql);
-				stm.setInt(1, j);
-				stm.executeQuery();
-				stm.close();
-			}
-			System.out.print((System.currentTimeMillis() - begin) + "ms	");
-		}
-		conn.close();
-		System.out.println();
-	}
+  public void test_CallableStatement() throws Exception {
+    System.out.print("CallableStatement cost: ");
+    Connection conn = DriverManager.getConnection(this.url, this.user, this.password);
+    for (int i = 0; i < this.loop; i++) {
+      long begin = System.currentTimeMillis();
+      for (int j = 0; j < this.count; j++) {
+        CallableStatement stm = conn.prepareCall(this.preparedSql);
+        stm.setInt(1, j);
+        stm.executeQuery();
+        stm.close();
+      }
+      System.out.print((System.currentTimeMillis() - begin) + "ms	");
+    }
+    conn.close();
+    System.out.println();
+  }
 
-	@Override
-	public void tearDown() throws Exception {
-	}
+  @Override
+  public void tearDown() throws Exception {}
 }

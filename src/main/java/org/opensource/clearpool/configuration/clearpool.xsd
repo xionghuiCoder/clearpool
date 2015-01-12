@@ -53,8 +53,8 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="show-sql" type="xs:boolean" minOccurs="0"
 				maxOccurs="1" />
-			<xs:element name="sql-time-filter" type="xs:integer" minOccurs="0"
-				maxOccurs="1" />
+			<xs:element name="sql-time-filter" type="xs:integer"
+				minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 	</xs:group>
 

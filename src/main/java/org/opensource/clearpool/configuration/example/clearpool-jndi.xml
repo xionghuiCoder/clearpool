@@ -3,7 +3,7 @@
 	xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<!-- alias -->
 	<alias>myclearpool</alias>
-	<!-- we can get datasource by jndi.-->
+	<!-- we can get datasource by jndi. -->
 	<jndi>
 		<jndi-name>jndi</jndi-name>
 		<prop key="java.naming.factory.initial">initial</prop>

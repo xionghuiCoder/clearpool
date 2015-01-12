@@ -14,21 +14,21 @@ import org.opensource.clearpool.datasource.connection.CommonConnection;
  * @version 1.0
  */
 public class JDBCDataSourceWrapper extends AbstractDataSource {
-	private JDBCDataSource jdbcDs;
+  private JDBCDataSource jdbcDs;
 
-	public JDBCDataSourceWrapper(JDBCDataSource jdbcDs) {
-		this.jdbcDs = jdbcDs;
-	}
+  public JDBCDataSourceWrapper(JDBCDataSource jdbcDs) {
+    this.jdbcDs = jdbcDs;
+  }
 
-	@Override
-	public Connection getConnection() throws SQLException {
-		return this.jdbcDs.getConnection();
-	}
+  @Override
+  public Connection getConnection() throws SQLException {
+    return this.jdbcDs.getConnection();
+  }
 
-	@Override
-	public CommonConnection getCommonConnection() throws SQLException {
-		Connection con = this.getConnection();
-		CommonConnection cmnCon = new ConnectionWrapper(con);
-		return cmnCon;
-	}
+  @Override
+  public CommonConnection getCommonConnection() throws SQLException {
+    Connection con = this.getConnection();
+    CommonConnection cmnCon = new ConnectionWrapper(con);
+    return cmnCon;
+  }
 }

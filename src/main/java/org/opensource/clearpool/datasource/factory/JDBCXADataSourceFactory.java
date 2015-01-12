@@ -11,15 +11,14 @@ import org.opensource.clearpool.jta.xa.XAConnectionImpl;
 
 public class JDBCXADataSourceFactory extends DataSourceAbstractFactory {
 
-	@Override
-	public AbstractDataSource createDataSource(
-			CommonDataSource commonDataSource) {
-		return new JDBCXADataSource((JDBCDataSource) commonDataSource);
-	}
+  @Override
+  public AbstractDataSource createDataSource(CommonDataSource commonDataSource) {
+    return new JDBCXADataSource((JDBCDataSource) commonDataSource);
+  }
 
-	@Override
-	public PooledConnection createPooledConnection(ConnectionProxy conProxy) {
-		PooledConnection pooledConnection = new XAConnectionImpl(conProxy);
-		return pooledConnection;
-	}
+  @Override
+  public PooledConnection createPooledConnection(ConnectionProxy conProxy) {
+    PooledConnection pooledConnection = new XAConnectionImpl(conProxy);
+    return pooledConnection;
+  }
 }

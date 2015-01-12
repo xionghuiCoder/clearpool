@@ -8,29 +8,28 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class XMLEntityResolver implements EntityResolver {
-	private static final String CONFIG_DTD = "org/opensource/clearpool/configuration/clearpool.xsd";
+  private static final String CONFIG_DTD = "org/opensource/clearpool/configuration/clearpool.xsd";
 
-	@Override
-	public InputSource resolveEntity(String publicId, String systemId)
-			throws SAXException, IOException {
-		String path = CONFIG_DTD;
-		InputSource source = this.getInputSource(path);
-		source.setPublicId(publicId);
-		source.setSystemId(systemId);
-		return source;
-	}
+  @Override
+  public InputSource resolveEntity(String publicId, String systemId) throws SAXException,
+      IOException {
+    String path = CONFIG_DTD;
+    InputSource source = this.getInputSource(path);
+    source.setPublicId(publicId);
+    source.setSystemId(systemId);
+    return source;
+  }
 
-	private InputSource getInputSource(String path) {
-		InputSource source = null;
-		ClassLoader classLoader = Thread.currentThread()
-				.getContextClassLoader();
-		InputStream in = null;
-		if (classLoader == null) {
-			in = ClassLoader.getSystemResourceAsStream(path);
-		} else {
-			in = classLoader.getResourceAsStream(path);
-		}
-		source = new InputSource(in);
-		return source;
-	}
+  private InputSource getInputSource(String path) {
+    InputSource source = null;
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    InputStream in = null;
+    if (classLoader == null) {
+      in = ClassLoader.getSystemResourceAsStream(path);
+    } else {
+      in = classLoader.getResourceAsStream(path);
+    }
+    source = new InputSource(in);
+    return source;
+  }
 }

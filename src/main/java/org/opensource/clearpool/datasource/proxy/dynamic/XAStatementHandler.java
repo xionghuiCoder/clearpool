@@ -13,39 +13,36 @@ import org.opensource.clearpool.jta.TransactionManagerImpl;
 import org.opensource.clearpool.jta.xa.XAConnectionImpl;
 
 class XAStatementHandler extends StatementHandler {
-	protected static final String EXECUTE_UPDATE_METHOD = "executeUpdate";
+  protected static final String EXECUTE_UPDATE_METHOD = "executeUpdate";
 
-	private XAConnectionImpl xaCon;
+  private XAConnectionImpl xaCon;
 
-	XAStatementHandler(Statement statement, XAConnectionImpl xaCon,
-			ConnectionProxy conProxy, String sql) {
-		super(statement, xaCon, conProxy, sql);
-		this.xaCon = xaCon;
-	}
+  XAStatementHandler(Statement statement, XAConnectionImpl xaCon, ConnectionProxy conProxy,
+      String sql) {
+    super(statement, xaCon, conProxy, sql);
+    this.xaCon = xaCon;
+  }
 
-	/**
-	 * @see StatementHandler#beforeInvoke
-	 */
-	@Override
-	protected void beforeInvoke(String methodName) throws XAException,
-			SystemException {
-		if (this.needTransaction(methodName)) {
-			Transaction ts = TransactionManagerImpl.getManager()
-					.getTransaction();
-			if (ts != null) {
-				try {
-					XAResource xaRes = this.xaCon.getXAResource();
-					ts.enlistResource(xaRes);
-				} catch (Exception e) {
-					throw new TransactionException(e);
-				}
-			}
-		}
-	}
+  /**
+   * @see StatementHandler#beforeInvoke
+   */
+  @Override
+  protected void beforeInvoke(String methodName) throws XAException, SystemException {
+    if (this.needTransaction(methodName)) {
+      Transaction ts = TransactionManagerImpl.getManager().getTransaction();
+      if (ts != null) {
+        try {
+          XAResource xaRes = this.xaCon.getXAResource();
+          ts.enlistResource(xaRes);
+        } catch (Exception e) {
+          throw new TransactionException(e);
+        }
+      }
+    }
+  }
 
-	private boolean needTransaction(String methodName) {
-		return EXECUTE.equals(methodName)
-				|| EXECUTE_BATCH_METHOD.equals(methodName)
-				|| EXECUTE_UPDATE_METHOD.equals(methodName);
-	}
+  private boolean needTransaction(String methodName) {
+    return EXECUTE.equals(methodName) || EXECUTE_BATCH_METHOD.equals(methodName)
+        || EXECUTE_UPDATE_METHOD.equals(methodName);
+  }
 }

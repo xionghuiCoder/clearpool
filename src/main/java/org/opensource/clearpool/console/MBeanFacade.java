@@ -16,50 +16,47 @@ import org.opensource.clearpool.util.PoolLatchUtil;
  * @version 1.0
  */
 public class MBeanFacade {
-	public static Console console = ConfigurationVO.getConsole();
+  public static Console console = ConfigurationVO.getConsole();
 
-	/**
-	 * {@see
-	 * CommunicatorServerHandler#registerMBean(ConnectionPoolManager,String,
-	 * String)}
-	 */
-	public static void registerMBean(ConnectionPoolManager pool,
-			String mbeanName, String poolName) {
-		if (console != null) {
-			CommunicatorServerHandler.registerMBean(pool, mbeanName, poolName);
-		}
-	}
+  /**
+   * {@see CommunicatorServerHandler#registerMBean(ConnectionPoolManager,String, String)}
+   */
+  public static void registerMBean(ConnectionPoolManager pool, String mbeanName, String poolName) {
+    if (console != null) {
+      CommunicatorServerHandler.registerMBean(pool, mbeanName, poolName);
+    }
+  }
 
-	/**
-	 * {@see CommunicatorServerHandler#unregisterMBean(String)}
-	 */
-	public static void unregisterMBean(String poolName) {
-		if (console != null) {
-			CommunicatorServerHandler.unregisterMBean(poolName);
-		}
-	}
+  /**
+   * {@see CommunicatorServerHandler#unregisterMBean(String)}
+   */
+  public static void unregisterMBean(String poolName) {
+    if (console != null) {
+      CommunicatorServerHandler.unregisterMBean(poolName);
+    }
+  }
 
-	/**
-	 * {@see CommunicatorServerHandler#start()}
-	 */
-	public static void start() {
-		if (console == null) {
-			/**
-			 * Maybe HtmlAdaptorHook don't need to start,so don't forget count
-			 * down latch,otherwise CommonPoolContainer will wait forever.
-			 */
-			PoolLatchUtil.countDownStartLatch();
-		} else {
-			CommunicatorServerHandler.start();
-		}
-	}
+  /**
+   * {@see CommunicatorServerHandler#start()}
+   */
+  public static void start() {
+    if (console == null) {
+      /**
+       * Maybe HtmlAdaptorHook don't need to start,so don't forget count down latch,otherwise
+       * CommonPoolContainer will wait forever.
+       */
+      PoolLatchUtil.countDownStartLatch();
+    } else {
+      CommunicatorServerHandler.start();
+    }
+  }
 
-	/**
-	 * {@see CommunicatorServerHandler#stop()}
-	 */
-	public static void stop() {
-		if (console != null) {
-			CommunicatorServerHandler.stop();
-		}
-	}
+  /**
+   * {@see CommunicatorServerHandler#stop()}
+   */
+  public static void stop() {
+    if (console != null) {
+      CommunicatorServerHandler.stop();
+    }
+  }
 }
