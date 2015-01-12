@@ -14,6 +14,8 @@ The function of the pool:
 </ol>
 
 Here is the result of comparing with druid and tomcat-jdbc.
-![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/compare.jpg)
+![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/compare.png)
 
 If you want to compare the performance with other popular database pools,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPool.java.
+
+If you want to modify and commit clearpool, please import googlestyle-java.xml, it will helps a lot.
