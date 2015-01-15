@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This is a circle chain.We can add or remove a element by lock.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -50,7 +50,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
 
   /**
    * This class used to get element and set next.
-   * 
+   *
    * @author xionghui
    * @date 26.07.2014
    * @version 1.0
@@ -73,7 +73,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
 
   /**
    * This class is used by for..in
-   * 
+   *
    * @author xionghui
    * @date 26.07.2014
    * @version 1.0
@@ -96,7 +96,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
     public E next() {
       this.previous = this.pointer;
       this.pointer = this.pointer.next;
-      return this.pointer.element;
+      return this.previous.element;
     }
 
     /**
@@ -113,6 +113,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
           LockCircleChain.this.lock.lock();
           try {
             this.previous.next = this.pointer.next;
+            this.pointer = this.pointer.next;
           } finally {
             LockCircleChain.this.lock.unlock();
           }

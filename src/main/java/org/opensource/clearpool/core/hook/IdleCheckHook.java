@@ -13,7 +13,7 @@ import org.opensource.clearpool.util.ThreadSleepUtil;
 /**
  * This class's duty is that close the connection which is expired and check if the connection is
  * valid.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -46,7 +46,7 @@ public class IdleCheckHook extends CommonHook {
       if (Thread.currentThread().isInterrupted()) {
         break;
       }
-      // rest for a while
+      // rest for a minute
       ThreadSleepUtil.sleep();
       ConnectionPoolManager pool = itr.next();
       if (pool == null || pool.isClosed()) {

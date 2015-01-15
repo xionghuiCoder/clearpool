@@ -8,13 +8,14 @@ package org.opensource.clearpool.util;
  * @version 1.0
  */
 public class ThreadSleepUtil {
+  private final static long MINUTE = 60 * 1000L;
 
   /**
-   * release CPU:if the thread don't sleep,the CPU will be took by this thread all the time.
+   * release CPU:if the thread don't sleep,the CPU will be used by this thread all the time.
    */
   public static void sleep() {
     try {
-      Thread.sleep(0, 1);
+      Thread.sleep(MINUTE);
     } catch (InterruptedException e) {
       // swallow the exception
     }
