@@ -16,13 +16,6 @@ public abstract class CommonChain<E> implements Iterable<E> {
   public abstract E remove();
 
   /**
-   * if it is the first element.
-   */
-  public boolean isFirst(E e) {
-    throw new UnsupportedOperationException("not supported yet");
-  }
-
-  /**
    * Remove a element which is overtime.
    */
   public E removeIdle(long period) {

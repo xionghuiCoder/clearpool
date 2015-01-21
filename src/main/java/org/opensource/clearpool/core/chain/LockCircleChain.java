@@ -44,11 +44,6 @@ public class LockCircleChain<E> extends CommonChain<E> {
   }
 
   @Override
-  public boolean isFirst(E e) {
-    return e == head;
-  }
-
-  @Override
   public Iterator<E> iterator() {
     return new ChainIterator();
   }
@@ -101,7 +96,7 @@ public class LockCircleChain<E> extends CommonChain<E> {
     public E next() {
       this.previous = this.pointer;
       this.pointer = this.pointer.next;
-      return this.previous.element;
+      return this.pointer.element;
     }
 
     /**
@@ -109,22 +104,22 @@ public class LockCircleChain<E> extends CommonChain<E> {
      */
     @Override
     public void remove() {
-      if (this.pointer != LockCircleChain.this.head) {
-        /**
-         * when previous is equals with head,we need to lock it,because we may set next of head when
-         * we add element.
-         */
-        if (this.previous == LockCircleChain.this.head) {
-          LockCircleChain.this.lock.lock();
-          try {
-            this.previous.next = this.pointer.next;
-            this.pointer = this.pointer.next;
-          } finally {
-            LockCircleChain.this.lock.unlock();
-          }
-        } else {
+      if (this.pointer == LockCircleChain.this.head) {
+        return;
+      }
+      /**
+       * when previous is equals with head,we need to lock it, because we may set next of head when
+       * we add element.
+       */
+      if (this.previous == LockCircleChain.this.head) {
+        LockCircleChain.this.lock.lock();
+        try {
           this.previous.next = this.pointer.next;
+        } finally {
+          LockCircleChain.this.lock.unlock();
         }
+      } else {
+        this.previous.next = this.pointer.next;
       }
     }
   }
