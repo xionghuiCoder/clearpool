@@ -44,6 +44,11 @@ public class LockCircleChain<E> extends CommonChain<E> {
   }
 
   @Override
+  public boolean isFirst(E e) {
+    return e == head;
+  }
+
+  @Override
   public Iterator<E> iterator() {
     return new ChainIterator();
   }

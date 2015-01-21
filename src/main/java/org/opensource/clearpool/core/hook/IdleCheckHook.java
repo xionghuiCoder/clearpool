@@ -46,9 +46,11 @@ public class IdleCheckHook extends CommonHook {
       if (Thread.currentThread().isInterrupted()) {
         break;
       }
-      // rest for a minute
-      ThreadSleepUtil.sleep();
       ConnectionPoolManager pool = itr.next();
+      if (poolChain.isFirst(pool)) {
+        // rest for a minute
+        ThreadSleepUtil.sleep();
+      }
       if (pool == null || pool.isClosed()) {
         itr.remove();
         continue;

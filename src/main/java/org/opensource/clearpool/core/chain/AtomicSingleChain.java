@@ -10,14 +10,15 @@ import sun.misc.Unsafe;
 /**
  * This is a one-way chain,it is provide atomic operation like {@link #add(E)}, {@link #get} and
  * getIdle(long).
- * 
+ *
  * Note:the class used {@link Unsafe} by reflection.We should know that {@link Unsafe} is not
  * encouraged to use.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
+@SuppressWarnings("restriction")
 @Deprecated
 public class AtomicSingleChain<E> extends CommonChain<E> {
   private static final Unsafe UNSAFE;
@@ -119,7 +120,7 @@ public class AtomicSingleChain<E> extends CommonChain<E> {
 
   /**
    * Atomically sets the Node to the given updated Node if the current Node is the expected Node.
-   * 
+   *
    * @param expect the expected Node
    * @param update the new Node
    * @return true if successful. False return indicates that the actual Node was not equal to the
@@ -143,7 +144,7 @@ public class AtomicSingleChain<E> extends CommonChain<E> {
 
   /**
    * This class used to get element atomically.
-   * 
+   *
    * @author xionghui
    * @date 26.07.2014
    * @version 1.0
