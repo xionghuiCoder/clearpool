@@ -25,9 +25,9 @@ import org.opensource.clearpool.log.PoolLogFactory;
 /**
  * This is the VO of the configuration XML.It has 3 main field:driverUrl,user and password.CfgVO
  * also carry urls of other XML.
- * 
+ *
  * Note:Two CfgVOs is equals If their 3 main fields are the same.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -54,7 +54,7 @@ public class ConfigurationVO {
   private String testQuerySql;
   private String testCreateSql;
   private boolean showSql;
-  private int sqlTimeFilter;
+  private long sqlTimeFilter = -1;
 
   public static Console getConsole() {
     return console;
@@ -200,11 +200,11 @@ public class ConfigurationVO {
     this.showSql = showSql;
   }
 
-  public int getSqlTimeFilter() {
+  public long getSqlTimeFilter() {
     return this.sqlTimeFilter;
   }
 
-  public void setSqlTimeFilter(int sqlTimeFilter) {
+  public void setSqlTimeFilter(long sqlTimeFilter) {
     if (sqlTimeFilter < 0) {
       LOG.warn("the sqlFilter is negative");
       return;

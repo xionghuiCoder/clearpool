@@ -138,12 +138,12 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.vo.setAcquireRetryTimes(acquireRetryTimes);
   }
 
-  public void setLimitIdleTime(int limitIdleTime) {
+  public void setLimitIdleTime(long limitIdleTime) {
     this.checkCfgLegal();
     this.vo.setLimitIdleTime(limitIdleTime);
   }
 
-  public void setKeepTestPeriod(int keepTestPeriod) {
+  public void setKeepTestPeriod(long keepTestPeriod) {
     this.checkCfgLegal();
     this.vo.setKeepTestPeriod(keepTestPeriod);
   }
@@ -158,7 +158,7 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.vo.setShowSql(showSql);
   }
 
-  public void setSqlTimeFilter(int sqlTimeFilter) {
+  public void setSqlTimeFilter(long sqlTimeFilter) {
     this.checkCfgLegal();
     this.vo.setSqlTimeFilter(sqlTimeFilter);
   }
@@ -204,6 +204,7 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
               this.JdbcPassword);
     }
     this.vo.setCommonDataSource(this.dataSource);
+    ConfigurationVO.setConsole(console);
     this.initVO(this.vo);
   }
 

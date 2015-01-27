@@ -30,7 +30,7 @@ import org.xml.sax.InputSource;
 /**
  * This class load,check and resolve XML.You can get the details of how to resolve XML by the method
  * {@link #parseXML}.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -91,7 +91,7 @@ public class XMLConfiguration {
   /**
    * If path is null,we get path from {@code SYSTEM_KEY}. If path is not set in {@code SYSTEM_KEY}
    * ,we set it as {@code DEFAULT_PATH}.
-   * 
+   *
    * @param path the path of the XML
    */
   private static String getRealPath(String path) {
@@ -108,12 +108,12 @@ public class XMLConfiguration {
 
   /**
    * If xml has {@code DISTRIBUTE_URL},we parse XML recursive.
-   * 
+   *
    * If reader don't has {@code DISTRIBUTE_URL},we treat the XML as a {@link ConfigurationVO}.After
    * we fill {@link ConfigurationVO},we check if {@link ConfigurationVO} is legal.IF
    * {@link ConfigurationVO} is legal,we add it to cfgMap,otherwise we throw a
    * {@link ConnectionPoolXMLParseException}.
-   * 
+   *
    * @param cfgMap is hashMap of the alias to cfgVO
    * @param path is the path of the cfg
    * @param xmlFac is used to parse path
@@ -184,7 +184,7 @@ public class XMLConfiguration {
 
   /**
    * Fill normal node value.
-   * 
+   *
    * @param nodeName
    * @param nodeValue
    * @param cfgVO
@@ -213,13 +213,13 @@ public class XMLConfiguration {
     } else if (SHOW_SQL.equals(nodeName)) {
       cfgVO.setShowSql(Boolean.valueOf(nodeValue));
     } else if (SQL_TIME_FILTER.equals(nodeName)) {
-      cfgVO.setSqlTimeFilter(Integer.valueOf(nodeValue));
+      cfgVO.setSqlTimeFilter(Integer.valueOf(nodeValue) * 1000L);
     }
   }
 
   /**
    * Get reader by path and {@link #encoding}.
-   * 
+   *
    * @param resource
    * @return
    * @throws UnsupportedEncodingException
@@ -236,7 +236,7 @@ public class XMLConfiguration {
 
   /**
    * The rule of searching resource is base on ClassLoader searching rule.
-   * 
+   *
    * @see java.lang.Class#getResourceAsStream(String)
    * @param path is the url of the resource
    * @return the inputstream of the resource
@@ -258,7 +258,7 @@ public class XMLConfiguration {
 
   /**
    * Create document by reader.
-   * 
+   *
    * @param reader
    * @return
    * @throws Exception

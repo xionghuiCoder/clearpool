@@ -27,6 +27,8 @@ public interface ConnectionPoolMBean {
 
   public boolean isShowSql();
 
+  public String getSqlTimeFilter();
+
   public int getPeakPoolSize();
 
   public int getPoolSize();

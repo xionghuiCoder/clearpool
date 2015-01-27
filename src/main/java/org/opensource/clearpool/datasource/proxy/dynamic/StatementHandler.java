@@ -26,7 +26,7 @@ import org.opensource.clearpool.log.PoolLogFactory;
 
 /**
  * This class is the dynamic proxy of the {@link Statement},it used to trace and record sql.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -55,7 +55,7 @@ class StatementHandler implements InvocationHandler {
   // need to show sql?
   private boolean showSql;
   // filter sql
-  private int sqlTimeFilter;
+  private long sqlTimeFilter;
 
   private StringBuilder sqlLog = new StringBuilder();
 
@@ -93,7 +93,7 @@ class StatementHandler implements InvocationHandler {
        * With simple test,it shows that setAccessible(true) is about 3 times faster than original.
        */
       method.setAccessible(true);
-      long startTime = (this.showSql ? System.currentTimeMillis() : 0);
+      long startTime = this.showSql ? System.currentTimeMillis() : 0;
       try {
         result = method.invoke(this.statement, args);
         // deal sqlCount if there is no exception
@@ -129,7 +129,7 @@ class StatementHandler implements InvocationHandler {
    */
   private void dealSqlCount(String methodName, Object[] args) {
     if (ADD_BATCH_METHOD.equals(methodName)) {
-      int argCount = (args != null ? args.length : 0);
+      int argCount = args != null ? args.length : 0;
       if (argCount > 0 && args[0] instanceof String && this.sql == null) {
         this.sqlSet.add((String) args[0]);
       }
@@ -200,7 +200,7 @@ class StatementHandler implements InvocationHandler {
     } else if (ADD_BATCH_METHOD.equals(methodName)) {
       // If we have just added a batch call then we need to
       // update the sql log
-      int argCount = (args != null ? args.length : 0);
+      int argCount = args != null ? args.length : 0;
       if (argCount > 0 && args[0] instanceof String) {
         this.setSqlStatementIfNull((String) args[0]);
       }
@@ -210,7 +210,7 @@ class StatementHandler implements InvocationHandler {
       this.trace(sqlTime);
     } else if (methodName.startsWith(EXECUTE)) {
       // executing should update the log and do a trace
-      int argCount = (args != null ? args.length : 0);
+      int argCount = args != null ? args.length : 0;
       if (argCount > 0 && args[0] instanceof String) {
         this.setSqlStatementIfNull((String) args[0]);
       }
@@ -221,7 +221,7 @@ class StatementHandler implements InvocationHandler {
 
   /**
    * Add a parameter so that we can show its value when tracing
-   * 
+   *
    * @param index within the procedure
    * @param value an object describing its value
    */
@@ -235,7 +235,7 @@ class StatementHandler implements InvocationHandler {
         }
 
         private int compareOrigin(int x, int y) {
-          return (x < y) ? -1 : ((x == y) ? 0 : 1);
+          return x < y ? -1 : x == y ? 0 : 1;
         }
       });
     }
@@ -308,7 +308,7 @@ class StatementHandler implements InvocationHandler {
 
   /**
    * Trace the sql and the time it cost.
-   * 
+   *
    * @param sqlTime so we can log how long the sql cost
    */
   private void trace(long sqlTime) {

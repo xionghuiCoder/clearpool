@@ -112,6 +112,15 @@ class ConnectionPool implements ConnectionPoolMBean {
   }
 
   @Override
+  public String getSqlTimeFilter() {
+    long sqlTimeFilter = this.pool.getCfgVO().getSqlTimeFilter();
+    if (sqlTimeFilter == -1) {
+      return "-";
+    }
+    return sqlTimeFilter / 1000 + "(s)";
+  }
+
+  @Override
   public int getPeakPoolSize() {
     return this.pool.getPeakPoolSize();
   }
