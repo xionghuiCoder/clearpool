@@ -21,7 +21,7 @@ import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
 
 /**
  * This class is used by IOC container.Or you can use it by programming.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -156,6 +156,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
   public void setShowSql(boolean showSql) {
     this.checkCfgLegal();
     this.vo.setShowSql(showSql);
+  }
+
+  public void setSqlTimeFilter(int sqlTimeFilter) {
+    this.checkCfgLegal();
+    this.vo.setSqlTimeFilter(sqlTimeFilter);
   }
 
   /**
