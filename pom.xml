@@ -216,4 +216,16 @@
 			<email>xionghui_coder@163.com</email>
 		</developer>
 	</developers>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<url>http://mvn.d.sohu.com/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>nexus-releases</id>
+			<name>idx</name>
+			<url>http://mvn.d.sohu.com/nexus/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
 </project>

@@ -43,8 +43,8 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
 
   private String driverClass;
   private String jdbcUrl;
-  private String JdbcUser;
-  private String JdbcPassword;
+  private String jdbcUser;
+  private String jdbcPassword;
 
   public static String getEncoding() {
     return XMLConfiguration.getEncoding();
@@ -86,8 +86,8 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
 
   public void setDataSource(CommonDataSource dataSource) {
     this.checkCfgLegal();
-    if (this.driverClass != null || this.jdbcUrl != null || this.JdbcUser != null
-        || this.JdbcPassword != null) {
+    if (this.driverClass != null || this.jdbcUrl != null || this.jdbcUser != null
+        || this.jdbcPassword != null) {
       throw new ConnectionPoolXMLParseException(
           "we shouldn't use JDBC and dataSource at the same time");
     }
@@ -106,16 +106,16 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.jdbcUrl = jdbcUrl;
   }
 
-  public void setJdbcUser(String JdbcUser) {
+  public void setJdbcUser(String jdbcUser) {
     this.checkCfgLegal();
     this.checkAndInitJDBC();
-    this.JdbcUser = JdbcUser;
+    this.jdbcUser = jdbcUser;
   }
 
-  public void setJdbcPassword(String JdbcPassword) {
+  public void setJdbcPassword(String jdbcPassword) {
     this.checkCfgLegal();
     this.checkAndInitJDBC();
-    this.JdbcPassword = JdbcPassword;
+    this.jdbcPassword = jdbcPassword;
   }
 
   public void setCorePoolSize(int corePoolSize) {
@@ -197,11 +197,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
       return;
     }
     if (this.dataSource == null
-        && (this.driverClass != null || this.jdbcUrl != null || this.JdbcUser != null || this.JdbcPassword != null)) {
+        && (this.driverClass != null || this.jdbcUrl != null || this.jdbcUser != null || this.jdbcPassword != null)) {
       // we are trying to use jdbc driver if dataSource is null.
       this.dataSource =
-          JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl, this.JdbcUser,
-              this.JdbcPassword);
+          JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl, this.jdbcUser,
+              this.jdbcPassword);
     }
     this.vo.setCommonDataSource(this.dataSource);
     ConfigurationVO.setConsole(console);
