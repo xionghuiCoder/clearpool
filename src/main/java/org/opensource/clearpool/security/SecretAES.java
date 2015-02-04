@@ -28,7 +28,8 @@ public class SecretAES implements Secret {
   public SecretAES() throws Exception {
     // Security.addProvider(new SunJCE());
     this.keygen = KeyGenerator.getInstance("AES");
-    SecureRandom securerandom = new SecureRandom(KEY.getBytes());
+    SecureRandom securerandom = SecureRandom.getInstance("SHA1PRNG");
+    securerandom.setSeed(KEY.getBytes());
     this.keygen.init(securerandom);
     // generate key
     this.deskey = this.keygen.generateKey();

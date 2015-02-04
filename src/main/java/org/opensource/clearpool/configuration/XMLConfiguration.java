@@ -73,6 +73,7 @@ public class XMLConfiguration {
   private final static String LIMIT_IDLE_TIME = "limit-idle-time";
   private final static String KEEP_TEST_PERIOD = "keep-test-period";
   private final static String TEST_TABLE_NAME = "test-table-name";
+  private final static String TEST_QUER_YSQL = "test-query-sql";
   private final static String SHOW_SQL = "show-sql";
   private final static String SQL_TIME_FILTER = "sql-time-filter";
 
@@ -210,6 +211,8 @@ public class XMLConfiguration {
       cfgVO.setKeepTestPeriod(Integer.valueOf(nodeValue) * 1000L);
     } else if (TEST_TABLE_NAME.equals(nodeName)) {
       cfgVO.setTestTableName(nodeValue);
+    } else if (TEST_QUER_YSQL.equals(nodeName)) {
+      cfgVO.setTestQuerySql(nodeValue);
     } else if (SHOW_SQL.equals(nodeName)) {
       cfgVO.setShowSql(Boolean.valueOf(nodeValue));
     } else if (SQL_TIME_FILTER.equals(nodeName)) {

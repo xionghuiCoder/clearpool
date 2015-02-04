@@ -153,6 +153,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.vo.setTestTableName(testTableName);
   }
 
+  public void setTestQuerySql(String testQuerySql) {
+    this.checkCfgLegal();
+    this.vo.setTestQuerySql(testQuerySql);
+  }
+
   public void setShowSql(boolean showSql) {
     this.checkCfgLegal();
     this.vo.setShowSql(showSql);

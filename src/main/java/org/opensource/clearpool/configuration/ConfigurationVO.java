@@ -188,6 +188,10 @@ public class ConfigurationVO {
     return this.testQuerySql;
   }
 
+  public void setTestQuerySql(String testQuerySql) {
+    this.testQuerySql = testQuerySql;
+  }
+
   public String getTestCreateSql() {
     return this.testCreateSql;
   }
@@ -221,6 +225,8 @@ public class ConfigurationVO {
       throw new ConnectionPoolXMLParseException("the maxPoolsize less than corePoolsize");
     }
     if (this.keepTestPeriod == -1) {
+      this.testTableName = null;
+    } else if (testQuerySql != null) {
       this.testTableName = null;
     } else {
       boolean right = false;

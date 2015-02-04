@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="clearpool.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><clearpool xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="clearpool.xsd">
 	<console>
 		<port>8085</port>
 		<security>
@@ -13,9 +11,9 @@
 		<jdbc-class>org.opensource.clearpool.util.MockTestDriver</jdbc-class>
 		<url>jdbc:mock:case</url>
 		<user>1</user>
-		<password>WDroom5uAqkPfQwgOMCQGQ==</password>
+		<password>vbAo1ErcEUtDy+RUrX9Mrw==</password>
 		<!-- replace file-path with your xml's real absolute path please -->
-		<file-path>E:\WorkSpace\clearpool\src\test\resources\clearpool\clearpool-test-unique.xml
+		<file-path>/home/xionghui/eclipse-jee-workspace/clearpool/src/test/resources/clearpool/clearpool-test-unique.xml
 		</file-path>
 		<status>decrypt</status>
 	</jdbc>

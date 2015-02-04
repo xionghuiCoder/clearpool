@@ -41,13 +41,13 @@ public class UniqueFunction extends TestCase {
       startLatch = new CountDownLatch(1);
       this.startThreads(startLatch, endLatch, 10, i);
       startLatch.countDown();
-      System.out.println("start " + ((1 + i) * 10) + " threads");
+      System.out.println("start " + (1 + i) * 10 + " threads");
     }
     // remove 10 thread every TIME(s)
     for (int i = 0; i < 10; i++) {
       Thread.sleep(TIME * 1000);
       this.signs[i] = true;
-      System.out.println("left " + ((9 - i) * 10) + " threads");
+      System.out.println("left " + (9 - i) * 10 + " threads");
     }
     Thread.sleep(TIME * 1000);
     endLatch.await();

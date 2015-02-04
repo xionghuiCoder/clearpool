@@ -39,8 +39,8 @@ public class BinaryHeap {
   }
 
   private int roundUpToPowerOf2(int number) {
-    return number >= MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : (number > 1) ? Integer
-        .highestOneBit((number - 1) << 1) : 1;
+    return number >= MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : number > 1 ? Integer
+        .highestOneBit(number - 1 << 1) : 1;
   }
 
   /**
@@ -121,11 +121,14 @@ public class BinaryHeap {
    * remove a element if it's over period(ms)
    */
   public ConnectionProxy removeIdle(long period) {
+    if (this.size == 0) {
+      return null;
+    }
     // re-get current time
     long now = System.currentTimeMillis();
     // double check
     ProxyNode last = this.queue[this.size];
-    if (this.size > 0 || last == null || now - last.entryTime < period) {
+    if (last == null || now - last.entryTime < period) {
       return null;
     }
     // Drop extra reference to prevent memory leak
