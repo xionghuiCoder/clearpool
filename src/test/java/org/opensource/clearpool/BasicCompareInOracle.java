@@ -14,7 +14,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.datasource.JDBCDataSource;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogFactory;
 import org.opensource.clearpool.util.JdbcUtil;
 import org.opensource.clearpool.util.MemoryUtil;
 import org.opensource.clearpool.util.ThreadProcessUtil;

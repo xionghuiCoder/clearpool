@@ -19,8 +19,8 @@ import org.opensource.clearpool.datasource.factory.JDBCXADataSourceFactory;
 import org.opensource.clearpool.datasource.factory.PoolDataSourceFactory;
 import org.opensource.clearpool.datasource.factory.XADataSourceFactory;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * This is the VO of the configuration XML.It has 3 main field:driverUrl,user and password.CfgVO

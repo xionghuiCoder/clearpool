@@ -12,8 +12,8 @@ import javax.management.ObjectName;
 
 import org.opensource.clearpool.console.MBeanFacade;
 import org.opensource.clearpool.exception.ConnectionPoolMBeanException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 
 import com.sun.jdmk.comm.AuthInfo;

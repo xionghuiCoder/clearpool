@@ -1,7 +1,7 @@
 package org.opensource.clearpool.util;
 
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;

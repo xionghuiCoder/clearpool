@@ -5,8 +5,8 @@ import java.util.Collection;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.core.chain.LockCircleChain;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * The common hook of the hooks.

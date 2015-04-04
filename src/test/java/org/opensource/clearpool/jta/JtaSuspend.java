@@ -13,7 +13,7 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.jta.UserTransactionImpl;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * Note: <br />

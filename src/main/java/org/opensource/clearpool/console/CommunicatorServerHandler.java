@@ -13,8 +13,8 @@ import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.console.hook.HtmlAdaptorHook;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.exception.ConnectionPoolMBeanException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 import com.sun.jdmk.comm.CommunicatorServer;
 

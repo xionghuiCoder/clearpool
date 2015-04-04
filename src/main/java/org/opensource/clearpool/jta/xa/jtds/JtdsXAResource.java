@@ -9,8 +9,8 @@ import javax.transaction.xa.Xid;
 
 import net.sourceforge.jtds.jdbc.XASupport;
 
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 public class JtdsXAResource implements XAResource {
   private static final PoolLog LOG = PoolLogFactory.getLog(JtdsXAResource.class);

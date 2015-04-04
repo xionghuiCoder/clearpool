@@ -1,8 +1,8 @@
-package org.opensource.clearpool.log;
+package org.opensource.clearpool.logging;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.opensource.clearpool.log.impl.PoolLogImpl;
+import org.opensource.clearpool.logging.impl.PoolLogImpl;
 
 /**
  * This class is used to invoke LogFactory if LogFactory could be imported.

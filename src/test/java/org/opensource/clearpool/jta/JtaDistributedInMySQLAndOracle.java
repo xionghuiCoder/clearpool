@@ -11,7 +11,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * Note: replace database configuration in clearpool-test-jta-mysql-distributed1.xml with your

@@ -17,8 +17,8 @@ import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.datasource.factory.DataSourceAbstractFactory;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * This class save the connection to {@link #connectionChain},it's duty is to manage the pool.

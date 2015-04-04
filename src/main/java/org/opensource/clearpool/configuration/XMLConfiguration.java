@@ -17,8 +17,8 @@ import javax.xml.stream.XMLInputFactory;
 
 import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 import org.opensource.clearpool.util.XMLEntityResolver;
 import org.opensource.clearpool.util.XMLErrorHandler;
 import org.w3c.dom.Document;

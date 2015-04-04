@@ -1,6 +1,6 @@
-package org.opensource.clearpool.log;
+package org.opensource.clearpool.logging;
 
-import org.opensource.clearpool.log.impl.NullLogger;
+import org.opensource.clearpool.logging.impl.NullLogger;
 
 /**
  * This log factory depend on commons-logging.jar.We use {@link NullLogger} to replace the log if we

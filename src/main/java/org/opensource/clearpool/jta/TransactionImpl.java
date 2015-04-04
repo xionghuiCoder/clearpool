@@ -19,8 +19,8 @@ import javax.transaction.xa.Xid;
 
 import org.opensource.clearpool.exception.TransactionException;
 import org.opensource.clearpool.jta.xa.XidImpl;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * This class used to control jta transaction.

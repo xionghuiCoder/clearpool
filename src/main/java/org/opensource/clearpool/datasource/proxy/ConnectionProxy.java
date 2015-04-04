@@ -12,8 +12,8 @@ import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * This class is the proxy of connection.

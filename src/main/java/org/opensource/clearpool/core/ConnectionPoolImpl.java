@@ -12,8 +12,8 @@ import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.console.MBeanFacade;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolStateException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 /**
  * The pool provide two kind of database connection pool.Please check {@link CommonPoolContainer} if

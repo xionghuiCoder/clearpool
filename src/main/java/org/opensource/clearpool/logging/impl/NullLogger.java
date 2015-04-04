@@ -1,8 +1,8 @@
-package org.opensource.clearpool.log.impl;
+package org.opensource.clearpool.logging.impl;
 
 import java.io.Serializable;
 
-import org.opensource.clearpool.log.PoolLog;
+import org.opensource.clearpool.logging.PoolLog;
 
 /**
  * This class is used when we set log unable

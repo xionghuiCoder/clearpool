@@ -1,4 +1,4 @@
-package org.opensource.clearpool.log;
+package org.opensource.clearpool.logging;
 
 /**
  * This class is used to instead of adapter org.apache.commons.logging.Log.

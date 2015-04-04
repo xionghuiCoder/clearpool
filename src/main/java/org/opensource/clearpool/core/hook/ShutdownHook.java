@@ -3,8 +3,8 @@ package org.opensource.clearpool.core.hook;
 import java.util.Iterator;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 
 public class ShutdownHook extends CommonHook {
   private static final PoolLog LOG = PoolLogFactory.getLog(ShutdownHook.class);

@@ -18,8 +18,8 @@ import org.opensource.clearpool.core.hook.CommonHook;
 import org.opensource.clearpool.core.hook.IdleCheckHook;
 import org.opensource.clearpool.core.hook.ShutdownHook;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.log.PoolLog;
-import org.opensource.clearpool.log.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLog;
+import org.opensource.clearpool.logging.PoolLogFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 
 /**
