@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -46,7 +47,7 @@ public class ConnectionPoolManager {
 
   private ConfigurationVO cfgVO;
 
-  private int poolSize;
+  private AtomicInteger poolSize = new AtomicInteger();
 
   // record the peak of the connection in the pool.
   private int peakPoolSize;
@@ -88,37 +89,50 @@ public class ConnectionPoolManager {
    */
   public PooledConnection exitPool() throws SQLException {
     ConnectionProxy conProxy = null;
-    this.lock.lock();
-    try {
-      do {
-        conProxy = this.connectionChain.remove();
-        // if we couln't get a connection from the pool,we should get
-        // new
-        // connection.
-        if (conProxy == null) {
-          int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize;
-          // if pool is full,we shouldn't grow it
-          if (maxIncrement == 0) {
-            if (this.cfgVO.getUselessConnectionException()) {
-              throw new ConnectionPoolException("there is no connection left in the pool");
-            } else {
-              // wait for connection
-              while (this.connectionChain.size() == 0) {
-                this.notEmpty.await();
+    for (;;) {
+      this.lock.lock();
+      try {
+        do {
+          conProxy = this.connectionChain.remove();
+          // if we couln't get a connection from the pool,we should get
+          // new
+          // connection.
+          if (conProxy == null) {
+            int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
+            // if pool is full,we shouldn't grow it
+            if (maxIncrement == 0) {
+              if (this.cfgVO.getUselessConnectionException()) {
+                throw new ConnectionPoolException("there is no connection left in the pool");
+              } else {
+                // wait for connection
+                while (this.connectionChain.size() == 0) {
+                  this.notEmpty.await();
+                }
               }
+            } else {
+              this.fillPoolByAcquireIncrement();
             }
-          } else {
-            this.fillPoolByAcquireIncrement();
           }
+        } while (conProxy == null);
+      } catch (InterruptedException e) {
+        throw new ConnectionPoolException(e);
+      } finally {
+        this.lock.unlock();
+      }
+      if (cfgVO.isTestBeforeUse()) {
+        boolean isValid = checkTestTable(conProxy, false);
+        if (!isValid) {
+          decrementPoolSize();
+          closeConnection(conProxy);
+          incrementOneConnection();
+          continue;
         }
-      } while (conProxy == null);
-    } catch (InterruptedException e) {
-      throw new ConnectionPoolException(e);
-    } finally {
-      this.lock.unlock();
+      }
+      break;
     }
     DataSourceAbstractFactory factory = this.cfgVO.getFactory();
-    return factory.createPooledConnection(conProxy);
+    PooledConnection pooledConnection = factory.createPooledConnection(conProxy);
+    return pooledConnection;
   }
 
   public ConnectionProxy exitPool(long period) {
@@ -133,8 +147,8 @@ public class ConnectionPoolManager {
   /**
    * fill the pool by acquireIncrement
    */
-  private synchronized void fillPoolByAcquireIncrement() {
-    int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize;
+  private void fillPoolByAcquireIncrement() {
+    int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
     // double check
     if (maxIncrement != 0) {
       int increment = this.cfgVO.getAcquireIncrement();
@@ -148,11 +162,12 @@ public class ConnectionPoolManager {
   /**
    * increment one connection
    */
-  public synchronized void incrementOneConnection() {
-    int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize;
-    // if pool is full,we shouldn't grow it
-    if (maxIncrement != 0) {
+  public void incrementOneConnection() {
+    this.lock.lock();
+    try {
       this.fillPool(1);
+    } finally {
+      this.lock.unlock();
     }
   }
 
@@ -171,7 +186,7 @@ public class ConnectionPoolManager {
       this.connectionChain.add(conProxy);
       this.handlePeakPoolSize(i + 1);
     }
-    this.poolSize += poolNum;
+    this.poolSize.addAndGet(poolNum);
   }
 
   /**
@@ -240,25 +255,25 @@ public class ConnectionPoolManager {
   }
 
   public boolean isNeedCollected() {
-    return this.poolSize > this.cfgVO.getCorePoolSize();
+    return this.poolSize.get() > this.cfgVO.getCorePoolSize();
   }
 
   /**
    * Save the peak pool size
    */
   private void handlePeakPoolSize(int poolNum) {
-    int size = this.poolSize + poolNum;
+    int size = this.poolSize.get() + poolNum;
     if (size > this.peakPoolSize) {
       this.peakPoolSize = size;
     }
   }
 
   public void decrementPoolSize() {
-    this.poolSize--;
+    this.poolSize.decrementAndGet();
   }
 
   public int getPoolSize() {
-    return this.poolSize;
+    return this.poolSize.get();
   }
 
   public int getPeakPoolSize() {

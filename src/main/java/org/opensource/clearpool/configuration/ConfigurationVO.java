@@ -51,6 +51,7 @@ public class ConfigurationVO {
   private long limitIdleTime = 60 * 1000L;
   private long keepTestPeriod = -1;
   private String testTableName = "clearpool_test";
+  private boolean testBeforeUse;
   private String testQuerySql;
   private String testCreateSql;
   private boolean showSql;
@@ -182,6 +183,14 @@ public class ConfigurationVO {
 
   public void setTestTableName(String testTableName) {
     this.testTableName = testTableName;
+  }
+
+  public boolean isTestBeforeUse() {
+    return testBeforeUse;
+  }
+
+  public void setTestBeforeUse(boolean testBeforeUse) {
+    this.testBeforeUse = testBeforeUse;
   }
 
   public String getTestQuerySql() {

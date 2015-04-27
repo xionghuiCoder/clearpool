@@ -22,7 +22,8 @@
 	<acquire-increment>5</acquire-increment>
 	<acquire-retry-times>3</acquire-retry-times>
 	<limit-idle-time>5</limit-idle-time>
+	<test-before-use>true</test-before-use>
 	<keep-test-period>20</keep-test-period>
 	<test-table-name>test</test-table-name>
-	<show-sql>false</show-sql>
+	<show-sql>true</show-sql>
 </clearpool>

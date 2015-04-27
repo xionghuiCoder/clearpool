@@ -25,6 +25,10 @@ public interface ConnectionPoolMBean {
 
   public String getTestTableName();
 
+  public boolean isTestBeforeUse();
+
+  public String getTestQuerySql();
+
   public boolean isShowSql();
 
   public String getSqlTimeFilter();

@@ -149,7 +149,12 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
    */
   public void dealSqlCount(String sql) {
     if (this.sqlMap.put(sql, PRESENT) == null) {
-      this.sqlCount++;
+      int count = this.sqlCount;
+      count++;
+      // in case sqlCount be negative
+      if (count > 0) {
+        this.sqlCount = count;
+      }
     }
   }
 
@@ -157,6 +162,6 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
   public int compareTo(ConnectionProxy anoConnProxy) {
     int x = this.sqlCount;
     int y = anoConnProxy.sqlCount;
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return x < y ? -1 : x == y ? 0 : 1;
   }
 }

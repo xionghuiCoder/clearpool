@@ -107,6 +107,16 @@ class ConnectionPool implements ConnectionPoolMBean {
   }
 
   @Override
+  public boolean isTestBeforeUse() {
+    return this.pool.getCfgVO().isTestBeforeUse();
+  }
+
+  @Override
+  public String getTestQuerySql() {
+    return this.pool.getCfgVO().getTestQuerySql();
+  }
+
+  @Override
   public boolean isShowSql() {
     return this.pool.getCfgVO().isShowSql();
   }
