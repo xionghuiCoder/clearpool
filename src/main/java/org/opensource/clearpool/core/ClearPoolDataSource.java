@@ -138,6 +138,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.vo.setAcquireRetryTimes(acquireRetryTimes);
   }
 
+  public void setUselessConnectionException(boolean uselessConnectionException) {
+    this.checkCfgLegal();
+    vo.setUselessConnectionException(uselessConnectionException);
+  }
+
   public void setLimitIdleTime(long limitIdleTime) {
     this.checkCfgLegal();
     this.vo.setLimitIdleTime(limitIdleTime);

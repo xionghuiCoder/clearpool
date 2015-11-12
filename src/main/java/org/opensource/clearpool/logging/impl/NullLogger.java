@@ -6,7 +6,7 @@ import org.opensource.clearpool.logging.PoolLog;
 
 /**
  * This class is used when we set log unable
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -27,12 +27,6 @@ public class NullLogger implements PoolLog, Serializable {
   public void error(Object message, Throwable t) {}
 
   @Override
-  public void fatal(Object message) {}
-
-  @Override
-  public void fatal(Object message, Throwable t) {}
-
-  @Override
   public void info(Object message) {}
 
   @Override
@@ -45,11 +39,6 @@ public class NullLogger implements PoolLog, Serializable {
 
   @Override
   public boolean isErrorEnabled() {
-    return false;
-  }
-
-  @Override
-  public boolean isFatalEnabled() {
     return false;
   }
 

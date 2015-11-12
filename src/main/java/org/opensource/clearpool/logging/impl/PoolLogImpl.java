@@ -1,109 +1,94 @@
 package org.opensource.clearpool.logging.impl;
 
-import org.apache.commons.logging.Log;
 import org.opensource.clearpool.logging.PoolLog;
+import org.slf4j.Logger;
 
 /**
  * This class is used to adapter org.apache.commons.logging.Log.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 public class PoolLogImpl implements PoolLog {
-  private Log log;
+  private Logger log;
 
-  public PoolLogImpl(Log log) {
+  public PoolLogImpl(Logger log) {
     this.log = log;
   }
 
   @Override
   public void debug(Object message) {
-    this.log.debug(message);
+    log.debug(String.valueOf(message));
   }
 
   @Override
   public void debug(Object message, Throwable t) {
-    this.log.debug(message, t);
+    log.debug(String.valueOf(message), t);
   }
 
   @Override
   public void error(Object message) {
-    this.log.error(message);
+    log.error(String.valueOf(message));
   }
 
   @Override
   public void error(Object message, Throwable t) {
-    this.log.error(message, t);
-  }
-
-  @Override
-  public void fatal(Object message) {
-    this.log.fatal(message);
-  }
-
-  @Override
-  public void fatal(Object message, Throwable t) {
-    this.log.fatal(message, t);
+    log.error(String.valueOf(message), t);
   }
 
   @Override
   public void info(Object message) {
-    this.log.info(message);
+    log.info(String.valueOf(message));
   }
 
   @Override
   public void info(Object message, Throwable t) {
-    this.log.info(message, t);
+    log.info(String.valueOf(message), t);
   }
 
   @Override
   public boolean isDebugEnabled() {
-    return this.log.isDebugEnabled();
+    return log.isDebugEnabled();
   }
 
   @Override
   public boolean isErrorEnabled() {
-    return this.log.isErrorEnabled();
-  }
-
-  @Override
-  public boolean isFatalEnabled() {
-    return this.log.isFatalEnabled();
+    return log.isErrorEnabled();
   }
 
   @Override
   public boolean isInfoEnabled() {
-    return this.log.isInfoEnabled();
+    return log.isInfoEnabled();
   }
 
   @Override
   public boolean isTraceEnabled() {
-    return this.log.isTraceEnabled();
+    return log.isTraceEnabled();
   }
 
   @Override
   public boolean isWarnEnabled() {
-    return this.log.isWarnEnabled();
+    return log.isWarnEnabled();
   }
 
   @Override
   public void trace(Object message) {
-    this.log.trace(message);
+    log.trace(String.valueOf(message));
   }
 
   @Override
   public void trace(Object message, Throwable t) {
-    this.log.trace(message, t);
+    log.trace(String.valueOf(message), t);
   }
 
   @Override
   public void warn(Object message) {
-    this.log.warn(message);
+    log.warn(String.valueOf(message));
   }
 
   @Override
   public void warn(Object message, Throwable t) {
-    this.log.warn(message, t);
+    log.warn(String.valueOf(message), t);
   }
 }

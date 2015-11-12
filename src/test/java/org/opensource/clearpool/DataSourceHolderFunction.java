@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import junit.framework.TestCase;
-
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.datasource.DataSourceHolder;
 
 import com.alibaba.druid.mock.MockConnection;
+
+import junit.framework.TestCase;
 
 public class DataSourceHolderFunction extends TestCase {
   private ClearPoolDataSource dataSource = new ClearPoolDataSource();
@@ -28,17 +28,20 @@ public class DataSourceHolderFunction extends TestCase {
     new MockDataSource().getParentLogger();
     dataSourceMap.put("testholder", new MockDataSource());
     DataSourceHolder.setDataSourceMap(dataSourceMap);
-    this.dataSource.initPath("clearpool/clearpool-test-holder.xml");
+    dataSource.initPath("clearpool/clearpool-test-holder.xml");
   }
 
   public void test_clearPool() throws Exception {
-    Connection conn = this.dataSource.getConnection();
+    Connection conn = dataSource.getConnection();
     System.out.println(conn);
+    synchronized (DataSourceHolderFunction.class) {
+      DataSourceHolderFunction.class.wait();
+    }
   }
 
   @Override
   public void tearDown() throws Exception {
-    this.dataSource.destory();
+    dataSource.destory();
   }
 
   private static class MockDataSource implements DataSource {
