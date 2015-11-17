@@ -118,6 +118,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
     this.jdbcPassword = jdbcPassword;
   }
 
+  public void setJtaSupport(boolean jtaSupport) {
+	this.checkCfgLegal();
+	this.vo.setJtaSupport(jtaSupport);
+  }
+
   public void setCorePoolSize(int corePoolSize) {
     this.checkCfgLegal();
     this.vo.setCorePoolSize(corePoolSize);
@@ -156,6 +161,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
   public void setTestTableName(String testTableName) {
     this.checkCfgLegal();
     this.vo.setTestTableName(testTableName);
+  }
+
+  public void setTestBeforeUse(boolean testBeforeUse) {
+    this.checkCfgLegal();
+    vo.setTestBeforeUse(testBeforeUse);
   }
 
   public void setTestQuerySql(String testQuerySql) {
