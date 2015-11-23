@@ -21,8 +21,8 @@ import javax.transaction.xa.XAException;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * This class is the dynamic proxy of the {@link Statement},it used to trace and record sql.
@@ -32,7 +32,7 @@ import org.opensource.clearpool.logging.PoolLogFactory;
  * @version 1.0
  */
 class StatementHandler implements InvocationHandler {
-  private static final PoolLog LOG = PoolLogFactory.getLog(StatementHandler.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(StatementHandler.class);
 
   private static final String TOSTRING_METHOD = "toString";
   private static final String EQUALS_METHOD = "equals";
@@ -76,6 +76,7 @@ class StatementHandler implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Object result = null;
+    Throwable target = null;
     String methodName = method.getName();
     if (TOSTRING_METHOD.equals(methodName)) {
       result = this.toString();
@@ -99,17 +100,18 @@ class StatementHandler implements InvocationHandler {
         // deal sqlCount if there is no exception
         this.dealSqlCount(methodName, args);
       } catch (InvocationTargetException e) {
-        Throwable t = e.getTargetException();
-        if (t instanceof SQLException) {
-          this.handleException((SQLException) t);
+        LOGGER.error("StatementHandler.invoke error: ", e);
+        target = e.getTargetException();
+        if (target instanceof SQLException) {
+          this.handleException((SQLException) target);
         } else {
-          throw t;
+          throw target;
         }
       } finally {
         if (showSql) {
           long sqlTime = System.currentTimeMillis() - startTime;
-          if (sqlTime >= sqlTimeFilter) {
-            this.dealLogSql(methodName, sqlTime, args);
+          if (target != null || sqlTime >= sqlTimeFilter) {
+            this.dealLogSql(methodName, target != null, sqlTime, args);
           }
         }
       }
@@ -148,6 +150,7 @@ class StatementHandler implements InvocationHandler {
     try {
       statement.close();
     } catch (SQLException e) {
+      LOGGER.error("close statement error: ", e);
       this.handleException(e);
     }
     pooledConnection.removeStatement(statement);
@@ -183,7 +186,7 @@ class StatementHandler implements InvocationHandler {
   /**
    * Set sql parameters and log the sql.
    */
-  private void dealLogSql(String methodName, long sqlTime, Object[] args) {
+  private void dealLogSql(String methodName, boolean isError, long sqlTime, Object[] args) {
     if (CLEARPARAMETERS_METHOD.equals(methodName)) {
       // clear parameters
       if (parameterMap != null) {
@@ -211,7 +214,7 @@ class StatementHandler implements InvocationHandler {
       this.appendToSqlLog();
     } else if (EXECUTE_BATCH_METHOD.equals(methodName)) {
       // executing a batch should do a trace
-      this.trace(sqlTime);
+      this.trace(isError, sqlTime);
     } else if (methodName.startsWith(EXECUTE)) {
       // executing should update the log and do a trace
       int argCount = args != null ? args.length : 0;
@@ -219,7 +222,7 @@ class StatementHandler implements InvocationHandler {
         this.setSqlStatementIfNull((String) args[0]);
       }
       this.appendToSqlLog();
-      this.trace(sqlTime);
+      this.trace(isError, sqlTime);
     }
   }
 
@@ -315,14 +318,20 @@ class StatementHandler implements InvocationHandler {
    *
    * @param sqlTime so we can log how long the sql cost
    */
-  private void trace(long sqlTime) {
+  private void trace(boolean isError, long sqlTime) {
     int len = sqlLog.length();
     if (len > 0) {
       // delete the last "\n"
       sqlLog.deleteCharAt(len - 1);
     }
-    // log sql and the time it cost
-    LOG.info("SHOWSQL(" + sqlTime + "ms):\n" + sqlLog.toString());
+    String logMsg = "SHOWSQL(" + sqlTime + "ms):\n" + sqlLog.toString();
+    if (isError) {
+      // log sql and the time it cost
+      LOGGER.error(logMsg);
+    } else {
+      // log sql and the time it cost
+      LOGGER.info(logMsg);
+    }
     // Clear parameterMap for next time
     if (parameterMap != null) {
       parameterMap.clear();

@@ -31,15 +31,18 @@ import javax.sql.StatementEventListener;
 
 import org.opensource.clearpool.datasource.proxy.dynamic.ProxyFactory;
 import org.opensource.clearpool.exception.ConnectionPoolException;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * This class is the implement of PooledConnection.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 public class PoolConnectionImpl implements PooledConnection, Connection {
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(PoolConnectionImpl.class);
 
   private Connection connection;
   protected final ConnectionProxy conProxy;
@@ -52,7 +55,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   private volatile boolean isClosed;
 
   public PoolConnectionImpl(ConnectionProxy conProxy) {
-    this.connection = conProxy.getConnection();
+    connection = conProxy.getConnection();
     this.conProxy = conProxy;
   }
 
@@ -83,12 +86,12 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Statement statement = null;
     try {
-      statement = this.connection.createStatement();
+      statement = connection.createStatement();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     Statement statementProxy = this.createProxyStatement(statement, null);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -97,13 +100,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement = this.connection.prepareStatement(sql);
+      statement = connection.prepareStatement(sql);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -112,44 +115,44 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     CallableStatement statement = null;
     try {
-      statement = this.connection.prepareCall(sql);
+      statement = connection.prepareCall(sql);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     CallableStatement statementProxy =
         (CallableStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
   @Override
   public String nativeSQL(String sql) throws SQLException {
     this.checkState();
-    return this.connection.nativeSQL(sql);
+    return connection.nativeSQL(sql);
   }
 
   @Override
   public void setAutoCommit(boolean autoCommit) throws SQLException {
     this.checkState();
     try {
-      this.connection.setAutoCommit(autoCommit);
+      connection.setAutoCommit(autoCommit);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.newAutoCommit = autoCommit;
+    conProxy.newAutoCommit = autoCommit;
   }
 
   @Override
   public boolean getAutoCommit() throws SQLException {
     this.checkState();
-    return this.connection.getAutoCommit();
+    return connection.getAutoCommit();
   }
 
   @Override
   public void commit() throws SQLException {
     this.checkState();
     try {
-      this.connection.commit();
+      connection.commit();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -159,7 +162,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   public void rollback() throws SQLException {
     this.checkState();
     try {
-      this.connection.rollback();
+      connection.rollback();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -168,7 +171,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   @Override
   public boolean isClosed() throws SQLException {
     this.checkState();
-    return this.connection.isClosed();
+    return connection.isClosed();
   }
 
   @Override
@@ -176,7 +179,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     DatabaseMetaData metaData = null;
     try {
-      metaData = this.connection.getMetaData();
+      metaData = connection.getMetaData();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -188,80 +191,81 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   public void setReadOnly(boolean readOnly) throws SQLException {
     this.checkState();
     try {
-      this.connection.setReadOnly(readOnly);
+      connection.setReadOnly(readOnly);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.newReadOnly = readOnly;
+    conProxy.newReadOnly = readOnly;
   }
 
   @Override
   public boolean isReadOnly() throws SQLException {
     this.checkState();
-    return this.connection.isReadOnly();
+    return connection.isReadOnly();
   }
 
   @Override
   public void setCatalog(String catalog) throws SQLException {
     this.checkState();
     try {
-      this.connection.setCatalog(catalog);
+      connection.setCatalog(catalog);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.newCatalog = catalog;
+    conProxy.newCatalog = catalog;
   }
 
   @Override
   public String getCatalog() throws SQLException {
     this.checkState();
-    return this.connection.getCatalog();
+    return connection.getCatalog();
   }
 
   @Override
   public void setTransactionIsolation(int level) throws SQLException {
     this.checkState();
     try {
-      this.connection.setTransactionIsolation(level);
+      connection.setTransactionIsolation(level);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.newTransactionIsolation = level;
+    conProxy.newTransactionIsolation = level;
   }
 
   @Override
   public int getTransactionIsolation() throws SQLException {
     this.checkState();
-    return this.connection.getTransactionIsolation();
+    return connection.getTransactionIsolation();
   }
 
   @Override
   public SQLWarning getWarnings() throws SQLException {
     this.checkState();
-    return this.connection.getWarnings();
+    return connection.getWarnings();
   }
 
   @Override
   public void clearWarnings() throws SQLException {
     this.checkState();
     try {
-      this.connection.clearWarnings();
+      connection.clearWarnings();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
   }
 
   @Override
-  public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+  public Statement createStatement(int resultSetType, int resultSetConcurrency)
+      throws SQLException {
     this.checkState();
     Statement statement = null;
     try {
-      statement = this.connection.createStatement(resultSetType, resultSetConcurrency);
+      statement = connection.createStatement(resultSetType, resultSetConcurrency);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     Statement statementProxy = this.createProxyStatement(statement, null);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -271,13 +275,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement = this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
+      statement = connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -287,27 +291,27 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     CallableStatement statement = null;
     try {
-      statement = this.connection.prepareCall(sql, resultSetType, resultSetConcurrency);
+      statement = connection.prepareCall(sql, resultSetType, resultSetConcurrency);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     CallableStatement statementProxy =
         (CallableStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
   @Override
   public Map<String, Class<?>> getTypeMap() throws SQLException {
     this.checkState();
-    return this.connection.getTypeMap();
+    return connection.getTypeMap();
   }
 
   @Override
   public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
     this.checkState();
     try {
-      this.connection.setTypeMap(map);
+      connection.setTypeMap(map);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -317,17 +321,17 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   public void setHoldability(int holdability) throws SQLException {
     this.checkState();
     try {
-      this.connection.setHoldability(holdability);
+      connection.setHoldability(holdability);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.newHoldability = holdability;
+    conProxy.newHoldability = holdability;
   }
 
   @Override
   public int getHoldability() throws SQLException {
     this.checkState();
-    return this.connection.getHoldability();
+    return connection.getHoldability();
   }
 
   @Override
@@ -335,11 +339,11 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Savepoint savepoint = null;
     try {
-      savepoint = this.connection.setSavepoint();
+      savepoint = connection.setSavepoint();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.savepoint = savepoint;
+    conProxy.savepoint = savepoint;
     return savepoint;
   }
 
@@ -348,11 +352,11 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Savepoint savepoint = null;
     try {
-      savepoint = this.connection.setSavepoint(name);
+      savepoint = connection.setSavepoint(name);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
-    this.conProxy.savepoint = savepoint;
+    conProxy.savepoint = savepoint;
     return savepoint;
   }
 
@@ -360,7 +364,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   public void rollback(Savepoint savepoint) throws SQLException {
     this.checkState();
     try {
-      this.connection.rollback();
+      connection.rollback();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -370,7 +374,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   public void releaseSavepoint(Savepoint savepoint) throws SQLException {
     this.checkState();
     try {
-      this.connection.releaseSavepoint(savepoint);
+      connection.releaseSavepoint(savepoint);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -383,31 +387,29 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     Statement statement = null;
     try {
       statement =
-          this.connection
-              .createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
+          connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     Statement statementProxy = this.createProxyStatement(statement, null);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
   @Override
-  public PreparedStatement prepareStatement(String sql, int resultSetType,
-      int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency,
+      int resultSetHoldability) throws SQLException {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement =
-          this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency,
-              resultSetHoldability);
+      statement = connection.prepareStatement(sql, resultSetType, resultSetConcurrency,
+          resultSetHoldability);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -418,14 +420,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     CallableStatement statement = null;
     try {
       statement =
-          this.connection.prepareCall(sql, resultSetType, resultSetConcurrency,
-              resultSetHoldability);
+          connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     CallableStatement statementProxy =
         (CallableStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -434,13 +435,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement = this.connection.prepareStatement(sql, autoGeneratedKeys);
+      statement = connection.prepareStatement(sql, autoGeneratedKeys);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -449,13 +450,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement = this.connection.prepareStatement(sql, columnIndexes);
+      statement = connection.prepareStatement(sql, columnIndexes);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -464,13 +465,13 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     PreparedStatement statement = null;
     try {
-      statement = this.connection.prepareStatement(sql, columnNames);
+      statement = connection.prepareStatement(sql, columnNames);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
     PreparedStatement statementProxy =
         (PreparedStatement) this.createProxyStatement(statement, sql);
-    this.statementSet.add(statementProxy);
+    statementSet.add(statementProxy);
     return statementProxy;
   }
 
@@ -478,8 +479,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
    * This is a template method for XAConnectionImpl
    */
   protected Statement createProxyStatement(Statement statement, String sql) {
-    Statement statementProxy =
-        ProxyFactory.createProxyStatement(statement, this, this.conProxy, sql);
+    Statement statementProxy = ProxyFactory.createProxyStatement(statement, this, conProxy, sql);
     return statementProxy;
   }
 
@@ -488,7 +488,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Clob clob = null;
     try {
-      clob = this.connection.createClob();
+      clob = connection.createClob();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -500,7 +500,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Blob blob = null;
     try {
-      blob = this.connection.createBlob();
+      blob = connection.createBlob();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -512,7 +512,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     NClob nclob = null;
     try {
-      nclob = this.connection.createNClob();
+      nclob = connection.createNClob();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -524,7 +524,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     SQLXML sqlXML = null;
     try {
-      sqlXML = this.connection.createSQLXML();
+      sqlXML = connection.createSQLXML();
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -534,35 +534,35 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
   @Override
   public boolean isValid(int timeout) throws SQLException {
     this.checkState();
-    return this.connection.isValid(timeout);
+    return connection.isValid(timeout);
   }
 
   @Override
   public void setClientInfo(String name, String value) throws SQLClientInfoException {
-    if (this.isClosed) {
+    if (isClosed) {
       throw new SQLClientInfoException();
     }
-    this.connection.setClientInfo(name, value);
+    connection.setClientInfo(name, value);
   }
 
   @Override
   public void setClientInfo(Properties properties) throws SQLClientInfoException {
-    if (this.isClosed) {
+    if (isClosed) {
       throw new SQLClientInfoException();
     }
-    this.connection.setClientInfo(properties);
+    connection.setClientInfo(properties);
   }
 
   @Override
   public String getClientInfo(String name) throws SQLException {
     this.checkState();
-    return this.connection.getClientInfo(name);
+    return connection.getClientInfo(name);
   }
 
   @Override
   public Properties getClientInfo() throws SQLException {
     this.checkState();
-    return this.connection.getClientInfo();
+    return connection.getClientInfo();
   }
 
   @Override
@@ -570,7 +570,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Array array = null;
     try {
-      array = this.connection.createArrayOf(typeName, elements);
+      array = connection.createArrayOf(typeName, elements);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -582,7 +582,7 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
     this.checkState();
     Struct struct = null;
     try {
-      struct = this.connection.createStruct(typeName, attributes);
+      struct = connection.createStruct(typeName, attributes);
     } catch (SQLException ex) {
       this.handleException(ex);
     }
@@ -616,68 +616,68 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
 
   @Override
   public void close() throws SQLException {
-    if (this.isClosed) {
+    if (isClosed) {
       return;
     }
-    this.isClosed = true;
-    for (Statement stmt : this.statementSet) {
+    isClosed = true;
+    for (Statement stmt : statementSet) {
       stmt.close();
     }
-    this.statementSet.clear();
-    if (this.connectionEventListeners != null) {
+    statementSet.clear();
+    if (connectionEventListeners != null) {
       ConnectionEvent event = new ConnectionEvent(this);
-      for (ConnectionEventListener listener : this.connectionEventListeners) {
+      for (ConnectionEventListener listener : connectionEventListeners) {
         listener.connectionClosed(event);
       }
-      this.connectionEventListeners = null;
+      connectionEventListeners = null;
     }
-    if (this.statementEventListeners != null) {
-      this.statementEventListeners = null;
+    if (statementEventListeners != null) {
+      statementEventListeners = null;
     }
-    this.connection = null;
-    this.conProxy.close();
+    connection = null;
+    conProxy.close();
   }
 
   /**
    * Check if pool connection closed.
    */
   protected void checkState() throws SQLException {
-    if (this.isClosed) {
+    if (isClosed) {
       throw new SQLException("connection closed");
     }
   }
 
   @Override
   public void addConnectionEventListener(ConnectionEventListener listener) {
-    if (this.connectionEventListeners == null) {
-      this.connectionEventListeners = new ArrayList<ConnectionEventListener>();
+    if (connectionEventListeners == null) {
+      connectionEventListeners = new ArrayList<ConnectionEventListener>();
     }
-    this.connectionEventListeners.add(listener);
+    connectionEventListeners.add(listener);
   }
 
   @Override
   public void removeConnectionEventListener(ConnectionEventListener listener) {
-    if (this.connectionEventListeners != null) {
-      this.connectionEventListeners.remove(listener);
+    if (connectionEventListeners != null) {
+      connectionEventListeners.remove(listener);
     }
   }
 
   @Override
   public void addStatementEventListener(StatementEventListener listener) {
-    if (this.statementEventListeners == null) {
-      this.statementEventListeners = new ArrayList<StatementEventListener>();
+    if (statementEventListeners == null) {
+      statementEventListeners = new ArrayList<StatementEventListener>();
     }
-    this.statementEventListeners.add(listener);
+    statementEventListeners.add(listener);
   }
 
   public List<StatementEventListener> getStatementEventListeners() {
-    return this.statementEventListeners;
+    return statementEventListeners;
   }
 
   @Override
   public void removeStatementEventListener(StatementEventListener listener) {
-    if (this.statementEventListeners != null) {
-      this.statementEventListeners.remove(listener);
+    if (statementEventListeners != null) {
+      statementEventListeners.remove(listener);
     }
   }
 
@@ -685,9 +685,10 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
    * Handle the SQLException
    */
   private SQLException handleException(SQLException e) throws SQLException {
+    LOGGER.error("handleException get SQLException: ", e);
     ConnectionEvent event = new ConnectionEvent(this, e);
-    if (this.connectionEventListeners != null) {
-      for (ConnectionEventListener eventListener : this.connectionEventListeners) {
+    if (connectionEventListeners != null) {
+      for (ConnectionEventListener eventListener : connectionEventListeners) {
         eventListener.connectionErrorOccurred(event);
       }
     }
@@ -698,6 +699,6 @@ public class PoolConnectionImpl implements PooledConnection, Connection {
    * Remove statement
    */
   public void removeStatement(Statement statement) {
-    this.statementSet.remove(statement);
+    statementSet.remove(statement);
   }
 }

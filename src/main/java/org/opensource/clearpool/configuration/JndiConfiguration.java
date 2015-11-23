@@ -9,18 +9,22 @@ import javax.sql.CommonDataSource;
 
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
  * How to parse jndi.
- * 
+ *
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0
  */
 public class JndiConfiguration {
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(JndiConfiguration.class);
+
   private final static String JNDI_NAME = "jndi-name";
   private final static String PROP = "prop";
   private final static String KEY = "key";
@@ -63,6 +67,7 @@ public class JndiConfiguration {
       Context initial = new InitialContext(environment);
       ds = (CommonDataSource) initial.lookup(jndiName);
     } catch (NamingException e) {
+      LOGGER.error("getDataSource error: ", e);
       throw new ConnectionPoolException(e);
     }
     return ds;

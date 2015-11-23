@@ -6,14 +6,20 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
+
 /**
  * The dynamic proxy of DatabaseMetaData.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 class DatabaseMetaDataHandler implements InvocationHandler {
+  private static final PoolLogger LOGGER =
+      PoolLoggerFactory.getLogger(DatabaseMetaDataHandler.class);
+
   private static final String TOSTRING_METHOD = "toString";
   private static final String EQUALS_METHOD = "equals";
   private static final String HASHCODE_METHOD = "hashCode";
@@ -41,8 +47,9 @@ class DatabaseMetaDataHandler implements InvocationHandler {
       result = this.getConnection();
     } else {
       try {
-        result = method.invoke(this.metaData, args);
+        result = method.invoke(metaData, args);
       } catch (InvocationTargetException e) {
+        LOGGER.error("invoke " + method + " error:", e);
         throw e.getTargetException();
       }
     }
@@ -52,10 +59,10 @@ class DatabaseMetaDataHandler implements InvocationHandler {
   /**
    * User may want to ask the DatabaseMetaData for the connection, so we will return the pool
    * connection instead of it.
-   * 
+   *
    * @see DatabaseMetaData#getConnection
    */
   private Connection getConnection() {
-    return this.con;
+    return con;
   }
 }

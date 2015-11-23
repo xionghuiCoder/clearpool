@@ -13,25 +13,28 @@ import org.opensource.clearpool.datasource.proxy.PoolConnectionImpl;
 import org.opensource.clearpool.datasource.proxy.dynamic.ProxyFactory;
 import org.opensource.clearpool.exception.TransactionException;
 import org.opensource.clearpool.jta.TransactionManagerImpl;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 public class XAConnectionImpl extends PoolConnectionImpl implements XAConnection {
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(XAConnectionImpl.class);
+
   private final XAConnection xaCon;
 
   public XAConnectionImpl(ConnectionProxy conProxy) {
     super(conProxy);
-    this.xaCon = conProxy.getXaConnection();
+    xaCon = conProxy.getXaConnection();
   }
 
   @Override
   public XAResource getXAResource() throws SQLException {
     this.checkState();
-    return this.xaCon.getXAResource();
+    return xaCon.getXAResource();
   }
 
   @Override
   public Statement createProxyStatement(Statement statement, String sql) {
-    Statement statementProxy =
-        ProxyFactory.createProxyXAStatement(statement, this, this.conProxy, sql);
+    Statement statementProxy = ProxyFactory.createProxyXAStatement(statement, this, conProxy, sql);
     return statementProxy;
   }
 
@@ -59,6 +62,7 @@ public class XAConnectionImpl extends PoolConnectionImpl implements XAConnection
     try {
       ts = TransactionManagerImpl.getManager().getTransaction();
     } catch (SystemException e) {
+      LOGGER.error("getTransaction error: ", e);
       throw new TransactionException(e);
     }
     return ts != null;

@@ -12,18 +12,18 @@ import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.connection.CommonConnection;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * This class is the proxy of connection.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 public class ConnectionProxy implements Comparable<ConnectionProxy> {
-  private static final PoolLog LOG = PoolLogFactory.getLog(ConnectionProxy.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(ConnectionProxy.class);
 
   // Dummy value to associate with an Object in the backing Map
   private static final Object PRESENT = new Object();
@@ -51,8 +51,8 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
 
   public ConnectionProxy(ConnectionPoolManager pool, CommonConnection cmnCon) {
     this.pool = pool;
-    this.connection = cmnCon.getConnection();
-    this.xaConnection = cmnCon.getXAConnection();
+    connection = cmnCon.getConnection();
+    xaConnection = cmnCon.getXAConnection();
     this.saveValue();
   }
 
@@ -61,13 +61,13 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
    */
   private void saveValue() {
     try {
-      this.newAutoCommit = this.autoCommit = this.connection.getAutoCommit();
-      this.newCatalog = this.catalog = this.connection.getCatalog();
-      this.newHoldability = this.holdability = this.connection.getHoldability();
-      this.newReadOnly = this.readOnly = this.connection.isReadOnly();
-      this.newTransactionIsolation =
-          this.transactionIsolation = this.connection.getTransactionIsolation();
+      newAutoCommit = autoCommit = connection.getAutoCommit();
+      newCatalog = catalog = connection.getCatalog();
+      newHoldability = holdability = connection.getHoldability();
+      newReadOnly = readOnly = connection.isReadOnly();
+      newTransactionIsolation = transactionIsolation = connection.getTransactionIsolation();
     } catch (SQLException e) {
+      LOGGER.error("it calls a exception when we saveValue: ", e);
       throw new ConnectionPoolException(e);
     }
   }
@@ -76,41 +76,41 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
    * Reset the value which had been changed.
    */
   void reset() throws SQLException {
-    boolean autoCommit = this.connection.getAutoCommit();
+    boolean autoCommit = connection.getAutoCommit();
     if (!autoCommit) {
       // we have to roll back commit before we return connection to
       // the pool
-      this.connection.rollback();
+      connection.rollback();
     }
 
-    if (this.newAutoCommit != this.autoCommit) {
-      this.connection.setAutoCommit(this.autoCommit);
+    if (newAutoCommit != this.autoCommit) {
+      connection.setAutoCommit(this.autoCommit);
     }
-    if (this.newCatalog != this.catalog) {
-      this.connection.setCatalog(this.catalog);
+    if (newCatalog != catalog) {
+      connection.setCatalog(catalog);
     }
-    if (this.newHoldability != this.holdability) {
-      this.connection.setHoldability(this.holdability);
+    if (newHoldability != holdability) {
+      connection.setHoldability(holdability);
     }
-    if (this.newReadOnly != this.readOnly) {
-      this.connection.setReadOnly(this.readOnly);
+    if (newReadOnly != readOnly) {
+      connection.setReadOnly(readOnly);
     }
-    if (this.newTransactionIsolation != this.transactionIsolation) {
-      this.connection.setTransactionIsolation(this.transactionIsolation);
+    if (newTransactionIsolation != transactionIsolation) {
+      connection.setTransactionIsolation(transactionIsolation);
     }
-    if (this.savepoint != null) {
-      this.connection.releaseSavepoint(this.savepoint);
+    if (savepoint != null) {
+      connection.releaseSavepoint(savepoint);
     }
     // clear warnings before return connection to pool
-    this.connection.clearWarnings();
+    connection.clearWarnings();
   }
 
   public Connection getConnection() {
-    return this.connection;
+    return connection;
   }
 
   public XAConnection getXaConnection() {
-    return this.xaConnection;
+    return xaConnection;
   }
 
   /**
@@ -121,11 +121,11 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
       // reset it
       this.reset();
     } catch (SQLException e) {
-      LOG.warn("it calls a exception when we reset the connection");
+      LOGGER.error("it calls a exception when we reset the connection: ", e);
       this.reallyClose();
       return;
     }
-    this.pool.entryPool(this);
+    pool.entryPool(this);
   }
 
   /**
@@ -133,34 +133,34 @@ public class ConnectionProxy implements Comparable<ConnectionProxy> {
    */
   private void reallyClose() {
     // close connection
-    this.pool.closeConnection(this);
-    this.pool.decrementPoolSize();
-    this.pool.incrementOneConnection();
+    pool.closeConnection(this);
+    pool.decrementPoolSize();
+    pool.incrementOneConnection();
   }
 
   public ConfigurationVO getCfgVO() {
-    return this.pool.getCfgVO();
+    return pool.getCfgVO();
   }
 
   /**
    * deal if we need to increment {@link #sqlCount};
-   * 
+   *
    * @param sql
    */
   public void dealSqlCount(String sql) {
-    if (this.sqlMap.put(sql, PRESENT) == null) {
-      int count = this.sqlCount;
+    if (sqlMap.put(sql, PRESENT) == null) {
+      int count = sqlCount;
       count++;
       // in case sqlCount be negative
       if (count > 0) {
-        this.sqlCount = count;
+        sqlCount = count;
       }
     }
   }
 
   @Override
   public int compareTo(ConnectionProxy anoConnProxy) {
-    int x = this.sqlCount;
+    int x = sqlCount;
     int y = anoConnProxy.sqlCount;
     return x < y ? -1 : x == y ? 0 : 1;
   }

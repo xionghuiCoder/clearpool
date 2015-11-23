@@ -2,7 +2,7 @@ package org.opensource.clearpool.exception;
 
 /**
  * This exception will be threw if we get a exception when we use MBean.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -20,5 +20,9 @@ public class ConnectionPoolMBeanException extends RuntimeException {
 
   public ConnectionPoolMBeanException(Throwable cause) {
     super(cause);
+  }
+
+  public ConnectionPoolMBeanException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

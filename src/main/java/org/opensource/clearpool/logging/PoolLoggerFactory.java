@@ -10,7 +10,7 @@ import org.opensource.clearpool.logging.impl.NullLogger;
  * @date 26.07.2014
  * @version 1.0
  */
-public class PoolLogFactory {
+public class PoolLoggerFactory {
   public static final String LOG_UNABLE = "org.clearpool.log.unable";
 
   private static final String CLAZZ = "org.slf4j.LoggerFactory";
@@ -33,25 +33,25 @@ public class PoolLogFactory {
    * get log by LogFactoryAdapter
    *
    * @param name
-   * @return PoolLog
+   * @return PoolLogger
    */
-  public static PoolLog getLog(String name) {
+  public static PoolLogger getLogger(String name) {
     if (logUnable) {
       return new NullLogger();
     }
-    return LogFactoryAdapter.getLog(name);
+    return LoggerFactoryAdapter.getLogger(name);
   }
 
   /**
    * get log by LogFactoryAdapter
    *
    * @param name
-   * @return PoolLog
+   * @return PoolLogger
    */
-  public static PoolLog getLog(Class<?> clazz) {
+  public static PoolLogger getLogger(Class<?> clazz) {
     if (logUnable) {
       return new NullLogger();
     }
-    return LogFactoryAdapter.getLog(clazz);
+    return LoggerFactoryAdapter.getLogger(clazz);
   }
 }

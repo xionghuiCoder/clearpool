@@ -13,20 +13,21 @@ import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.console.hook.HtmlAdaptorHook;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.exception.ConnectionPoolMBeanException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 import com.sun.jdmk.comm.CommunicatorServer;
 
 /**
  * This class is used to control MBean.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 class CommunicatorServerHandler {
-  private static final PoolLog LOG = PoolLogFactory.getLog(CommunicatorServerHandler.class);
+  private static final PoolLogger LOGGER =
+      PoolLoggerFactory.getLogger(CommunicatorServerHandler.class);
 
   private static MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 
@@ -47,9 +48,10 @@ class CommunicatorServerHandler {
       ObjectNameCarry carry = new ObjectNameCarry(objectName, mbeanName);
       objectNameMap.put(poolName, carry);
     } catch (Exception e) {
+      LOGGER.error("registerMBean error: ", e);
       throw new ConnectionPoolMBeanException(e);
     }
-    LOG.info("register " + poolName + "'s MBean:" + mbeanName);
+    LOGGER.info("register " + poolName + "'s MBean:" + mbeanName);
   }
 
   /**
@@ -67,9 +69,9 @@ class CommunicatorServerHandler {
     } catch (Exception e) {
       // If we use Unregister button to stop it,we will get this exception
       // and log it.
-      LOG.info(e);
+      LOGGER.error("unregisterMBean error: ", e);
     }
-    LOG.info("unregister " + poolName + "'s MBean:" + mbeanName);
+    LOGGER.info("unregister " + poolName + "'s MBean:" + mbeanName);
   }
 
   /**
@@ -92,6 +94,7 @@ class CommunicatorServerHandler {
       ServerSocket server = new ServerSocket(port);
       server.close();
     } catch (IOException e) {
+      LOGGER.error("checkPort error: ", e);
       throw new ConnectionPoolMBeanException(Console.PORT + " is used");
     }
   }
@@ -114,7 +117,7 @@ class CommunicatorServerHandler {
   /**
    * This class used to carry mbeanName of the ObjectName,we can't log mbeanName with it while we
    * unregister the MBean.
-   * 
+   *
    * @author xionghui
    * @date 26.07.2014
    * @version 1.0

@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.util.MemoryUtil;
 import org.opensource.clearpool.util.MockTestDriver;
 import org.opensource.clearpool.util.ThreadProcessUtil;
@@ -44,7 +44,7 @@ public class CompareWithPopularPool extends TestCase {
   @Override
   public void setUp() throws Exception {
     MemoryUtil.printMemoryInfo();
-    System.setProperty(PoolLogFactory.LOG_UNABLE, "true");
+    System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
     DriverManager.registerDriver(new MockTestDriver());
     this.driverClass = MockTestDriver.CLASS;
     this.jdbcUrl = MockTestDriver.URL;

@@ -13,7 +13,7 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.jta.UserTransactionImpl;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * Note: <br />
@@ -36,7 +36,7 @@ public class JtaSuspend extends TestCase {
   private String tableName;
 
   static {
-    System.setProperty(PoolLogFactory.LOG_UNABLE, "true");
+    System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
   }
 
   @Override

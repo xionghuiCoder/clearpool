@@ -18,19 +18,20 @@ import org.opensource.clearpool.core.hook.CommonHook;
 import org.opensource.clearpool.core.hook.IdleCheckHook;
 import org.opensource.clearpool.core.hook.ShutdownHook;
 import org.opensource.clearpool.exception.ConnectionPoolException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 
 /**
  * This class is used to parse xml and manage hooks.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 class ConnectionPoolContainer {
-  private static final PoolLog LOG = PoolLogFactory.getLog(ConnectionPoolContainer.class);
+  private static final PoolLogger LOGGER =
+      PoolLoggerFactory.getLogger(ConnectionPoolContainer.class);
 
   private static final Lock lock = new ReentrantLock();
 
@@ -44,7 +45,7 @@ class ConnectionPoolContainer {
 
   /**
    * Load XML and init pool.
-   * 
+   *
    * @param path is used to find XML
    * @return PoolContainer is {@link ConnectionPoolContainer} or {@link UniquePoolContainer}
    */
@@ -127,6 +128,7 @@ class ConnectionPoolContainer {
       try {
         pool.initPool();
       } catch (Throwable t) {
+        LOGGER.error("initPool error: ", t);
         // in case memory reveal.
         pool.remove();
         throw new ConnectionPoolException(t);
@@ -138,7 +140,7 @@ class ConnectionPoolContainer {
       MBeanFacade.registerMBean(pool, mbeanName, poolName);
     }
     long cost = System.currentTimeMillis() - begin;
-    LOG.info("initPool cost " + cost + "ms");
+    LOGGER.info("initPool cost " + cost + "ms");
   }
 
   /**

@@ -5,18 +5,18 @@ import java.util.Collection;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.core.chain.CommonChain;
 import org.opensource.clearpool.core.chain.LockCircleChain;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * The common hook of the hooks.
- * 
+ *
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0
  */
 public abstract class CommonHook implements Runnable {
-  private static final PoolLog LOG = PoolLogFactory.getLog(CommonHook.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(CommonHook.class);
 
   static CommonChain<ConnectionPoolManager> poolChain =
       new LockCircleChain<ConnectionPoolManager>();
@@ -29,7 +29,7 @@ public abstract class CommonHook implements Runnable {
     thread.setName(name);
     thread.setDaemon(true);
     thread.start();
-    LOG.debug("start " + name);
+    LOGGER.info("start " + name);
     return thread;
   }
 

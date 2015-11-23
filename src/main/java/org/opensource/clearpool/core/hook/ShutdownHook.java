@@ -3,11 +3,11 @@ package org.opensource.clearpool.core.hook;
 import java.util.Iterator;
 
 import org.opensource.clearpool.core.ConnectionPoolManager;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 public class ShutdownHook extends CommonHook {
-  private static final PoolLog LOG = PoolLogFactory.getLog(ShutdownHook.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(ShutdownHook.class);
 
   /**
    * start ShutdownHook by Runtime
@@ -17,7 +17,7 @@ public class ShutdownHook extends CommonHook {
     Thread thread = new Thread(shutdownHook);
     thread.setName("ShutdownHook");
     Runtime.getRuntime().addShutdownHook(thread);
-    LOG.debug("register ShutdownHook");
+    LOGGER.info("register ShutdownHook");
   }
 
   /**
@@ -42,6 +42,6 @@ public class ShutdownHook extends CommonHook {
       pool.remove();
     }
     long cost = System.currentTimeMillis() - begin;
-    LOG.debug("ShutdownHook pool end,it cost " + cost + " ms");
+    LOGGER.info("ShutdownHook pool end,it cost " + cost + " ms");
   }
 }

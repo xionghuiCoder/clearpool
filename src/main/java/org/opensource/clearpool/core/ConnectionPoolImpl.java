@@ -12,25 +12,25 @@ import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.console.MBeanFacade;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolStateException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * The pool provide two kind of database connection pool.Please check {@link CommonPoolContainer} if
  * you want the details.
- * 
+ *
  * The pool have 3 different states here.We can do nothing if the pool is unInitialized or
  * destroyed, and we can do everything if pool is initialized.
- * 
+ *
  * Note:this class is a singleton class.The reason that we don't use ENUM singleton model which is
  * recommend by Joshua Bloch is because ENUM instance cann't be released.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 class ConnectionPoolImpl implements IConnectionPool {
-  private static final PoolLog LOG = PoolLogFactory.getLog(ConnectionPoolImpl.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(ConnectionPoolImpl.class);
 
   // the INSTANCE should be the front of the SINGLETON_MARK
   private static ConnectionPoolImpl instance = new ConnectionPoolImpl();
@@ -44,9 +44,9 @@ class ConnectionPoolImpl implements IConnectionPool {
 
   /**
    * we get 3 states here.
-   * 
+   *
    * state=0:unInitialized; state=1:initialized; state=2:destroyed.
-   * 
+   *
    */
   private volatile int state = 0;
 
@@ -111,8 +111,8 @@ class ConnectionPoolImpl implements IConnectionPool {
     for (ConfigurationVO vo : voList) {
       vo.init();
       if (cfgMap.put(vo.getAlias(), vo) != null) {
-        throw new ConnectionPoolStateException("ConfigurationVOs' alias " + vo.getAlias()
-            + " repeat");
+        throw new ConnectionPoolStateException(
+            "ConfigurationVOs' alias " + vo.getAlias() + " repeat");
       }
     }
     this.load(null, cfgMap);
@@ -120,7 +120,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 
   /**
    * Init pool by path or cfgMap.
-   * 
+   *
    * Note:one of path and cfgMap is null.
    */
   private void load(String path, Map<String, ConfigurationVO> cfgMap) {
@@ -129,10 +129,11 @@ class ConnectionPoolImpl implements IConnectionPool {
     ConnectionPoolContainer container = ConnectionPoolContainer.load(path, cfgMap);
     if (container != null) {
       poolContainer = container;
-      LOG.info("connection pool initialized.it cost " + (System.currentTimeMillis() - begin) + "ms");
+      LOGGER.info(
+          "connection pool initialized.it cost " + (System.currentTimeMillis() - begin) + "ms");
     }
     this.checkDestroyed();
-    this.state = 1;
+    state = 1;
   }
 
   public PooledConnection getPooledConnection() throws SQLException {
@@ -172,7 +173,7 @@ class ConnectionPoolImpl implements IConnectionPool {
       return;
     }
     tempContainer.remove(name);
-    LOG.info("remove pool " + name);
+    LOGGER.info("remove pool " + name);
   }
 
   @Override
@@ -180,7 +181,7 @@ class ConnectionPoolImpl implements IConnectionPool {
     this.checkDestroyed();
     // remove all the pool
     this.removeAll();
-    LOG.info("the pool is removed");
+    LOGGER.info("the pool is removed");
   }
 
   /**
@@ -196,7 +197,7 @@ class ConnectionPoolImpl implements IConnectionPool {
 
   @Override
   public void destory() {
-    if (this.state == 2) {
+    if (state == 2) {
       return;
     }
     /**
@@ -204,20 +205,20 @@ class ConnectionPoolImpl implements IConnectionPool {
      * memory leak.
      */
     instance = null;
-    this.state = 2;
+    state = 2;
     ConnectionPoolContainer.destoryHooks();
     // remove all the pool
     this.removeAll();
     MBeanFacade.stop();
     poolContainer = null;
-    LOG.info("the pool is destroyed");
+    LOGGER.info("the pool is destroyed");
   }
 
   /**
    * Check the state if it's destroyed.
    */
   private void checkDestroyed() {
-    if (this.state == 2) {
+    if (state == 2) {
       throw new ConnectionPoolStateException("clearpool have been destroyed");
     }
   }

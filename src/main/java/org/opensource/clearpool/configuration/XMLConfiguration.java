@@ -17,8 +17,8 @@ import javax.xml.stream.XMLInputFactory;
 
 import org.opensource.clearpool.configuration.console.Console;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.util.XMLEntityResolver;
 import org.opensource.clearpool.util.XMLErrorHandler;
 import org.w3c.dom.Document;
@@ -36,7 +36,7 @@ import org.xml.sax.InputSource;
  * @version 1.0
  */
 public class XMLConfiguration {
-  private static final PoolLog LOG = PoolLogFactory.getLog(XMLConfiguration.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(XMLConfiguration.class);
 
   /**
    * encoding used to read and write xml.
@@ -86,7 +86,7 @@ public class XMLConfiguration {
     long begin = System.currentTimeMillis();
     parseXML(cfgMap, path, xmlFac, true, false);
     long cost = System.currentTimeMillis() - begin;
-    LOG.info("XML parsing cost " + cost + "ms");
+    LOGGER.info("XML parsing cost " + cost + "ms");
     return cfgMap;
   }
 
@@ -139,8 +139,8 @@ public class XMLConfiguration {
           String nodeName = child.getNodeName();
           if (CONSOLE.equals(nodeName)) {
             if (!isFirst) {
-              throw new ConnectionPoolXMLParseException(CONSOLE
-                  + " should set in the first configuration");
+              throw new ConnectionPoolXMLParseException(
+                  CONSOLE + " should set in the first configuration");
             }
             Console console = new Console();
             console.parse(child);
@@ -163,12 +163,13 @@ public class XMLConfiguration {
         }
       }
     } catch (Exception e) {
+      LOGGER.error("parseXML error: ", e);
       throw new ConnectionPoolXMLParseException(e);
     } finally {
       try {
         reader.close();
       } catch (IOException e) {
-        LOG.error(e);
+        LOGGER.error("close reader error: ", e);
       }
     }
     if (urls.size() > 0) {
@@ -235,6 +236,7 @@ public class XMLConfiguration {
     try {
       reader = new InputStreamReader(getResourceAsStream(path), encoding);
     } catch (UnsupportedEncodingException e) {
+      LOGGER.error("getResourceAsReader error: ", e);
       throw new ConnectionPoolXMLParseException(e);
     }
     return reader;

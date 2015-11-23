@@ -7,13 +7,13 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
+
 import net.sourceforge.jtds.jdbc.XASupport;
 
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
-
 public class JtdsXAResource implements XAResource {
-  private static final PoolLog LOG = PoolLogFactory.getLog(JtdsXAResource.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(JtdsXAResource.class);
 
   private final Connection connection;
   private final JtdsXAConnection xaConnection;
@@ -28,40 +28,38 @@ public class JtdsXAResource implements XAResource {
       try {
         method = connection.getClass().getMethod("getRmHost");
       } catch (Exception e) {
-        LOG.error("getRmHost method error", e);
+        LOGGER.error("getRmHost method error: ", e);
       }
-    }
-
-    if (method != null) {
+    } else {
       try {
-        this.rmHost = (String) method.invoke(connection);
+        rmHost = (String) method.invoke(connection);
       } catch (Exception e) {
-        LOG.error("getRmHost error", e);
+        LOGGER.error("invoke " + method + " error: ", e);
       }
     }
   }
 
   protected JtdsXAConnection getResourceManager() {
-    return this.xaConnection;
+    return xaConnection;
   }
 
   protected String getRmHost() {
-    return this.rmHost;
+    return rmHost;
   }
 
   @Override
   public void commit(Xid xid, boolean commit) throws XAException {
-    XASupport.xa_commit(this.connection, this.xaConnection.getXAConnectionID(), xid, commit);
+    XASupport.xa_commit(connection, xaConnection.getXAConnectionID(), xid, commit);
   }
 
   @Override
   public void end(Xid xid, int flags) throws XAException {
-    XASupport.xa_end(this.connection, this.xaConnection.getXAConnectionID(), xid, flags);
+    XASupport.xa_end(connection, xaConnection.getXAConnectionID(), xid, flags);
   }
 
   @Override
   public void forget(Xid xid) throws XAException {
-    XASupport.xa_forget(this.connection, this.xaConnection.getXAConnectionID(), xid);
+    XASupport.xa_forget(connection, xaConnection.getXAConnectionID(), xid);
   }
 
   @Override
@@ -72,7 +70,7 @@ public class JtdsXAResource implements XAResource {
   @Override
   public boolean isSameRM(XAResource xares) throws XAException {
     if (xares instanceof JtdsXAResource) {
-      if (((JtdsXAResource) xares).getRmHost().equals(this.rmHost)) {
+      if (((JtdsXAResource) xares).getRmHost().equals(rmHost)) {
         return true;
       }
     }
@@ -81,17 +79,17 @@ public class JtdsXAResource implements XAResource {
 
   @Override
   public int prepare(Xid xid) throws XAException {
-    return XASupport.xa_prepare(this.connection, this.xaConnection.getXAConnectionID(), xid);
+    return XASupport.xa_prepare(connection, xaConnection.getXAConnectionID(), xid);
   }
 
   @Override
   public Xid[] recover(int flags) throws XAException {
-    return XASupport.xa_recover(this.connection, this.xaConnection.getXAConnectionID(), flags);
+    return XASupport.xa_recover(connection, xaConnection.getXAConnectionID(), flags);
   }
 
   @Override
   public void rollback(Xid xid) throws XAException {
-    XASupport.xa_rollback(this.connection, this.xaConnection.getXAConnectionID(), xid);
+    XASupport.xa_rollback(connection, xaConnection.getXAConnectionID(), xid);
   }
 
   @Override
@@ -101,6 +99,6 @@ public class JtdsXAResource implements XAResource {
 
   @Override
   public void start(Xid xid, int flags) throws XAException {
-    XASupport.xa_start(this.connection, this.xaConnection.getXAConnectionID(), xid, flags);
+    XASupport.xa_start(connection, xaConnection.getXAConnectionID(), xid, flags);
   }
 }

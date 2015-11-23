@@ -23,6 +23,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.opensource.clearpool.datasource.JDBCDataSource;
 import org.opensource.clearpool.exception.ConnectionPoolException;
 import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.security.Secret;
 import org.opensource.clearpool.security.SecretAES;
 import org.opensource.clearpool.util.JdbcUtil;
@@ -33,12 +35,14 @@ import org.w3c.dom.NodeList;
 
 /**
  * This class used to parse JDBC.
- * 
+ *
  * @author xionghui
  * @date 16.08.2014
  * @version 1.0
  */
 public class JDBCConfiguration {
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(JDBCConfiguration.class);
+
   private final static String CLASS = "class";
   private final static String URL = "url";
   private final static String USER = "user";
@@ -113,6 +117,7 @@ public class JDBCConfiguration {
       }
       driver = JdbcUtil.createDriver(clazz);
     } catch (SQLException e) {
+      LOGGER.error("getDataSource error: ", e);
       throw new ConnectionPoolException(e);
     }
     Properties connectProperties = new Properties();
@@ -155,6 +160,7 @@ public class JDBCConfiguration {
         password = handler.decrypt(password);
       }
     } catch (Exception e) {
+      LOGGER.error("handlerPassword error: ", e);
       throw new ConnectionPoolException(e.getMessage());
     }
     return password;
@@ -162,7 +168,7 @@ public class JDBCConfiguration {
 
   /**
    * Save the configuration.
-   * 
+   *
    * @param document
    * @param filePath
    * @throws Exception
@@ -181,7 +187,7 @@ public class JDBCConfiguration {
 
   /**
    * Get writer by path and {@link XMLConfiguration#encoding}.
-   * 
+   *
    * @param encoding
    * @param filePath
    * @return

@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opensource.clearpool.exception.ConnectionPoolException;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 import sun.misc.Unsafe;
 
@@ -21,6 +23,8 @@ import sun.misc.Unsafe;
 @SuppressWarnings("restriction")
 @Deprecated
 public class AtomicSingleChain<E> extends CommonChain<E> {
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(AtomicSingleChain.class);
+
   private static final Unsafe UNSAFE;
 
   private static final long HEAD_OFFSET;
@@ -34,6 +38,7 @@ public class AtomicSingleChain<E> extends CommonChain<E> {
       HEAD_OFFSET = UNSAFE.objectFieldOffset(AtomicSingleChain.class.getDeclaredField("head"));
       TAIL_OFFSET = UNSAFE.objectFieldOffset(AtomicSingleChain.class.getDeclaredField("tail"));
     } catch (Exception e) {
+      LOGGER.error("init failed: ", e);
       throw new ConnectionPoolException("use Unsafe error");
     }
   }
@@ -150,12 +155,15 @@ public class AtomicSingleChain<E> extends CommonChain<E> {
    * @version 1.0
    */
   private final static class SingleNode<E> extends Node<E> {
+    private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(SingleNode.class);
+
     private static final long ELEMENT_OFFSET;
 
     static {
       try {
         ELEMENT_OFFSET = UNSAFE.objectFieldOffset(Node.class.getDeclaredField("element"));
       } catch (Exception e) {
+        LOGGER.error("init ELEMENT_OFFSET error: ", e);
         throw new ConnectionPoolException("get element position error");
       }
     }
@@ -167,7 +175,7 @@ public class AtomicSingleChain<E> extends CommonChain<E> {
     @Override
     E getElement() {
       for (;;) {
-        E current = this.element;
+        E current = element;
         if (this.compareAndSetElement(current, null)) {
           return current;
         }

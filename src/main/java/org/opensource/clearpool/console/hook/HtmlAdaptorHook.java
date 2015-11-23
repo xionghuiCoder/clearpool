@@ -12,8 +12,8 @@ import javax.management.ObjectName;
 
 import org.opensource.clearpool.console.MBeanFacade;
 import org.opensource.clearpool.exception.ConnectionPoolMBeanException;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 
 import com.sun.jdmk.comm.AuthInfo;
@@ -23,13 +23,13 @@ import com.sun.jdmk.comm.HtmlAdaptorServer;
 /**
  * This class's duty is to start HtmlAdaptorServer and count down the latch to run
  * CommonPoolContainer.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
  */
 public class HtmlAdaptorHook extends HtmlAdaptorServer {
-  private static final PoolLog LOG = PoolLogFactory.getLog(HtmlAdaptorHook.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(HtmlAdaptorHook.class);
 
   /**
    * Start HtmlAdaptorHook
@@ -59,6 +59,7 @@ public class HtmlAdaptorHook extends HtmlAdaptorServer {
       ObjectName adapterName = new ObjectName("com.sun.jdmk.comm:type=HtmlAdaptorServer");
       server.registerMBean(communicatorServer, adapterName);
     } catch (Exception e) {
+      LOGGER.error("registerMBean error: ", e);
       throw new ConnectionPoolMBeanException(e);
     }
     return communicatorServer;
@@ -73,7 +74,8 @@ public class HtmlAdaptorHook extends HtmlAdaptorServer {
 
   @Override
   public void run() {
-    LOG.info("HtmlAdaptorServer running:url is http://localhost:" + MBeanFacade.console.getPort());
+    LOGGER
+        .info("HtmlAdaptorServer running:url is http://localhost:" + MBeanFacade.console.getPort());
     // I'm running.
     PoolLatchUtil.countDownStartLatch();
     super.run();
@@ -93,6 +95,7 @@ public class HtmlAdaptorHook extends HtmlAdaptorServer {
       ServerSocket sockListen = (ServerSocket) field.get(communicatorServer);
       sockListen.close();
     } catch (Exception e) {
+      LOGGER.error("stop CommunicatorServer error: ", e);
       throw new ConnectionPoolMBeanException(e);
     }
   }

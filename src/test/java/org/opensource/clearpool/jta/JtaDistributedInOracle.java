@@ -11,7 +11,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * Note: replace database configuration in clearpool-test-jta-oracle-distributed1.xml and
@@ -30,7 +30,7 @@ public class JtaDistributedInOracle extends TestCase {
   private String tableName2;
 
   static {
-    System.setProperty(PoolLogFactory.LOG_UNABLE, "true");
+    System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
   }
 
   @Override

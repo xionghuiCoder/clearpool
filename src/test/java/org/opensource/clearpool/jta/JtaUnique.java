@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.jta.UserTransactionImpl;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 
 /**
  * We need database which support XA such as mySql or oracle to run this case.
@@ -37,7 +37,7 @@ public class JtaUnique extends TestCase {
   private String tableName;
 
   static {
-    System.setProperty(PoolLogFactory.LOG_UNABLE, "true");
+    System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
   }
 
   @Override

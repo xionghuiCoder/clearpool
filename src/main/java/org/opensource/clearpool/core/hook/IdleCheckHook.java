@@ -5,8 +5,8 @@ import java.util.Iterator;
 import org.opensource.clearpool.configuration.ConfigurationVO;
 import org.opensource.clearpool.core.ConnectionPoolManager;
 import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
-import org.opensource.clearpool.logging.PoolLog;
-import org.opensource.clearpool.logging.PoolLogFactory;
+import org.opensource.clearpool.logging.PoolLogger;
+import org.opensource.clearpool.logging.PoolLoggerFactory;
 import org.opensource.clearpool.util.PoolLatchUtil;
 import org.opensource.clearpool.util.ThreadSleepUtil;
 
@@ -19,7 +19,7 @@ import org.opensource.clearpool.util.ThreadSleepUtil;
  * @version 1.0
  */
 public class IdleCheckHook extends CommonHook {
-  private static final PoolLog LOG = PoolLogFactory.getLog(IdleCheckHook.class);
+  private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(IdleCheckHook.class);
 
   /**
    * Start IdleCheckHook
@@ -37,7 +37,7 @@ public class IdleCheckHook extends CommonHook {
 
   @Override
   public void run() {
-    LOG.info("IdleCheckHook running");
+    LOGGER.info("IdleCheckHook running");
     // I'm running.
     PoolLatchUtil.countDownStartLatch();
     Iterator<ConnectionPoolManager> itr = poolChain.iterator();
