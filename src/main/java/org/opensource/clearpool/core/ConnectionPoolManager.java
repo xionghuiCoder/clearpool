@@ -93,7 +93,7 @@ public class ConnectionPoolManager {
       lock.lock();
       try {
         do {
-          conProxy = connectionChain.remove();
+          conProxy = connectionChain.removeFirst();
           // if we couln't get a connection from the pool,we should get
           // new
           // connection.
@@ -218,7 +218,7 @@ public class ConnectionPoolManager {
     int coreSize = cfgVO.getCorePoolSize();
     ConnectionProxy conProxy = null;
     if (coreSize > 0) {
-      conProxy = connectionChain.remove();
+      conProxy = connectionChain.removeFirst();
     } else {
       int retryTimes = cfgVO.getAcquireRetryTimes();
       conProxy = this.tryGetConnection(retryTimes);

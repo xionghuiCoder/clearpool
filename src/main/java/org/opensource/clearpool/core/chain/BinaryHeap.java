@@ -7,7 +7,7 @@ import org.opensource.clearpool.datasource.proxy.ConnectionProxy;
 /**
  * This is a binary heap.<br />
  * It makes sure that the connection is most often reused.
- * 
+ *
  * @author xionghui
  * @date 26.07.2014
  * @version 1.0
@@ -35,12 +35,12 @@ public class BinaryHeap {
     }
     // Find a power of 2 >= toSize
     initialCapacity = this.roundUpToPowerOf2(initialCapacity);
-    this.queue = new ProxyNode[initialCapacity];
+    queue = new ProxyNode[initialCapacity];
   }
 
   private int roundUpToPowerOf2(int number) {
-    return number >= MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : number > 1 ? Integer
-        .highestOneBit(number - 1 << 1) : 1;
+    return number >= MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY
+        : number > 1 ? Integer.highestOneBit(number - 1 << 1) : 1;
   }
 
   /**
@@ -48,71 +48,79 @@ public class BinaryHeap {
    */
   public void add(ConnectionProxy e) {
     // Grow backing store if necessary
-    if (this.size + 1 == this.queue.length) {
-      this.queue = Arrays.copyOf(this.queue, 2 * this.queue.length);
+    if (size + 1 == queue.length) {
+      queue = Arrays.copyOf(queue, 2 * queue.length);
     }
-    this.queue[++this.size] = new ProxyNode(e, System.currentTimeMillis());
-    this.fixUp(this.size);
+    queue[++size] = new ProxyNode(e, System.currentTimeMillis());
+    this.fixUp(size);
   }
 
   /**
    * Establishes the heap invariant (described above) assuming the heap satisfies the invariant
    * except possibly for the leaf-node indexed by k (which may have a element greater than its
    * parent's).
-   * 
+   *
    * This method functions by "promoting" queue[k] up the hierarchy (by swapping it with its parent)
    * repeatedly until queue[k]'s element is less than or equal to that of its parent.
    */
   private void fixUp(int k) {
     while (k > 1) {
       int j = k >> 1;
-      if (this.queue[j].element.compareTo(this.queue[k].element) >= 0) {
+      if (queue[j].element.compareTo(queue[k].element) > 0) {
         break;
       }
-      ProxyNode tmp = this.queue[j];
-      this.queue[j] = this.queue[k];
-      this.queue[k] = tmp;
+      ProxyNode tmp = queue[j];
+      queue[j] = queue[k];
+      queue[k] = tmp;
       k = j;
     }
   }
 
   /**
+   * remove the first element
+   */
+  public ConnectionProxy removeFirst() {
+    return remove(1);
+  }
+
+  /**
    * remove a element
    */
-  public ConnectionProxy remove() {
-    if (this.size == 0) {
+  private ConnectionProxy remove(int i) {
+    if (size == 0) {
       return null;
     }
-    ProxyNode first = this.queue[1];
-    this.queue[1] = this.queue[this.size];
+    ProxyNode removeProxyNode = queue[i];
+    queue[i] = queue[size];
     // Drop extra reference to prevent memory leak
-    this.queue[this.size--] = null;
-    this.fixDown(1);
-    return first.element;
+    queue[size--] = null;
+    this.fixDown(i);
+    return removeProxyNode.element;
   }
+
 
   /**
    * Establishes the heap invariant (described above) in the subtree rooted at k, which is assumed
    * to satisfy the heap invariant except possibly for node k itself (which may have a element less
    * than its children's).
-   * 
+   *
    * This method functions by "demoting" queue[k] down the hierarchy (by swapping it with its
    * smaller child) repeatedly until queue[k]'s element is greater than or equal to those of its
    * children.
    */
   private void fixDown(int k) {
     int j;
-    while ((j = k << 1) <= this.size && j > 0) {
-      if (j < this.size && this.queue[j].element.compareTo(this.queue[j + 1].element) < 0) {
+    while ((j = k << 1) <= size && j > 0) {
+      if (j < size && queue[j].element.compareTo(queue[j + 1].element) < 0) {
         // j indexes bigger kid
         j++;
       }
-      if (this.queue[k].element.compareTo(this.queue[j].element) >= 0) {
+      if (queue[k].element.compareTo(queue[j].element) >= 0) {
         break;
       }
-      ProxyNode tmp = this.queue[j];
-      this.queue[j] = this.queue[k];
-      this.queue[k] = tmp;
+      ProxyNode tmp = queue[j];
+      queue[j] = queue[k];
+      queue[k] = tmp;
       k = j;
     }
   }
@@ -121,28 +129,27 @@ public class BinaryHeap {
    * remove a element if it's over period(ms)
    */
   public ConnectionProxy removeIdle(long period) {
-    if (this.size == 0) {
-      return null;
+    for (int i = size; i > 0; i--) {
+      // double check
+      ProxyNode last = queue[i];
+      if (last != null) {
+        // re-get current time
+        long now = System.currentTimeMillis();
+        if (now - last.entryTime >= period) {
+          return remove(i);
+        }
+      }
     }
-    // re-get current time
-    long now = System.currentTimeMillis();
-    // double check
-    ProxyNode last = this.queue[this.size];
-    if (last == null || now - last.entryTime < period) {
-      return null;
-    }
-    // Drop extra reference to prevent memory leak
-    this.queue[this.size--] = null;
-    return last.element;
+    return null;
   }
 
   public int size() {
-    return this.size;
+    return size;
   }
 
   /**
    * This class works as a time carrier.
-   * 
+   *
    * @author xionghui
    * @date 26.07.2014
    * @version 1.0
