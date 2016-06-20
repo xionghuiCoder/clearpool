@@ -16,6 +16,9 @@ public class XMLUtil {
       "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
   private static final String XSD_SCHEMA_LANGUAGE = "http://www.w3.org/2001/XMLSchema";
 
+  private XMLUtil() {
+  }
+
   public static Document createDocument(String path) throws Exception {
     Reader reader = getResourceAsReader(path);
     InputSource inputSource = new InputSource(reader);

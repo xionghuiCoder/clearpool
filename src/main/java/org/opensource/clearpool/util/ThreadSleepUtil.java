@@ -10,6 +10,9 @@ package org.opensource.clearpool.util;
 public class ThreadSleepUtil {
   private final static long MINUTE = 60 * 1000L;
 
+  private ThreadSleepUtil() {
+  }
+
   /**
    * release CPU:if the thread don't sleep,the CPU will be used by this thread all the time.
    */

@@ -10,6 +10,9 @@ import javax.management.ObjectName;
  */
 public class GCUtil {
 
+  private GCUtil() {
+  }
+
   public static long getYoungGC() {
     try {
       MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
