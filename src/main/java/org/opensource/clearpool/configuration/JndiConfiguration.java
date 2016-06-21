@@ -62,7 +62,7 @@ public class JndiConfiguration {
     if (jndiName == null) {
       throw new ConnectionPoolXMLParseException(JNDI_NAME + " is illegal");
     }
-    CommonDataSource ds = null;
+    CommonDataSource ds;
     try {
       Context initial = new InitialContext(environment);
       ds = (CommonDataSource) initial.lookup(jndiName);

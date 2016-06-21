@@ -58,7 +58,7 @@ public class XAConnectionImpl extends PoolConnectionImpl implements XAConnection
    * Check if we have started the transaction.
    */
   private boolean isTsBeginning() {
-    Transaction ts = null;
+    Transaction ts;
     try {
       ts = TransactionManagerImpl.getManager().getTransaction();
     } catch (SystemException e) {

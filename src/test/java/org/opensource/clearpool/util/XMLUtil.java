@@ -31,14 +31,14 @@ public class XMLUtil {
   }
 
   private static Reader getResourceAsReader(String path) {
-    Reader reader = null;
+    Reader reader;
     reader = new InputStreamReader(getResourceAsStream(path));
     return reader;
   }
 
   private static InputStream getResourceAsStream(String path) {
     path = path.startsWith("/") ? path.substring(1) : path;
-    InputStream inStream = null;
+    InputStream inStream;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     if (classLoader == null) {
       inStream = ClassLoader.getSystemResourceAsStream(path);

@@ -46,7 +46,7 @@ public class JtaDistributedInMySQLAndOracle extends TestCase {
     Connection con = dataSource.getConnection(poolName);
     Statement st = con.createStatement();
     int count = 0;
-    String tableName = null;
+    String tableName;
     for (;;) {
       tableName = "clearpool_jta_" + RANDOM.nextInt(1000000000);
       try {

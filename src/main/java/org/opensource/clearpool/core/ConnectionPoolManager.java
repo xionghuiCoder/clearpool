@@ -216,7 +216,7 @@ public class ConnectionPoolManager {
    */
   private void initTestTable() {
     int coreSize = cfgVO.getCorePoolSize();
-    ConnectionProxy conProxy = null;
+    ConnectionProxy conProxy;
     if (coreSize > 0) {
       conProxy = connectionChain.removeFirst();
     } else {

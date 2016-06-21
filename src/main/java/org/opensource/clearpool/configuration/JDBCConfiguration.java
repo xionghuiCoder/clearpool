@@ -110,7 +110,7 @@ public class JDBCConfiguration {
     if (url == null) {
       throw new ConnectionPoolException(JDBCConfiguration.URL + " is null");
     }
-    Driver driver = null;
+    Driver driver;
     try {
       if (clazz == null) {
         clazz = JdbcUtil.getDriverClassName(url);
@@ -139,7 +139,7 @@ public class JDBCConfiguration {
       throw new ConnectionPoolException(PASSWORD + " shouldn't be null when we are using STATUS");
     }
     try {
-      Secret handler = null;
+      Secret handler;
       if (securityClass == null) {
         handler = new SecretAES();
       } else {
