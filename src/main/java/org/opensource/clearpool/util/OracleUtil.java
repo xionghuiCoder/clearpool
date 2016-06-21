@@ -10,8 +10,7 @@ import oracle.jdbc.xa.client.OracleXAConnection;
 import org.opensource.clearpool.exception.TransactionException;
 
 public class OracleUtil {
-  private OracleUtil() {
-  }
+  private OracleUtil() {}
 
   public static XAConnection oracleXAConnection(Connection oracleConnection) {
     try {

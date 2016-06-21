@@ -30,8 +30,8 @@ public class Console {
           Security security = new Security();
           security.parse(child);
           if (this.securityMap.put(security.getUser(), security.getPassword()) != null) {
-            throw new ConnectionPoolXMLParseException(Security.USER + " in " + Console.SECURITY
-                + " repeat");
+            throw new ConnectionPoolXMLParseException(
+                Security.USER + " in " + Console.SECURITY + " repeat");
           }
         }
       }

@@ -2,8 +2,7 @@ package org.opensource.clearpool.util;
 
 public class MemoryUtil {
 
-  private MemoryUtil() {
-  }
+  private MemoryUtil() {}
 
   /**
    * Print memory

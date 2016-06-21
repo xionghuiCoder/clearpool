@@ -26,8 +26,8 @@ import org.opensource.clearpool.exception.ConnectionPoolXMLParseException;
  * @date 26.07.2014
  * @version 1.0
  */
-public class ClearPoolDataSource extends AbstractDataSource implements IConnectionPool, Closeable,
-    ConnectionPoolDataSource {
+public class ClearPoolDataSource extends AbstractDataSource
+    implements IConnectionPool, Closeable, ConnectionPoolDataSource {
   private static volatile boolean isInited = false;
 
   private Lock lock = new ReentrantLock();
@@ -119,8 +119,8 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
   }
 
   public void setJtaSupport(boolean jtaSupport) {
-	this.checkCfgLegal();
-	this.vo.setJtaSupport(jtaSupport);
+    this.checkCfgLegal();
+    this.vo.setJtaSupport(jtaSupport);
   }
 
   public void setCorePoolSize(int corePoolSize) {
@@ -216,12 +216,11 @@ public class ClearPoolDataSource extends AbstractDataSource implements IConnecti
       this.initPath(this.poolPath);
       return;
     }
-    if (this.dataSource == null
-        && (this.driverClass != null || this.jdbcUrl != null || this.jdbcUser != null || this.jdbcPassword != null)) {
+    if (this.dataSource == null && (this.driverClass != null || this.jdbcUrl != null
+        || this.jdbcUser != null || this.jdbcPassword != null)) {
       // we are trying to use jdbc driver if dataSource is null.
-      this.dataSource =
-          JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl, this.jdbcUser,
-              this.jdbcPassword);
+      this.dataSource = JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl,
+          this.jdbcUser, this.jdbcPassword);
     }
     this.vo.setCommonDataSource(this.dataSource);
     ConfigurationVO.setConsole(console);

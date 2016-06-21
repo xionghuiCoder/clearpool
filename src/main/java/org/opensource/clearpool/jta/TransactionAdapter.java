@@ -33,14 +33,14 @@ public class TransactionAdapter implements Transaction {
   }
 
   @Override
-  public boolean delistResource(XAResource arg0, int arg1) throws IllegalStateException,
-      SystemException {
+  public boolean delistResource(XAResource arg0, int arg1)
+      throws IllegalStateException, SystemException {
     return this.tx.delistResource(arg0, arg1);
   }
 
   @Override
-  public boolean enlistResource(XAResource arg0) throws RollbackException, IllegalStateException,
-      SystemException {
+  public boolean enlistResource(XAResource arg0)
+      throws RollbackException, IllegalStateException, SystemException {
     return this.tx.enlistResource(arg0);
   }
 
@@ -50,8 +50,8 @@ public class TransactionAdapter implements Transaction {
   }
 
   @Override
-  public void registerSynchronization(Synchronization arg0) throws RollbackException,
-      IllegalStateException, SystemException {
+  public void registerSynchronization(Synchronization arg0)
+      throws RollbackException, IllegalStateException, SystemException {
     this.tx.registerSynchronization(arg0);
   }
 

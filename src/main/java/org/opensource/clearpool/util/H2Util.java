@@ -19,8 +19,7 @@ public class H2Util {
 
   public static final int XA_DATA_SOURCE = 13;
 
-  private H2Util() {
-  }
+  private H2Util() {}
 
   public static Object createJdbcDataSourceFactory() {
     return new JdbcDataSourceFactory();
@@ -30,9 +29,8 @@ public class H2Util {
       throws SQLException {
     try {
       if (constructor == null) {
-        constructor =
-            JdbcXAConnection.class.getDeclaredConstructor(JdbcDataSourceFactory.class, int.class,
-                JdbcConnection.class);
+        constructor = JdbcXAConnection.class.getDeclaredConstructor(JdbcDataSourceFactory.class,
+            int.class, JdbcConnection.class);
         constructor.setAccessible(true);
       }
       int id = getNextId(XA_DATA_SOURCE);

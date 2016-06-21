@@ -11,11 +11,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
 
 public class ThreadProcessUtil {
-  private ThreadProcessUtil() {
-  }
+  private ThreadProcessUtil() {}
 
   public static void process(final DataSource dataSource, String name, final int loop,
-                             int threadCount, final AtomicLong physicalConnStat) throws Exception {
+      int threadCount, final AtomicLong physicalConnStat) throws Exception {
     realProcess(dataSource, name, loop, threadCount, physicalConnStat, null);
   }
 

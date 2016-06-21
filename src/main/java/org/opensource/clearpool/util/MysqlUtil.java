@@ -12,8 +12,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlXAConnection;
 import com.mysql.jdbc.jdbc2.optional.SuspendableXAConnection;
 
 public class MysqlUtil {
-  private MysqlUtil() {
-  }
+  private MysqlUtil() {}
 
   public static XAConnection mysqlXAConnection(Connection con) throws SQLException {
     ConnectionImpl mysqlConn = (ConnectionImpl) con;

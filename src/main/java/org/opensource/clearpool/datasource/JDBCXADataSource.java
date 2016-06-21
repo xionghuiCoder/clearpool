@@ -41,8 +41,8 @@ public class JDBCXADataSource extends AbstractDataSource {
     if (url.startsWith(JdbcUtil.ORACLE_ONE_PREFIX) || url.startsWith(JdbcUtil.ORACLE_ANO_PREFIX)) {
       Driver driver = this.jdbcDs.getDriver();
       if (driver.getMajorVersion() < 10) {
-        throw new TransactionException("not support oracle driver " + driver.getMajorVersion()
-            + "." + driver.getMinorVersion());
+        throw new TransactionException("not support oracle driver " + driver.getMajorVersion() + "."
+            + driver.getMinorVersion());
       }
     }
     if (url.startsWith("jdbc:h2:")) {

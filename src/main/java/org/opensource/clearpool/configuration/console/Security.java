@@ -27,15 +27,15 @@ public class Security {
           this.user = nodeValue;
           boolean rightUser = this.checkSecurityPattern(this.user);
           if (!rightUser) {
-            throw new ConnectionPoolXMLParseException("the pattern of " + Security.USER + " in "
-                + Console.SECURITY + " is illegal");
+            throw new ConnectionPoolXMLParseException(
+                "the pattern of " + Security.USER + " in " + Console.SECURITY + " is illegal");
           }
         } else if (PASSWORD.equals(nodeName)) {
           this.password = nodeValue;
           boolean rightPsd = this.checkSecurityPattern(this.password);
           if (!rightPsd) {
-            throw new ConnectionPoolXMLParseException("the pattern of " + Security.PASSWORD
-                + " is illegal");
+            throw new ConnectionPoolXMLParseException(
+                "the pattern of " + Security.PASSWORD + " is illegal");
           }
         }
       }

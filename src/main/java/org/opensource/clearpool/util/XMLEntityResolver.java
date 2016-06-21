@@ -11,8 +11,8 @@ public class XMLEntityResolver implements EntityResolver {
   private static final String CONFIG_DTD = "org/opensource/clearpool/configuration/clearpool.xsd";
 
   @Override
-  public InputSource resolveEntity(String publicId, String systemId) throws SAXException,
-      IOException {
+  public InputSource resolveEntity(String publicId, String systemId)
+      throws SAXException, IOException {
     String path = CONFIG_DTD;
     InputSource source = this.getInputSource(path);
     source.setPublicId(publicId);

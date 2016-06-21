@@ -16,8 +16,7 @@ public class PoolLatchUtil {
   // 2 hooks: IdleCheckHook and HtmlAdaptorHook.
   private static CountDownLatch startLatch = new CountDownLatch(2);
 
-  private PoolLatchUtil() {
-  }
+  private PoolLatchUtil() {}
 
   /**
    * Count down startLatch.
