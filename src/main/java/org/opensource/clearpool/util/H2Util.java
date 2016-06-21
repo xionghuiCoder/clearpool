@@ -19,6 +19,9 @@ public class H2Util {
 
   public static final int XA_DATA_SOURCE = 13;
 
+  private H2Util() {
+  }
+
   public static Object createJdbcDataSourceFactory() {
     return new JdbcDataSourceFactory();
   }

@@ -9,6 +9,9 @@ import org.postgresql.core.BaseConnection;
 import org.postgresql.xa.PGXAConnection;
 
 public class PGUtil {
+  private PGUtil() {
+  }
+
   public static XAConnection createXAConnection(Connection physicalConn) throws SQLException {
     return new PGXAConnection((BaseConnection) physicalConn);
   }

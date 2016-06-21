@@ -19,6 +19,9 @@ public final class JdbcUtil {
   private static final String DB2_DRIVER = "COM.ibm.db2.jdbc.app.DB2Driver";
   private static final String H2_DRIVER = "org.h2.Driver";
 
+  private JdbcUtil() {
+  }
+
   public static String getDriverClassName(String rawUrl) throws SQLException {
     if (rawUrl.startsWith("jdbc:derby:")) {
       return "org.apache.derby.jdbc.EmbeddedDriver";
