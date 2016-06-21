@@ -20,7 +20,7 @@ public class XAConnectionWrapper extends CommonConnection {
 
   @Override
   public Connection getConnection() {
-    Connection con = null;
+    Connection con;
     try {
       con = xaCon.getConnection();
     } catch (SQLException e) {

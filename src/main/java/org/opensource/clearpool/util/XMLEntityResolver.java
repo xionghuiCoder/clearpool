@@ -21,9 +21,9 @@ public class XMLEntityResolver implements EntityResolver {
   }
 
   private InputSource getInputSource(String path) {
-    InputSource source = null;
+    InputSource source;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    InputStream in = null;
+    InputStream in;
     if (classLoader == null) {
       in = ClassLoader.getSystemResourceAsStream(path);
     } else {
