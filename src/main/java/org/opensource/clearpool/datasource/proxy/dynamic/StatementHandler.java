@@ -67,10 +67,10 @@ class StatementHandler implements InvocationHandler {
     this.pooledConnection = pooledConnection;
     this.conProxy = conProxy;
     ConfigurationVO cfgVO = conProxy.getCfgVO();
-    showSql = cfgVO.isShowSql();
-    sqlTimeFilter = cfgVO.getSqlTimeFilter();
+    this.showSql = cfgVO.isShowSql();
+    this.sqlTimeFilter = cfgVO.getSqlTimeFilter();
     this.sql = sql;
-    sqlSet.add(sql);
+    this.sqlSet.add(sql);
   }
 
   @Override
@@ -94,9 +94,9 @@ class StatementHandler implements InvocationHandler {
        * With simple test,it shows that setAccessible(true) is about 3 times faster than original.
        */
       method.setAccessible(true);
-      long startTime = showSql ? System.currentTimeMillis() : 0;
+      long startTime = this.showSql ? System.currentTimeMillis() : 0;
       try {
-        result = method.invoke(statement, args);
+        result = method.invoke(this.statement, args);
         // deal sqlCount if there is no exception
         this.dealSqlCount(methodName, args);
       } catch (InvocationTargetException e) {
@@ -108,9 +108,9 @@ class StatementHandler implements InvocationHandler {
           throw target;
         }
       } finally {
-        if (showSql) {
+        if (this.showSql) {
           long sqlTime = System.currentTimeMillis() - startTime;
-          if (target != null || sqlTime >= sqlTimeFilter) {
+          if (target != null || sqlTime >= this.sqlTimeFilter) {
             this.dealLogSql(methodName, target != null, sqlTime, args);
           }
         }
@@ -132,14 +132,14 @@ class StatementHandler implements InvocationHandler {
   private void dealSqlCount(String methodName, Object[] args) {
     if (ADD_BATCH_METHOD.equals(methodName)) {
       int argCount = args != null ? args.length : 0;
-      if (argCount > 0 && args[0] instanceof String && sql == null) {
-        sqlSet.add((String) args[0]);
+      if (argCount > 0 && args[0] instanceof String && this.sql == null) {
+        this.sqlSet.add((String) args[0]);
       }
     } else if (methodName.startsWith(EXECUTE)) {
-      for (String sql : sqlSet) {
-        conProxy.dealSqlCount(sql);
+      for (String sql : this.sqlSet) {
+        this.conProxy.dealSqlCount(sql);
       }
-      sqlSet.clear();
+      this.sqlSet.clear();
     }
   }
 
@@ -148,17 +148,18 @@ class StatementHandler implements InvocationHandler {
    */
   private void close() throws SQLException {
     try {
-      statement.close();
+      this.statement.close();
     } catch (SQLException e) {
       LOGGER.error("close statement error: ", e);
       this.handleException(e);
     }
-    pooledConnection.removeStatement(statement);
-    if (statement instanceof PreparedStatement) {
+    this.pooledConnection.removeStatement(this.statement);
+    if (this.statement instanceof PreparedStatement) {
       List<StatementEventListener> statementEventListeners =
-          pooledConnection.getStatementEventListeners();
+          this.pooledConnection.getStatementEventListeners();
       if (statementEventListeners != null) {
-        StatementEvent event = new StatementEvent(pooledConnection, (PreparedStatement) statement);
+        StatementEvent event =
+            new StatementEvent(this.pooledConnection, (PreparedStatement) this.statement);
         for (StatementEventListener listener : statementEventListeners) {
           listener.statementClosed(event);
         }
@@ -170,11 +171,12 @@ class StatementHandler implements InvocationHandler {
    * Handle the SQLException
    */
   private SQLException handleException(SQLException e) throws SQLException {
-    if (statement instanceof PreparedStatement) {
+    if (this.statement instanceof PreparedStatement) {
       List<StatementEventListener> statementEventListeners =
-          pooledConnection.getStatementEventListeners();
+          this.pooledConnection.getStatementEventListeners();
       if (statementEventListeners != null) {
-        StatementEvent event = new StatementEvent(pooledConnection, (PreparedStatement) statement);
+        StatementEvent event =
+            new StatementEvent(this.pooledConnection, (PreparedStatement) this.statement);
         for (StatementEventListener listener : statementEventListeners) {
           listener.statementErrorOccurred(event);
         }
@@ -189,8 +191,8 @@ class StatementHandler implements InvocationHandler {
   private void dealLogSql(String methodName, boolean isError, long sqlTime, Object[] args) {
     if (CLEARPARAMETERS_METHOD.equals(methodName)) {
       // clear parameters
-      if (parameterMap != null) {
-        parameterMap.clear();
+      if (this.parameterMap != null) {
+        this.parameterMap.clear();
       }
     } else if (SETNULL_METHOD.equals(methodName)) {
       int argCount = args != null ? args.length : 0;
@@ -234,8 +236,8 @@ class StatementHandler implements InvocationHandler {
    */
   private void saveParameter(int index, Object value) {
     // Lazily instantiate parameterMap if necessary
-    if (parameterMap == null) {
-      parameterMap = new TreeMap<Integer, Object>(new Comparator<Integer>() {
+    if (this.parameterMap == null) {
+      this.parameterMap = new TreeMap<Integer, Object>(new Comparator<Integer>() {
         @Override
         public int compare(Integer i1, Integer i2) {
           return this.compareOrigin(i1, i2);
@@ -247,17 +249,19 @@ class StatementHandler implements InvocationHandler {
       });
     }
     if (value == null) {
-      parameterMap.put(index, "NULL");
+      this.parameterMap.put(index, "NULL");
     } else if (value instanceof String) {
       // in case SQL injection
       value = ((String) value).replaceAll("'", "''");
-      parameterMap.put(index, "'" + value + "'");
+      this.parameterMap.put(index, "'" + value + "'");
+    } else if (value instanceof Boolean) {
+      this.parameterMap.put(index, value);
     } else if (value instanceof Number) {
-      parameterMap.put(index, value);
+      this.parameterMap.put(index, value);
     } else {
       String className = value.getClass().getName();
       int position = className.lastIndexOf(".") + 1;
-      parameterMap.put(index, className.substring(position));
+      this.parameterMap.put(index, className.substring(position));
     }
   }
 
@@ -274,42 +278,42 @@ class StatementHandler implements InvocationHandler {
    * Append sql to {@link #sqlLog} and set parameters if necessary.
    */
   private void appendToSqlLog() {
-    if (sql != null && sql.length() > 0) {
-      String[] sqlFrag = sql.split("\\?");
+    if (this.sql != null && this.sql.length() > 0) {
+      String[] sqlFrag = this.sql.split("\\?");
       int index = 0;
       for (String s : sqlFrag) {
         if (index > 0) {
-          if (parameterMap != null) {
-            Object value = parameterMap.get(index);
+          if (this.parameterMap != null) {
+            Object value = this.parameterMap.get(index);
             if (value != null) {
-              sqlLog.append(value);
+              this.sqlLog.append(value);
             } else {
-              sqlLog.append("?");
+              this.sqlLog.append("?");
             }
           } else {
-            sqlLog.append("?");
+            this.sqlLog.append("?");
           }
         }
-        sqlLog.append(s);
+        this.sqlLog.append(s);
         index++;
       }
-      if (sql.endsWith("?")) {
-        if (parameterMap != null) {
-          Object value = parameterMap.get(index);
+      if (this.sql.endsWith("?")) {
+        if (this.parameterMap != null) {
+          Object value = this.parameterMap.get(index);
           if (value != null) {
-            sqlLog.append(value);
+            this.sqlLog.append(value);
           } else {
-            sqlLog.append("?");
+            this.sqlLog.append("?");
           }
         } else {
-          sqlLog.append("?");
+          this.sqlLog.append("?");
         }
       }
-      sqlLog.append(";\n");
+      this.sqlLog.append(";\n");
     }
     // Clear parameterMap for next time
-    if (parameterMap != null) {
-      parameterMap.clear();
+    if (this.parameterMap != null) {
+      this.parameterMap.clear();
     }
   }
 
@@ -319,12 +323,12 @@ class StatementHandler implements InvocationHandler {
    * @param sqlTime so we can log how long the sql cost
    */
   private void trace(boolean isError, long sqlTime) {
-    int len = sqlLog.length();
+    int len = this.sqlLog.length();
     if (len > 0) {
       // delete the last "\n"
-      sqlLog.deleteCharAt(len - 1);
+      this.sqlLog.deleteCharAt(len - 1);
     }
-    String logMsg = "SHOWSQL(" + sqlTime + "ms):\n" + sqlLog.toString();
+    String logMsg = "SHOWSQL(" + sqlTime + "ms):\n" + this.sqlLog.toString();
     if (isError) {
       // log sql and the time it cost
       LOGGER.error(logMsg);
@@ -333,10 +337,10 @@ class StatementHandler implements InvocationHandler {
       LOGGER.info(logMsg);
     }
     // Clear parameterMap for next time
-    if (parameterMap != null) {
-      parameterMap.clear();
+    if (this.parameterMap != null) {
+      this.parameterMap.clear();
     }
-    sql = null;
-    sqlLog.setLength(0);
+    this.sql = null;
+    this.sqlLog.setLength(0);
   }
 }
