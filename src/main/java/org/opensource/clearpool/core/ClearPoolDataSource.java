@@ -145,7 +145,7 @@ public class ClearPoolDataSource extends AbstractDataSource
 
   public void setUselessConnectionException(boolean uselessConnectionException) {
     this.checkCfgLegal();
-    vo.setUselessConnectionException(uselessConnectionException);
+    this.vo.setUselessConnectionException(uselessConnectionException);
   }
 
   public void setLimitIdleTime(long limitIdleTime) {
@@ -165,7 +165,7 @@ public class ClearPoolDataSource extends AbstractDataSource
 
   public void setTestBeforeUse(boolean testBeforeUse) {
     this.checkCfgLegal();
-    vo.setTestBeforeUse(testBeforeUse);
+    this.vo.setTestBeforeUse(testBeforeUse);
   }
 
   public void setTestQuerySql(String testQuerySql) {
@@ -209,28 +209,6 @@ public class ClearPoolDataSource extends AbstractDataSource
    */
   @Override
   public void init() {
-    if (!this.isUseVO) {
-      // Note:if we haven't set poolPath and ConfigurationVO,we will
-      // use
-      // the default path to init pool
-      this.initPath(this.poolPath);
-      return;
-    }
-    if (this.dataSource == null && (this.driverClass != null || this.jdbcUrl != null
-        || this.jdbcUser != null || this.jdbcPassword != null)) {
-      // we are trying to use jdbc driver if dataSource is null.
-      this.dataSource = JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl,
-          this.jdbcUser, this.jdbcPassword);
-    }
-    this.vo.setCommonDataSource(this.dataSource);
-    ConfigurationVO.setConsole(console);
-    this.initVO(this.vo);
-  }
-
-  /**
-   * Try to init the pool.
-   */
-  private void tryInit() {
     if (isInited) {
       return;
     }
@@ -239,7 +217,23 @@ public class ClearPoolDataSource extends AbstractDataSource
       if (isInited) {
         return;
       }
-      this.init();
+      if (!this.isUseVO) {
+        // Note:if we haven't set poolPath and ConfigurationVO,we will
+        // use
+        // the default path to init pool
+        this.initPath(this.poolPath);
+      } else {
+        if (this.dataSource == null && (this.driverClass != null || this.jdbcUrl != null
+            || this.jdbcUser != null || this.jdbcPassword != null)) {
+          // we are trying to use jdbc driver if dataSource is null.
+          this.dataSource = JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl,
+              this.jdbcUser, this.jdbcPassword);
+        }
+        this.vo.setCommonDataSource(this.dataSource);
+        ConfigurationVO.setConsole(this.console);
+        this.initVO(this.vo);
+      }
+      isInited = true;
     } finally {
       this.lock.unlock();
     }
@@ -250,43 +244,76 @@ public class ClearPoolDataSource extends AbstractDataSource
    */
   @Override
   public void initPath(String path) {
-    ConnectionPoolImpl.getInstance().initPath(path);
-    isInited = true;
+    if (isInited) {
+      return;
+    }
+    this.lock.lock();
+    try {
+      if (isInited) {
+        return;
+      }
+      ConnectionPoolImpl.getInstance().initPath(path);
+      isInited = true;
+    } finally {
+      this.lock.unlock();
+    }
   }
 
   @Override
   public void initVO(ConfigurationVO vo) {
-    ConnectionPoolImpl.getInstance().initVO(vo);
-    isInited = true;
+    if (isInited) {
+      return;
+    }
+    this.lock.lock();
+    try {
+      if (isInited) {
+        return;
+      }
+      ConnectionPoolImpl.getInstance().initVO(vo);
+      isInited = true;
+    } finally {
+      this.lock.unlock();
+    }
   }
 
   @Override
   public void initVOList(List<ConfigurationVO> voList) {
-    ConnectionPoolImpl.getInstance().initVOList(voList);
-    isInited = true;
+    if (isInited) {
+      return;
+    }
+    this.lock.lock();
+    try {
+      if (isInited) {
+        return;
+      }
+      ConnectionPoolImpl.getInstance().initVOList(voList);
+      isInited = true;
+    } finally {
+      this.lock.unlock();
+    }
   }
 
   @Override
   public Connection getConnection() throws SQLException {
-    this.tryInit();
+    this.init();
     return ConnectionPoolImpl.getInstance().getConnection();
   }
 
   @Override
   public Connection getConnection(String name) throws SQLException {
-    this.tryInit();
+    this.init();
     return ConnectionPoolImpl.getInstance().getConnection(name);
   }
 
   @Override
   public PooledConnection getPooledConnection() throws SQLException {
-    this.tryInit();
+    this.init();
     return ConnectionPoolImpl.getInstance().getPooledConnection();
   }
 
   @Override
   public PooledConnection getPooledConnection(String name) throws SQLException {
-    this.tryInit();
+    this.init();
     return ConnectionPoolImpl.getInstance().getPooledConnection(name);
   }
 
