@@ -261,7 +261,8 @@ class StatementHandler implements InvocationHandler {
     } else {
       String className = value.getClass().getName();
       int position = className.lastIndexOf(".") + 1;
-      this.parameterMap.put(index, className.substring(position));
+      String name = className.substring(position);
+      this.parameterMap.put(index, name + ":" + value.toString());
     }
   }
 

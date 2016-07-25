@@ -1,21 +1,23 @@
 clearpool
 =========
 
-Clearpool is a High Performance Distributed Database Pool.It could manage the distributed database with high performance.Clearpool has a wondorful performance because it abandon the traditional database pool lock,and replaced by atomic operation.However,we should know that it used the Unsafe.java in the package of sun.misc.
-
+Clearpool is a High Performance Distributed Database Pool. It is able to manage multiple database, and has a wondorful performance.
+<p />
 The function of the pool:
 <ol>
-<li>It can manage distributed database.</li>
-<li>It support jta.</li>
-<li>It can be monitor by JMX.</li>
-<li>It will release the connection and get new connection if the connection is invalid.</li>
-<li>It will collect the idle connection if necessary.</li>
-<li>It can encrypt the password of the database.</li>
+<li>Be able to manage distributed database</li>
+<li>Support JTA transaction</li>
+<li>Support monitoring by JMX</li>
+<li>Automatically release the invalid connection and get new connection</li>
+<li>Automatically collect the idle connection if necessary</li>
+<li>Support encrypt the password of the database</li>
 </ol>
 
 Here is the result of comparing with druid and tomcat-jdbc.
 ![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/compare.png)
-
-If you want to compare the performance with other popular database pools,please run the test case:https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPool.java.
-
-If you want to modify and commit clearpool, please import googlestyle-java.xml, it will helps a lot.
+<p />
+If you want to compare the performance with other popular database pools, please run TestCase: [CompareWithPopularPool.java](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPool.java).
+<p />
+It really helps a lot if you are willing to improve clearpool.
+<P />
+Please import googlestyle-java.xml before any commit.

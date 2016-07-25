@@ -35,7 +35,7 @@ public class ConnectionPoolManager {
   private static final PoolLogger LOGGER = PoolLoggerFactory.getLogger(ConnectionPoolManager.class);
 
   private Lock lock = new ReentrantLock();
-  private Condition notEmpty = lock.newCondition();
+  private Condition notEmpty = this.lock.newCondition();
 
   private final BinaryHeap connectionChain = new BinaryHeap();;
 
@@ -60,9 +60,9 @@ public class ConnectionPoolManager {
    * Init the pool by the corePoolsize of {@link #cfgVO}
    */
   void initPool() {
-    int coreSize = cfgVO.getCorePoolSize();
+    int coreSize = this.cfgVO.getCorePoolSize();
     this.fillPool(coreSize);
-    String tableName = cfgVO.getTestTableName();
+    String tableName = this.cfgVO.getTestTableName();
     if (tableName != null) {
       this.initTestTable();
     }
@@ -75,12 +75,12 @@ public class ConnectionPoolManager {
     if (conProxy == null) {
       throw new NullPointerException();
     }
-    lock.lock();
+    this.lock.lock();
     try {
-      connectionChain.add(conProxy);
-      notEmpty.signal();
+      this.connectionChain.add(conProxy);
+      this.notEmpty.signal();
     } finally {
-      lock.unlock();
+      this.lock.unlock();
     }
   }
 
@@ -90,23 +90,23 @@ public class ConnectionPoolManager {
   public PooledConnection exitPool() throws SQLException {
     ConnectionProxy conProxy = null;
     for (;;) {
-      lock.lock();
+      this.lock.lock();
       try {
         do {
-          conProxy = connectionChain.removeFirst();
+          conProxy = this.connectionChain.removeFirst();
           // if we couln't get a connection from the pool,we should get
           // new
           // connection.
           if (conProxy == null) {
-            int maxIncrement = cfgVO.getMaxPoolSize() - poolSize.get();
+            int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
             // if pool is full,we shouldn't grow it
             if (maxIncrement == 0) {
-              if (cfgVO.getUselessConnectionException()) {
+              if (this.cfgVO.getUselessConnectionException()) {
                 throw new ConnectionPoolException("there is no connection left in the pool");
               } else {
                 // wait for connection
-                while (connectionChain.size() == 0) {
-                  notEmpty.await();
+                while (this.connectionChain.size() == 0) {
+                  this.notEmpty.await();
                 }
               }
             } else {
@@ -118,30 +118,30 @@ public class ConnectionPoolManager {
         LOGGER.error("exitPool error: ", e);
         throw new ConnectionPoolException(e);
       } finally {
-        lock.unlock();
+        this.lock.unlock();
       }
-      if (cfgVO.isTestBeforeUse()) {
-        boolean isValid = checkTestTable(conProxy, false);
+      if (this.cfgVO.isTestBeforeUse()) {
+        boolean isValid = this.checkTestTable(conProxy, false);
         if (!isValid) {
-          decrementPoolSize();
-          closeConnection(conProxy);
-          incrementOneConnection();
+          this.decrementPoolSize();
+          this.closeConnection(conProxy);
+          this.incrementOneConnection();
           continue;
         }
       }
       break;
     }
-    DataSourceAbstractFactory factory = cfgVO.getFactory();
+    DataSourceAbstractFactory factory = this.cfgVO.getFactory();
     PooledConnection pooledConnection = factory.createPooledConnection(conProxy);
     return pooledConnection;
   }
 
   public ConnectionProxy exitPool(long period) {
-    lock.lock();
+    this.lock.lock();
     try {
-      return connectionChain.removeIdle(period);
+      return this.connectionChain.removeIdle(period);
     } finally {
-      lock.unlock();
+      this.lock.unlock();
     }
   }
 
@@ -149,10 +149,10 @@ public class ConnectionPoolManager {
    * fill the pool by acquireIncrement
    */
   private void fillPoolByAcquireIncrement() {
-    int maxIncrement = cfgVO.getMaxPoolSize() - poolSize.get();
+    int maxIncrement = this.cfgVO.getMaxPoolSize() - this.poolSize.get();
     // double check
     if (maxIncrement != 0) {
-      int increment = cfgVO.getAcquireIncrement();
+      int increment = this.cfgVO.getAcquireIncrement();
       if (increment > maxIncrement) {
         increment = maxIncrement;
       }
@@ -164,11 +164,11 @@ public class ConnectionPoolManager {
    * increment one connection
    */
   public void incrementOneConnection() {
-    lock.lock();
+    this.lock.lock();
     try {
       this.fillPool(1);
     } finally {
-      lock.unlock();
+      this.lock.unlock();
     }
   }
 
@@ -176,18 +176,18 @@ public class ConnectionPoolManager {
    * fill the pool by poolNum
    */
   private void fillPool(int poolNum) {
-    int retryTimes = cfgVO.getAcquireRetryTimes();
+    int retryTimes = this.cfgVO.getAcquireRetryTimes();
     for (int i = 0; i < poolNum; i++) {
       // try to get a connection
       ConnectionProxy conProxy = this.tryGetConnection(retryTimes);
-      if (closed) {
+      if (this.closed) {
         this.remove();
         return;
       }
-      connectionChain.add(conProxy);
+      this.connectionChain.add(conProxy);
       this.handlePeakPoolSize(i + 1);
     }
-    poolSize.addAndGet(poolNum);
+    this.poolSize.addAndGet(poolNum);
   }
 
   /**
@@ -198,7 +198,7 @@ public class ConnectionPoolManager {
     CommonConnection cmnCon = null;
     do {
       try {
-        cmnCon = cfgVO.getDataSource().getCommonConnection();
+        cmnCon = this.cfgVO.getDataSource().getCommonConnection();
       } catch (SQLException e) {
         LOGGER.error("try connect error(" + count++ + " time): ", e);
         if (count > retryTimes) {
@@ -207,7 +207,7 @@ public class ConnectionPoolManager {
       }
     } while (cmnCon == null);
     ConnectionProxy conProxy = new ConnectionProxy(this, cmnCon);
-    connectionSet.add(conProxy);
+    this.connectionSet.add(conProxy);
     return conProxy;
   }
 
@@ -215,71 +215,67 @@ public class ConnectionPoolManager {
    * Init test table by testTableName in {@link #cfgVO}
    */
   private void initTestTable() {
-    int coreSize = cfgVO.getCorePoolSize();
+    int coreSize = this.cfgVO.getCorePoolSize();
     ConnectionProxy conProxy;
     if (coreSize > 0) {
-      conProxy = connectionChain.removeFirst();
+      conProxy = this.connectionChain.removeFirst();
     } else {
-      int retryTimes = cfgVO.getAcquireRetryTimes();
+      int retryTimes = this.cfgVO.getAcquireRetryTimes();
       conProxy = this.tryGetConnection(retryTimes);
     }
     try {
-      Connection con = conProxy.getConnection();
-      boolean auto = con.getAutoCommit();
-      con.setAutoCommit(true);
       this.checkTestTable(conProxy, true);
-      con.setAutoCommit(auto);
-    } catch (SQLException e) {
+    } catch (ConnectionPoolException e) {
       LOGGER.error("initTestTable test: ", e);
-      throw new ConnectionPoolException(e);
+      throw e;
     }
     if (coreSize > 0) {
-      connectionChain.add(conProxy);
+      this.connectionChain.add(conProxy);
     } else {
       this.closeConnection(conProxy);
     }
   }
 
   public BinaryHeap getConnectionChain() {
-    return connectionChain;
+    return this.connectionChain;
   }
 
   public Set<ConnectionProxy> getConnectionSet() {
-    return connectionSet;
+    return this.connectionSet;
   }
 
   public ConfigurationVO getCfgVO() {
-    return cfgVO;
+    return this.cfgVO;
   }
 
   public boolean isClosed() {
-    return closed;
+    return this.closed;
   }
 
   public boolean isNeedCollected() {
-    return poolSize.get() > cfgVO.getCorePoolSize();
+    return this.poolSize.get() > this.cfgVO.getCorePoolSize();
   }
 
   /**
    * Save the peak pool size
    */
   private void handlePeakPoolSize(int poolNum) {
-    int size = poolSize.get() + poolNum;
-    if (size > peakPoolSize) {
-      peakPoolSize = size;
+    int size = this.poolSize.get() + poolNum;
+    if (size > this.peakPoolSize) {
+      this.peakPoolSize = size;
     }
   }
 
   public void decrementPoolSize() {
-    poolSize.decrementAndGet();
+    this.poolSize.decrementAndGet();
   }
 
   public int getPoolSize() {
-    return poolSize.get();
+    return this.poolSize.get();
   }
 
   public int getPeakPoolSize() {
-    return peakPoolSize;
+    return this.peakPoolSize;
   }
 
   /**
@@ -288,11 +284,13 @@ public class ConnectionPoolManager {
   public boolean checkTestTable(ConnectionProxy conProxy, boolean autoCreateTable) {
     PreparedStatement queryPreparedStatement = null;
     try {
-      Connection con = conProxy.getConnection();
-      queryPreparedStatement = con.prepareStatement(cfgVO.getTestQuerySql());
+      DataSourceAbstractFactory factory = this.cfgVO.getFactory();
+      PooledConnection pooledConnection = factory.createPooledConnection(conProxy);
+      Connection con = pooledConnection.getConnection();
+      queryPreparedStatement = con.prepareStatement(this.cfgVO.getTestQuerySql());
       queryPreparedStatement.execute();
     } catch (SQLException e) {
-      LOGGER.error(cfgVO.getTestQuerySql() + " error: ", e);
+      LOGGER.error(this.cfgVO.getTestQuerySql() + " error: ", e);
       if (autoCreateTable) {
         this.createTestTable(conProxy);
       } else {
@@ -316,9 +314,12 @@ public class ConnectionPoolManager {
   private void createTestTable(ConnectionProxy conProxy) {
     PreparedStatement createPreparedStatement = null;
     try {
-      Connection con = conProxy.getConnection();
-      createPreparedStatement = con.prepareStatement(cfgVO.getTestCreateSql());
+      DataSourceAbstractFactory factory = this.cfgVO.getFactory();
+      PooledConnection pooledConnection = factory.createPooledConnection(conProxy);
+      Connection con = pooledConnection.getConnection();
+      createPreparedStatement = con.prepareStatement(this.cfgVO.getTestCreateSql());
       createPreparedStatement.execute();
+      con.commit();
     } catch (SQLException e) {
       LOGGER.error("createTestTable error: ", e);
       throw new ConnectionPoolException(e);
@@ -338,10 +339,10 @@ public class ConnectionPoolManager {
    * because it may cause a exception when people is using it.
    */
   public void remove() {
-    closed = true;
-    Set<ConnectionProxy> tempSet = connectionSet;
+    this.closed = true;
+    Set<ConnectionProxy> tempSet = this.connectionSet;
     // help gc
-    connectionSet = new HashSet<ConnectionProxy>();
+    this.connectionSet = new HashSet<ConnectionProxy>();
     for (ConnectionProxy conProxy : tempSet) {
       this.closeConnection(conProxy);
     }
@@ -357,7 +358,7 @@ public class ConnectionPoolManager {
       } catch (SQLException e) {
         LOGGER.error("it cause a exception when we close a pool connection: ", e);
       }
-      connectionSet.remove(conProxy);
+      this.connectionSet.remove(conProxy);
     }
   }
 }
