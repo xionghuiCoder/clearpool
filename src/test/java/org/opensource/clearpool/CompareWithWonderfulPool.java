@@ -3,8 +3,6 @@ package org.opensource.clearpool;
 import java.sql.DriverManager;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.logging.PoolLoggerFactory;
@@ -14,16 +12,18 @@ import org.opensource.clearpool.util.ThreadProcessUtil;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import junit.framework.TestCase;
+
 /**
  * Oracle Test.
- * 
+ *
  * Note: <br />
  * 1.replace jdbcClass with your database's jdbc-class please; <br />
  * 2.replace url with your database's url please; <br />
  * 3.replace user with your database's user please; <br />
  * 4.replace password with your database's password please; <br />
  * 5.replace sql with your valid sql please.
- * 
+ *
  * @author xionghui
  * @date 24.09.2014
  * @version 1.0
@@ -32,7 +32,7 @@ public class CompareWithWonderfulPool extends TestCase {
   private String jdbcUrl;
   private String user;
   private String password;
-  private String driverClass;
+  private String driverClassName;
   private int corePoolSize = 20;
   private int maxPoolSize = 50;
   private static final int threadCount = 100;
@@ -54,7 +54,7 @@ public class CompareWithWonderfulPool extends TestCase {
     MemoryUtil.printMemoryInfo();
     System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
     DriverManager.registerDriver(new MockTestDriver());
-    this.driverClass = MockTestDriver.CLASS;
+    this.driverClassName = MockTestDriver.CLASS;
     this.jdbcUrl = MockTestDriver.URL;
     this.user = "1";
     this.password = "1";
@@ -65,7 +65,7 @@ public class CompareWithWonderfulPool extends TestCase {
     ClearPoolDataSource dataSource = new ClearPoolDataSource();
     dataSource.setCorePoolSize(this.corePoolSize);
     dataSource.setMaxPoolSize(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setJdbcUser(this.user);
     dataSource.setJdbcPassword(this.password);
@@ -81,7 +81,7 @@ public class CompareWithWonderfulPool extends TestCase {
     dataSource.setMaxActive(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setPoolPreparedStatements(true);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setPoolPreparedStatements(true);
     dataSource.setUsername(this.user);
@@ -100,7 +100,7 @@ public class CompareWithWonderfulPool extends TestCase {
     dataSource.setMaxIdle(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setMaxActive(this.maxPoolSize);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setUsername(this.user);
     dataSource.setPassword(this.password);

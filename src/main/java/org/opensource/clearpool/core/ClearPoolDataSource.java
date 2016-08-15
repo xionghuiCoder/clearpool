@@ -41,7 +41,7 @@ public class ClearPoolDataSource extends AbstractDataSource
 
   private CommonDataSource dataSource;
 
-  private String driverClass;
+  private String driverClassName;
   private String jdbcUrl;
   private String jdbcUser;
   private String jdbcPassword;
@@ -86,7 +86,7 @@ public class ClearPoolDataSource extends AbstractDataSource
 
   public void setDataSource(CommonDataSource dataSource) {
     this.checkCfgLegal();
-    if (this.driverClass != null || this.jdbcUrl != null || this.jdbcUser != null
+    if (this.driverClassName != null || this.jdbcUrl != null || this.jdbcUser != null
         || this.jdbcPassword != null) {
       throw new ConnectionPoolXMLParseException(
           "we shouldn't use JDBC and dataSource at the same time");
@@ -94,26 +94,45 @@ public class ClearPoolDataSource extends AbstractDataSource
     this.dataSource = dataSource;
   }
 
-  public void setDriverClass(String driverClass) {
+  public void setDriverClassName(String driverClassName) {
     this.checkCfgLegal();
+    boolean noneChange = (this.driverClassName == null ? driverClassName == null
+        : this.driverClassName.equals(driverClassName));
+    if (noneChange) {
+      return;
+    }
     this.checkAndInitJDBC();
-    this.driverClass = driverClass;
+    this.driverClassName = driverClassName;
   }
 
   public void setJdbcUrl(String jdbcUrl) {
     this.checkCfgLegal();
+    boolean noneChange = (this.jdbcUrl == null ? jdbcUrl == null : this.jdbcUrl.equals(jdbcUrl));
+    if (noneChange) {
+      return;
+    }
     this.checkAndInitJDBC();
     this.jdbcUrl = jdbcUrl;
   }
 
   public void setJdbcUser(String jdbcUser) {
     this.checkCfgLegal();
+    boolean noneChange =
+        (this.jdbcUser == null ? jdbcUser == null : this.jdbcUser.equals(jdbcUser));
+    if (noneChange) {
+      return;
+    }
     this.checkAndInitJDBC();
     this.jdbcUser = jdbcUser;
   }
 
   public void setJdbcPassword(String jdbcPassword) {
     this.checkCfgLegal();
+    boolean noneChange =
+        (this.jdbcPassword == null ? jdbcPassword == null : this.jdbcPassword.equals(jdbcPassword));
+    if (noneChange) {
+      return;
+    }
     this.checkAndInitJDBC();
     this.jdbcPassword = jdbcPassword;
   }
@@ -223,10 +242,10 @@ public class ClearPoolDataSource extends AbstractDataSource
         // the default path to init pool
         this.initPath(this.poolPath);
       } else {
-        if (this.dataSource == null && (this.driverClass != null || this.jdbcUrl != null
+        if (this.dataSource == null && (this.driverClassName != null || this.jdbcUrl != null
             || this.jdbcUser != null || this.jdbcPassword != null)) {
           // we are trying to use jdbc driver if dataSource is null.
-          this.dataSource = JDBCConfiguration.getDataSource(this.driverClass, this.jdbcUrl,
+          this.dataSource = JDBCConfiguration.getDataSource(this.driverClassName, this.jdbcUrl,
               this.jdbcUser, this.jdbcPassword);
         }
         this.vo.setCommonDataSource(this.dataSource);

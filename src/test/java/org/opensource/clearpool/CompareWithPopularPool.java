@@ -3,8 +3,6 @@ package org.opensource.clearpool;
 import java.sql.DriverManager;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
@@ -17,11 +15,13 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+import junit.framework.TestCase;
+
 public class CompareWithPopularPool extends TestCase {
   private String jdbcUrl;
   private String user;
   private String password;
-  private String driverClass;
+  private String driverClassName;
   private int corePoolSize = 20;
   private int maxPoolSize = 50;
   private static final int threadCount = 100;
@@ -46,7 +46,7 @@ public class CompareWithPopularPool extends TestCase {
     MemoryUtil.printMemoryInfo();
     System.setProperty(PoolLoggerFactory.LOG_UNABLE, "true");
     DriverManager.registerDriver(new MockTestDriver());
-    this.driverClass = MockTestDriver.CLASS;
+    this.driverClassName = MockTestDriver.CLASS;
     this.jdbcUrl = MockTestDriver.URL;
     this.user = "1";
     this.password = "1";
@@ -57,7 +57,7 @@ public class CompareWithPopularPool extends TestCase {
     ClearPoolDataSource dataSource = new ClearPoolDataSource();
     dataSource.setCorePoolSize(this.corePoolSize);
     dataSource.setMaxPoolSize(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setJdbcUser(this.user);
     dataSource.setJdbcPassword(this.password);
@@ -73,7 +73,7 @@ public class CompareWithPopularPool extends TestCase {
     dataSource.setMaxActive(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setPoolPreparedStatements(true);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setPoolPreparedStatements(true);
     dataSource.setUsername(this.user);
@@ -93,7 +93,7 @@ public class CompareWithPopularPool extends TestCase {
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setMaxIdle(this.maxPoolSize);
     dataSource.setPoolPreparedStatements(true);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setPoolPreparedStatements(true);
     dataSource.setUsername(this.user);
@@ -110,7 +110,7 @@ public class CompareWithPopularPool extends TestCase {
     BoneCPDataSource dataSource = new BoneCPDataSource();
     dataSource.setMinConnectionsPerPartition(this.corePoolSize);
     dataSource.setMaxConnectionsPerPartition(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClass(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setStatementsCacheSize(100);
     dataSource.setServiceOrder("LIFO");
@@ -128,7 +128,7 @@ public class CompareWithPopularPool extends TestCase {
     ComboPooledDataSource dataSource = new ComboPooledDataSource();
     dataSource.setMinPoolSize(this.corePoolSize);
     dataSource.setMaxPoolSize(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClass(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setUser(this.user);
     dataSource.setPassword(this.password);
@@ -144,7 +144,7 @@ public class CompareWithPopularPool extends TestCase {
     dataSource.setMaxIdle(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setMaxActive(this.maxPoolSize);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setUsername(this.user);
     dataSource.setPassword(this.password);

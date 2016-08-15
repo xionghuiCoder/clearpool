@@ -5,8 +5,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.BasicCompareInOracle.NopoolDataSource;
 import org.opensource.clearpool.core.ClearPoolDataSource;
@@ -17,16 +15,18 @@ import org.opensource.clearpool.util.ThreadProcessUtil;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import junit.framework.TestCase;
+
 /**
  * Oracle Test.
- * 
+ *
  * Note: <br />
  * 1.replace driverClass with your database's jdbc-class please; <br />
  * 2.replace jdbcUrl with your database's url please; <br />
  * 3.replace user with your database's user please; <br />
  * 4.replace password with your database's password please; <br />
  * 5.replace sql with your valid sql please.
- * 
+ *
  * @author xionghui
  * @date 24.09.2014
  * @version 1.0
@@ -34,7 +34,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 public class BasicCompareInMySQL extends TestCase {
   private String sql = "select count(1) from test";
 
-  private String driverClass = "com.mysql.jdbc.Driver";
+  private String driverClassName = "com.mysql.jdbc.Driver";
   private String jdbcUrl = "jdbc:mysql://127.0.0.1:3306/test";
   private String user = "root";
   private String password = "1";
@@ -61,8 +61,8 @@ public class BasicCompareInMySQL extends TestCase {
   }
 
   public void test_Nopool() throws Exception {
-    System.setProperty("jdbc.drivers", this.driverClass);
-    Driver driver = JdbcUtil.createDriver(this.driverClass);
+    System.setProperty("jdbc.drivers", this.driverClassName);
+    Driver driver = JdbcUtil.createDriver(this.driverClassName);
     Properties connectProperties = new Properties();
     if (this.user != null) {
       connectProperties.put("user", this.user);
@@ -71,7 +71,7 @@ public class BasicCompareInMySQL extends TestCase {
       connectProperties.put("password", this.password);
     }
     DataSource dataSource =
-        new NopoolDataSource(this.driverClass, this.jdbcUrl, driver, connectProperties);
+        new NopoolDataSource(this.driverClassName, this.jdbcUrl, driver, connectProperties);
     for (int i = 0; i < this.loop; ++i) {
       ThreadProcessUtil.processSql(dataSource, "Nopool", this.count, threadCount, this.sql);
     }
@@ -82,7 +82,7 @@ public class BasicCompareInMySQL extends TestCase {
     ClearPoolDataSource dataSource = new ClearPoolDataSource();
     dataSource.setCorePoolSize(this.corePoolSize);
     dataSource.setMaxPoolSize(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setJdbcUser(this.user);
     dataSource.setJdbcPassword(this.password);
@@ -99,7 +99,7 @@ public class BasicCompareInMySQL extends TestCase {
     dataSource.setMaxActive(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setPoolPreparedStatements(true);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setPoolPreparedStatements(true);
     dataSource.setUsername(this.user);
@@ -119,7 +119,7 @@ public class BasicCompareInMySQL extends TestCase {
     dataSource.setMaxIdle(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setMaxActive(this.maxPoolSize);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setUsername(this.user);
     dataSource.setPassword(this.password);

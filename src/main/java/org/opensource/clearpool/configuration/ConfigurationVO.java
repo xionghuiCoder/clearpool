@@ -50,7 +50,7 @@ public class ConfigurationVO {
   private boolean uselessConnectionException;
   private long limitIdleTime = 60 * 1000L;
   private long keepTestPeriod = -1;
-  private String testTableName = "clearpool_test";
+  private String testTableName;
   private boolean testBeforeUse;
   private String testQuerySql;
   private String testCreateSql;
@@ -66,11 +66,11 @@ public class ConfigurationVO {
   }
 
   public DataSourceAbstractFactory getFactory() {
-    return factory;
+    return this.factory;
   }
 
   public String getAlias() {
-    return alias;
+    return this.alias;
   }
 
   public void setAlias(String alias) {
@@ -78,11 +78,11 @@ public class ConfigurationVO {
   }
 
   public AbstractDataSource getDataSource() {
-    return dataSource;
+    return this.dataSource;
   }
 
   public CommonDataSource getCommonDataSource() {
-    return commonDataSource;
+    return this.commonDataSource;
   }
 
   public void setCommonDataSource(CommonDataSource commonDataSource) {
@@ -90,7 +90,7 @@ public class ConfigurationVO {
   }
 
   public boolean isJtaSupport() {
-    return jtaSupport;
+    return this.jtaSupport;
   }
 
   public void setJtaSupport(boolean jtaSupport) {
@@ -98,7 +98,7 @@ public class ConfigurationVO {
   }
 
   public int getCorePoolSize() {
-    return corePoolSize;
+    return this.corePoolSize;
   }
 
   public void setCorePoolSize(int corePoolSize) {
@@ -110,7 +110,7 @@ public class ConfigurationVO {
   }
 
   public int getMaxPoolSize() {
-    return maxPoolSize;
+    return this.maxPoolSize;
   }
 
   public void setMaxPoolSize(int maxPoolSize) {
@@ -122,7 +122,7 @@ public class ConfigurationVO {
   }
 
   public int getAcquireIncrement() {
-    return acquireIncrement;
+    return this.acquireIncrement;
   }
 
   public void setAcquireIncrement(int acquireIncrement) {
@@ -134,7 +134,7 @@ public class ConfigurationVO {
   }
 
   public int getAcquireRetryTimes() {
-    return acquireRetryTimes;
+    return this.acquireRetryTimes;
   }
 
   public void setAcquireRetryTimes(int acquireRetryTimes) {
@@ -146,7 +146,7 @@ public class ConfigurationVO {
   }
 
   public boolean getUselessConnectionException() {
-    return uselessConnectionException;
+    return this.uselessConnectionException;
   }
 
   public void setUselessConnectionException(boolean uselessConnectionException) {
@@ -154,7 +154,7 @@ public class ConfigurationVO {
   }
 
   public long getLimitIdleTime() {
-    return limitIdleTime;
+    return this.limitIdleTime;
   }
 
   public void setLimitIdleTime(long limitIdleTime) {
@@ -166,7 +166,7 @@ public class ConfigurationVO {
   }
 
   public long getKeepTestPeriod() {
-    return keepTestPeriod;
+    return this.keepTestPeriod;
   }
 
   public void setKeepTestPeriod(long keepTestPeriod) {
@@ -178,7 +178,7 @@ public class ConfigurationVO {
   }
 
   public String getTestTableName() {
-    return testTableName;
+    return this.testTableName;
   }
 
   public void setTestTableName(String testTableName) {
@@ -186,7 +186,7 @@ public class ConfigurationVO {
   }
 
   public boolean isTestBeforeUse() {
-    return testBeforeUse;
+    return this.testBeforeUse;
   }
 
   public void setTestBeforeUse(boolean testBeforeUse) {
@@ -194,7 +194,7 @@ public class ConfigurationVO {
   }
 
   public String getTestQuerySql() {
-    return testQuerySql;
+    return this.testQuerySql;
   }
 
   public void setTestQuerySql(String testQuerySql) {
@@ -202,11 +202,11 @@ public class ConfigurationVO {
   }
 
   public String getTestCreateSql() {
-    return testCreateSql;
+    return this.testCreateSql;
   }
 
   public boolean isShowSql() {
-    return showSql;
+    return this.showSql;
   }
 
   public void setShowSql(boolean showSql) {
@@ -214,7 +214,7 @@ public class ConfigurationVO {
   }
 
   public long getSqlTimeFilter() {
-    return sqlTimeFilter;
+    return this.sqlTimeFilter;
   }
 
   public void setSqlTimeFilter(long sqlTimeFilter) {
@@ -230,26 +230,22 @@ public class ConfigurationVO {
    */
   public void init() {
     this.handlerDatasource();
-    if (maxPoolSize < corePoolSize) {
+    if (this.maxPoolSize < this.corePoolSize) {
       throw new ConnectionPoolXMLParseException("the maxPoolsize less than corePoolsize");
     }
-    if (keepTestPeriod == -1) {
-      testTableName = null;
-    } else if (testQuerySql != null) {
-      testTableName = null;
-    } else {
+    if (this.keepTestPeriod != -1 && this.testQuerySql == null) {
       boolean right = false;
-      if (testTableName != null && testTableName.length() > 0) {
-        String regex = "^[a-z|A-Z]\\w{" + (testTableName.length() - 1) + "}";
-        right = Pattern.matches(regex, testTableName);
+      if (this.testTableName != null && this.testTableName.length() > 0) {
+        String regex = "^[a-z|A-Z]\\w{" + (this.testTableName.length() - 1) + "}";
+        right = Pattern.matches(regex, this.testTableName);
       }
       if (!right) {
         throw new ConnectionPoolXMLParseException("the pattern of table name is illegal");
       }
-      testQuerySql = "select 1 from " + testTableName + " where 0=1";
-      testCreateSql = "create table " + testTableName + "(id char(1) primary key)";
+      this.testQuerySql = "select 1 from " + this.testTableName + " where 0=1";
+      this.testCreateSql = "create table " + this.testTableName + "(id char(1) primary key)";
     }
-    if (sqlTimeFilter > 0 && !showSql) {
+    if (this.sqlTimeFilter > 0 && !this.showSql) {
       throw new ConnectionPoolXMLParseException(
           "sqlTimeFilter shouldn't be set when showSql is false");
     }
@@ -260,37 +256,49 @@ public class ConfigurationVO {
    * factory.
    */
   private void handlerDatasource() {
-    if (commonDataSource == null) {
+    if (this.commonDataSource == null) {
       // if we haven't get dataSource from configuration,we should try to
       // get it by DataSourceHolder.
       Map<String, CommonDataSource> dataSourceMap = DataSourceHolder.getDataSourceMap();
       if (dataSourceMap != null) {
-        commonDataSource = dataSourceMap.get(alias);
+        this.commonDataSource = dataSourceMap.get(this.alias);
       }
-      if (commonDataSource == null) {
+      if (this.commonDataSource == null) {
         throw new ConnectionPoolXMLParseException(
             "cfg should have a driver or a jndi,otherwise you should set datasource in DataSourceHolder");
       }
     }
-    if (jtaSupport) {
-      if (commonDataSource instanceof JDBCDataSource) {
-        factory = new JDBCXADataSourceFactory();
-      } else if (commonDataSource instanceof XADataSource) {
-        factory = new XADataSourceFactory();
+    if (this.jtaSupport) {
+      if (this.commonDataSource instanceof JDBCDataSource) {
+        this.factory = new JDBCXADataSourceFactory();
+      } else if (this.commonDataSource instanceof XADataSource) {
+        this.factory = new XADataSourceFactory();
       }
     } else {
-      if (commonDataSource instanceof DataSource) {
-        factory = new DataSourceFactory();
-      } else if (commonDataSource instanceof JDBCDataSource) {
-        factory = new JDBCDataSourceFactory();
-      } else if (commonDataSource instanceof ConnectionPoolDataSource) {
-        factory = new PoolDataSourceFactory();
+      if (this.commonDataSource instanceof DataSource) {
+        this.factory = new DataSourceFactory();
+      } else if (this.commonDataSource instanceof JDBCDataSource) {
+        this.factory = new JDBCDataSourceFactory();
+      } else if (this.commonDataSource instanceof ConnectionPoolDataSource) {
+        this.factory = new PoolDataSourceFactory();
       }
     }
-    if (factory == null) {
+    if (this.factory == null) {
       throw new UnsupportedOperationException(
-          "we don't support the datasource: " + commonDataSource.getClass().getName());
+          "we don't support the datasource: " + this.commonDataSource.getClass().getName());
     }
-    dataSource = factory.createDataSource(commonDataSource);
+    this.dataSource = this.factory.createDataSource(this.commonDataSource);
+  }
+
+  @Override
+  public String toString() {
+    return "ConfigurationVO [alias=" + this.alias + ", jtaSupport=" + this.jtaSupport
+        + ", corePoolSize=" + this.corePoolSize + ", maxPoolSize=" + this.maxPoolSize
+        + ", acquireIncrement=" + this.acquireIncrement + ", acquireRetryTimes="
+        + this.acquireRetryTimes + ", uselessConnectionException=" + this.uselessConnectionException
+        + ", limitIdleTime=" + this.limitIdleTime + ", keepTestPeriod=" + this.keepTestPeriod
+        + ", testTableName=" + this.testTableName + ", testBeforeUse=" + this.testBeforeUse
+        + ", testQuerySql=" + this.testQuerySql + ", testCreateSql=" + this.testCreateSql
+        + ", showSql=" + this.showSql + ", sqlTimeFilter=" + this.sqlTimeFilter + "]";
   }
 }

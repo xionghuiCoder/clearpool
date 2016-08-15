@@ -9,8 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.PropertyConfigurator;
 import org.opensource.clearpool.core.ClearPoolDataSource;
 import org.opensource.clearpool.datasource.JDBCDataSource;
@@ -21,16 +19,18 @@ import org.opensource.clearpool.util.ThreadProcessUtil;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import junit.framework.TestCase;
+
 /**
  * Oracle Test.
- * 
+ *
  * Note: <br />
  * 1.replace driverClass with your database's jdbc-class please; <br />
  * 2.replace jdbcUrl with your database's url please; <br />
  * 3.replace user with your database's user please; <br />
  * 4.replace password with your database's password please; <br />
  * 5.replace sql with your valid sql please.
- * 
+ *
  * @author xionghui
  * @date 24.09.2014
  * @version 1.0
@@ -38,7 +38,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 public class BasicCompareInOracle extends TestCase {
   private String sql = "select count(1) from cm_stuff where dr=0";
 
-  private String driverClass = "oracle.jdbc.driver.OracleDriver";
+  private String driverClassName = "oracle.jdbc.driver.OracleDriver";
   private String jdbcUrl = "jdbc:oracle:thin:@20.10.1.224:1521:ora10g";
   private String user = "cm65dev";
   private String password = "1";
@@ -65,8 +65,8 @@ public class BasicCompareInOracle extends TestCase {
   }
 
   public void test_Nopool() throws Exception {
-    System.setProperty("jdbc.drivers", this.driverClass);
-    Driver driver = JdbcUtil.createDriver(this.driverClass);
+    System.setProperty("jdbc.drivers", this.driverClassName);
+    Driver driver = JdbcUtil.createDriver(this.driverClassName);
     Properties connectProperties = new Properties();
     if (this.user != null) {
       connectProperties.put("user", this.user);
@@ -75,7 +75,7 @@ public class BasicCompareInOracle extends TestCase {
       connectProperties.put("password", this.password);
     }
     DataSource dataSource =
-        new NopoolDataSource(this.driverClass, this.jdbcUrl, driver, connectProperties);
+        new NopoolDataSource(this.driverClassName, this.jdbcUrl, driver, connectProperties);
     for (int i = 0; i < this.loop; ++i) {
       ThreadProcessUtil.processSql(dataSource, "Nopool", this.count, threadCount, this.sql);
     }
@@ -86,7 +86,7 @@ public class BasicCompareInOracle extends TestCase {
     ClearPoolDataSource dataSource = new ClearPoolDataSource();
     dataSource.setCorePoolSize(this.corePoolSize);
     dataSource.setMaxPoolSize(this.maxPoolSize);
-    dataSource.setDriverClass(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setJdbcUrl(this.jdbcUrl);
     dataSource.setJdbcUser(this.user);
     dataSource.setJdbcPassword(this.password);
@@ -103,7 +103,7 @@ public class BasicCompareInOracle extends TestCase {
     dataSource.setMaxActive(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setPoolPreparedStatements(true);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setPoolPreparedStatements(true);
     dataSource.setUsername(this.user);
@@ -123,7 +123,7 @@ public class BasicCompareInOracle extends TestCase {
     dataSource.setMaxIdle(this.maxPoolSize);
     dataSource.setMinIdle(this.corePoolSize);
     dataSource.setMaxActive(this.maxPoolSize);
-    dataSource.setDriverClassName(this.driverClass);
+    dataSource.setDriverClassName(this.driverClassName);
     dataSource.setUrl(this.jdbcUrl);
     dataSource.setUsername(this.user);
     dataSource.setPassword(this.password);
@@ -136,7 +136,7 @@ public class BasicCompareInOracle extends TestCase {
 
   /**
    * Nopool DataSource
-   * 
+   *
    * @author xionghui
    * @date 24.09.2014
    * @version 1.0
