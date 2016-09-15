@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -122,11 +123,15 @@ class StatementHandler implements InvocationHandler {
 		}
 		this.pooledConnection.removeStatement(this.statement);
 		if (this.statement instanceof PreparedStatement) {
-			StatementEvent event = new StatementEvent(this.pooledConnection,
-					(PreparedStatement) this.statement);
-			for (StatementEventListener listener : this.pooledConnection
-					.getStatementEventListeners()) {
-				listener.statementClosed(event);
+			List<StatementEventListener> statementEventListeners = this.pooledConnection
+					.getStatementEventListeners();
+			if (statementEventListeners != null) {
+				StatementEvent event = new StatementEvent(
+						this.pooledConnection,
+						(PreparedStatement) this.statement);
+				for (StatementEventListener listener : statementEventListeners) {
+					listener.statementClosed(event);
+				}
 			}
 		}
 	}
@@ -136,11 +141,15 @@ class StatementHandler implements InvocationHandler {
 	 */
 	private SQLException handleException(SQLException e) throws SQLException {
 		if (this.statement instanceof PreparedStatement) {
-			StatementEvent event = new StatementEvent(this.pooledConnection,
-					(PreparedStatement) this.statement);
-			for (StatementEventListener listener : this.pooledConnection
-					.getStatementEventListeners()) {
-				listener.statementErrorOccurred(event);
+			List<StatementEventListener> statementEventListeners = this.pooledConnection
+					.getStatementEventListeners();
+			if (statementEventListeners != null) {
+				StatementEvent event = new StatementEvent(
+						this.pooledConnection,
+						(PreparedStatement) this.statement);
+				for (StatementEventListener listener : statementEventListeners) {
+					listener.statementErrorOccurred(event);
+				}
 			}
 		}
 		throw e;
