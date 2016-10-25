@@ -1,23 +1,23 @@
 clearpool
 =========
 
-Clearpool is a High Performance Distributed Database Pool. It is able to manage multiple database, and has a wondorful performance.
-<p />
-The function of the pool:
+### clearpool是一个高性能的分布式数据库连接池
+
+### 功能:
 <ol>
-<li>Be able to manage distributed database</li>
-<li>Support JTA transaction</li>
-<li>Support monitoring by JMX</li>
-<li>Automatically release the invalid connection and get new connection</li>
-<li>Automatically collect the idle connection if necessary</li>
-<li>Support encrypt the password of the database</li>
+<li>支持多数据源</li>
+<li>支持分布式事务</li>
+<li>支持JMX监控</li>
 </ol>
 
-Here is the result of comparing with druid and tomcat-jdbc.
+### clearpool，druid和tomcat-jdbc的性能比较
 ![image](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/resources/img/compare.png)
-<p />
-If you want to compare the performance with other popular database pools, please run TestCase: [CompareWithPopularPool.java](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/org/opensource/clearpool/CompareWithPopularPool.java).
-<p />
-It really helps a lot if you are willing to improve clearpool.
-<P />
-Please import googlestyle-java.xml before any commit.
+
+### 和其它数据库连接池的性能比较
+[CompareWithPopularPool.java](https://github.com/xionghuiCoder/clearpool/blob/master/src/test/java/com/github/xionghuicoder/clearpool/testcase/CompareWithPopularPool.java)
+
+### note
+<ol>
+<li>JDK支持1.6或1.6+</li>
+<li>在修改源码前，请导入googlestyle-java.xml以保证一致的代码格式</li>
+</ol>
