@@ -25,5 +25,4 @@ public class ConnectionPoolUselessConnectionException extends ConnectionPoolExce
   public ConnectionPoolUselessConnectionException(String message, Throwable cause) {
     super(message, cause);
   }
-
 }

@@ -94,8 +94,8 @@ public class ConnectionPoolManager {
                 }
               } else if (this.cfgVO.isUselessConnectionException()) {
                 throw new ConnectionPoolUselessConnectionException(
-                    "there is no connection left in the pool, the maxPoolSize is:"
-                        + cfgVO.getMaxPoolSize());
+                    "there is no connection left in the pool, the maxPoolSize is: "
+                        + this.cfgVO.getMaxPoolSize());
               } else {
                 // wait
                 while (this.connectionChain.size() == 0) {
