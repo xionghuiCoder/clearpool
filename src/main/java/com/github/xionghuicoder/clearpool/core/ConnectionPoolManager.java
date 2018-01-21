@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.sql.PooledConnection;
 
 import com.github.xionghuicoder.clearpool.ConnectionPoolException;
+import com.github.xionghuicoder.clearpool.ConnectionPoolUselessConnectionException;
 import com.github.xionghuicoder.clearpool.core.chain.BinaryHeap;
 import com.github.xionghuicoder.clearpool.datasource.CommonConnection;
 import com.github.xionghuicoder.clearpool.datasource.proxy.ConnectionProxy;
@@ -92,7 +93,9 @@ public class ConnectionPoolManager {
                   }
                 }
               } else if (this.cfgVO.isUselessConnectionException()) {
-                throw new ConnectionPoolException("there is no connection left in the pool");
+                throw new ConnectionPoolUselessConnectionException(
+                    "there is no connection left in the pool, the maxPoolSize is:"
+                        + cfgVO.getMaxPoolSize());
               } else {
                 // wait
                 while (this.connectionChain.size() == 0) {

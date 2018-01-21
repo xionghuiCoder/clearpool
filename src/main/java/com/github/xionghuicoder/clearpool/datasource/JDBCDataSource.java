@@ -34,6 +34,9 @@ public class JDBCDataSource extends AbstractDataSource {
   @Override
   public Connection getConnection() throws SQLException {
     Connection con = this.driver.connect(this.url, this.connectProperties);
+    if (con == null) {
+      throw new SQLException("No suitable driver found for " + this.url, "08001");
+    }
     return con;
   }
 
