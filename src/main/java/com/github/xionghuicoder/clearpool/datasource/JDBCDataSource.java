@@ -5,6 +5,13 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * jdbc数据源对象
+ *
+ * @author wufuxing
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 public class JDBCDataSource extends AbstractDataSource {
   private String clazz;
   private String url;
